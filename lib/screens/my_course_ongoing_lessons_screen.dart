@@ -1,0 +1,515 @@
+import 'package:flutter/material.dart';
+import '../utils/colors.dart';
+import '../utils/text_styles.dart';
+import '../utils/constants.dart';
+import '../routes/app_routes.dart';
+import '../widgets/bottom_navigation_bar.dart';
+
+class MyCourseOngoingLessonsScreen extends StatefulWidget {
+  final String courseTitle;
+  final String courseImage;
+
+  const MyCourseOngoingLessonsScreen({
+    Key? key,
+    required this.courseTitle,
+    required this.courseImage,
+  }) : super(key: key);
+
+  @override
+  State<MyCourseOngoingLessonsScreen> createState() => _MyCourseOngoingLessonsScreenState();
+}
+
+class _MyCourseOngoingLessonsScreenState extends State<MyCourseOngoingLessonsScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  
+  // Sample curriculum data
+  final List<Map<String, dynamic>> _sections = [
+    {
+      'title': 'Section 01 - Introduction',
+      'duration': '25 Mins',
+      'lessons': [
+        {
+          'id': 1,
+          'title': 'Why Using Graphic Design',
+          'duration': '15 Mins',
+          'isCompleted': true,
+        },
+        {
+          'id': 2,
+          'title': 'Setup Your Graphic Design',
+          'duration': '10 Mins',
+          'isCompleted': true,
+        },
+      ],
+    },
+    {
+      'title': 'Section 02 - Graphic Design',
+      'duration': '55 Mins',
+      'lessons': [
+        {
+          'id': 3,
+          'title': 'Take a Look Graphic Design',
+          'duration': '08 Mins',
+          'isCompleted': false,
+        },
+        {
+          'id': 4,
+          'title': 'Working with Graphic Design',
+          'duration': '25 Mins',
+          'isCompleted': false,
+        },
+        {
+          'id': 5,
+          'title': 'Working with Frame & Layout',
+          'duration': '12 Mins',
+          'isCompleted': false,
+        },
+        {
+          'id': 6,
+          'title': 'Using Graphic Plugins',
+          'duration': '10 Mins',
+          'isCompleted': false,
+        },
+      ],
+    },
+    {
+      'title': 'Section 03 - Let\'s Practice',
+      'duration': '35 Mins',
+      'lessons': [
+        {
+          'id': 7,
+          'title': 'Let\'s Design a Sign Up Form',
+          'duration': '15 Mins',
+          'isCompleted': false,
+        },
+        {
+          'id': 8,
+          'title': 'Sharing work with Team',
+          'duration': '20 Mins',
+          'isCompleted': false,
+        },
+      ],
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F9FF),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            _buildSearchBar(),
+            Expanded(
+              child: _buildCurriculum(),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _buildBottomButton(),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(35, 25, 35, 20),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Container(
+              width: 26,
+              height: 20,
+              decoration: BoxDecoration(
+                color: const Color(0xFF202244),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Icon(
+                Icons.arrow_back_ios,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'My Courses',
+              style: AppTextStyles.heading1.copyWith(
+                color: const Color(0xFF202244),
+                fontSize: 21,
+                fontWeight: FontWeight.w600,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(34, 0, 34, 20),
+      height: 64,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 21),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search for ...',
+                  hintStyle: AppTextStyles.body1.copyWith(
+                    color: const Color(0xFFB4BDC4),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  border: InputBorder.none,
+                ),
+                style: AppTextStyles.body1.copyWith(
+                  color: const Color(0xFF202244),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          Container(
+            width: 38,
+            height: 38,
+            margin: const EdgeInsets.only(right: 13),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F9FF),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.search,
+              color: Color(0xFF0961F5),
+              size: 20,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCurriculum() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(34, 0, 34, 20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: _sections.map((section) => _buildSection(section)).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection(Map<String, dynamic> section) {
+    return Column(
+      children: [
+        // Section Header
+        Container(
+          padding: const EdgeInsets.fromLTRB(25, 25, 25, 15),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  section['title'],
+                  style: AppTextStyles.body1.copyWith(
+                    color: const Color(0xFF202244),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Text(
+                section['duration'],
+                style: AppTextStyles.body1.copyWith(
+                  color: const Color(0xFF0961F5),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Lessons
+        ...section['lessons'].map<Widget>((lesson) => _buildLesson(lesson, section)).toList(),
+      ],
+    );
+  }
+
+  Widget _buildLesson(Map<String, dynamic> lesson, Map<String, dynamic> section) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(25, 0, 25, 0),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              // Navigate to video player
+              AppRoutes.navigateToMyCourseOngoingVideo(
+                context,
+                lessonTitle: lesson['title'],
+                courseTitle: widget.courseTitle,
+                videoUrl: 'https://example.com/video/${lesson['id']}.mp4',
+                currentTime: lesson['isCompleted'] ? 0 : 274, // 4:34 in seconds
+                totalTime: _parseDurationToSeconds(lesson['duration']),
+              );
+            },
+            child: Container(
+              height: 72,
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              child: Row(
+                children: [
+                  // Lesson Number Circle
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: lesson['isCompleted'] 
+                          ? const Color(0xFF0961F5) 
+                          : const Color(0xFFE8F1FF),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        lesson['id'].toString().padLeft(2, '0'),
+                        style: AppTextStyles.body1.copyWith(
+                          color: lesson['isCompleted'] 
+                              ? Colors.white 
+                              : const Color(0xFF202244),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(width: 16),
+                  
+                  // Lesson Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            lesson['title'],
+                            style: AppTextStyles.body1.copyWith(
+                              color: const Color(0xFF202244),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          lesson['duration'],
+                          style: AppTextStyles.body1.copyWith(
+                            color: const Color(0xFF545454),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(width: 8),
+                  
+                  // Play/Check Icon
+                  Container(
+                    width: 18,
+                    height: 18,
+                    child: Icon(
+                      lesson['isCompleted'] ? Icons.check : Icons.play_arrow,
+                      color: lesson['isCompleted'] 
+                          ? const Color(0xFF0961F5) 
+                          : const Color(0xFF545454),
+                      size: 18,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Divider
+          if (lesson != section['lessons'].last)
+            Container(
+              height: 1,
+              color: const Color(0xFFE8F1FF),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomButton() {
+    return Container(
+      height: 140,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.16),
+            blurRadius: 14,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(39, 27, 39, 20),
+        child: GestureDetector(
+          onTap: () {
+            // Continue to next lesson
+            _continueCourse();
+          },
+          child: Container(
+            height: 60,
+            decoration: BoxDecoration(
+              color: const Color(0xFF0961F5),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(1, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    'Continue Courses',
+                    style: AppTextStyles.body1.copyWith(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showLessonDialog(Map<String, dynamic> lesson) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(lesson['title']),
+          content: Text('Duration: ${lesson['duration']}'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Start lesson logic here
+              },
+              child: const Text('Start Lesson'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _continueCourse() {
+    // Find next incomplete lesson
+    for (var section in _sections) {
+      for (var lesson in section['lessons']) {
+        if (!lesson['isCompleted']) {
+          AppRoutes.navigateToMyCourseOngoingVideo(
+            context,
+            lessonTitle: lesson['title'],
+            courseTitle: widget.courseTitle,
+            videoUrl: 'https://example.com/video/${lesson['id']}.mp4',
+            currentTime: 0,
+            totalTime: _parseDurationToSeconds(lesson['duration']),
+          );
+          return;
+        }
+      }
+    }
+    
+    // If all lessons completed, show course completed screen
+    AppRoutes.navigateToCourseCompleted(
+      context,
+      courseTitle: widget.courseTitle,
+      courseImage: widget.courseImage,
+    );
+  }
+
+  int _parseDurationToSeconds(String duration) {
+    // Parse duration like "15 Mins" to seconds
+    final match = RegExp(r'(\d+)').firstMatch(duration);
+    if (match != null) {
+      return int.parse(match.group(1)!) * 60; // Convert minutes to seconds
+    }
+    return 0;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+}
