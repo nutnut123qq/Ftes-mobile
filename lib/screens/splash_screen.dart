@@ -129,7 +129,7 @@ class _SplashScreenState extends State<SplashScreen>
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: const Text(
-                  'Flutter Learning Experience',
+                  'Trải nghiệm học tập Flutter',
                   style: TextStyle(
                     fontSize: 16,
                     color: AppColors.textWhite,

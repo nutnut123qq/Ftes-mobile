@@ -85,7 +85,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           ),
           const SizedBox(width: 12),
           Text(
-            'Security',
+            'Bảo mật',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 21,
@@ -107,7 +107,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           
           // Remember Me Toggle
           _buildToggleItem(
-            title: 'Remember Me',
+            title: 'Ghi nhớ đăng nhập',
             value: _rememberMe,
             onChanged: (value) {
               setState(() {
@@ -120,7 +120,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           
           // Biometric ID Toggle
           _buildToggleItem(
-            title: 'Biometric ID',
+            title: 'ID Sinh trắc học',
             value: _biometricId,
             onChanged: (value) {
               setState(() {
@@ -258,7 +258,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ),
         child: Center(
           child: Text(
-            'Change PIN',
+            'Đổi PIN',
             style: AppTextStyles.body1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 18,
@@ -307,7 +307,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             ),
             const SizedBox(width: 10),
             Text(
-              'Change Password',
+              'Đổi mật khẩu',
               style: AppTextStyles.body1.copyWith(
                 color: Colors.white,
                 fontSize: 18,

@@ -9,10 +9,7 @@ import '../screens/forgot_password_screen.dart';
 import '../screens/verify_forgot_password_screen.dart';
 import '../screens/create_new_password_screen.dart';
 import '../screens/congratulations_screen.dart';
-import '../screens/category_screen.dart';
-import '../screens/fill_profile_screen.dart';
 import '../screens/create_pin_screen.dart';
-import '../screens/set_fingerprint_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/popular_courses_screen.dart';
 import '../screens/top_mentors_screen.dart';
@@ -23,27 +20,19 @@ import '../screens/course_detail_screen.dart';
 import '../screens/categories_screen.dart';
 import '../screens/learning_screen.dart';
 import '../screens/quiz_screen.dart';
-import '../screens/my_bookmark_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/notifications_screen.dart';
 import '../screens/chat_messages_screen.dart';
-import '../screens/voice_call_screen.dart';
 import '../screens/curriculum_screen.dart';
 import '../screens/reviews_screen.dart';
 import '../screens/write_review_screen.dart';
 import '../screens/payment_screen.dart';
 import '../screens/enroll_success_screen.dart';
 import '../screens/my_courses_screen.dart';
-import '../screens/my_course_lessons_screen.dart';
-import '../screens/certificate_screen.dart';
-import '../screens/my_course_ongoing_screen.dart';
 import '../screens/my_course_ongoing_lessons_screen.dart';
 import '../screens/my_course_ongoing_video_screen.dart';
-import '../screens/course_completed_screen.dart';
-import '../screens/transactions_screen.dart';
-import '../screens/e_receipt_screen.dart';
-import '../screens/e_receipt_edit_screen.dart';
 import '../screens/invite_friends_screen.dart';
+import '../screens/cart_screen.dart';
 import '../models/course_item.dart';
 import '../models/chat_item.dart';
 import '../models/call_item.dart';
@@ -69,10 +58,7 @@ class AppRoutes {
     },
     AppConstants.routeCreateNewPassword: (context) => const CreateNewPasswordScreen(),
     AppConstants.routeCongratulations: (context) => const CongratulationsScreen(),
-    AppConstants.routeCategories: (context) => const CategoryScreen(),
-    AppConstants.routeFillProfile: (context) => const FillProfileScreen(),
     AppConstants.routeCreatePin: (context) => const CreatePinScreen(),
-    AppConstants.routeSetFingerprint: (context) => const SetFingerprintScreen(),
     AppConstants.routeHome: (context) => const HomeScreen(),
     AppConstants.routePopularCourses: (context) => const PopularCoursesScreen(),
     AppConstants.routeTopMentors: (context) => const TopMentorsScreen(),
@@ -97,6 +83,7 @@ class AppRoutes {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       return CourseDetailScreen(
         course: args?['course'] ?? CourseItem(
+          id: 'default_course',
           category: 'Graphic Design',
           title: 'Design Principles',
           price: '499/-',
@@ -106,7 +93,6 @@ class AppRoutes {
         ),
       );
     },
-    AppConstants.routeMyBookmark: (context) => const MyBookmarkScreen(),
     AppConstants.routeProfile: (context) => const ProfileScreen(),
     AppConstants.routeNotifications: (context) => const NotificationsScreen(),
     AppConstants.routeChatMessages: (context) {
@@ -121,37 +107,12 @@ class AppRoutes {
         ),
       );
     },
-    AppConstants.routeVoiceCall: (context) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      return VoiceCallScreen(
-        contactName: args?['contactName'] ?? 'Unknown',
-        contactAvatar: args?['contactAvatar'],
-        callType: args?['callType'],
-      );
-    },
     AppConstants.routeCurriculum: (context) => const CurriculumScreen(),
     AppConstants.routeReviews: (context) => const ReviewsScreen(),
     AppConstants.routeWriteReview: (context) => const WriteReviewScreen(),
     AppConstants.routePayment: (context) => const PaymentScreen(),
     AppConstants.routeEnrollSuccess: (context) => const EnrollSuccessScreen(),
     AppConstants.routeMyCourses: (context) => const MyCoursesScreen(),
-    AppConstants.routeMyCourseLessons: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-      return MyCourseLessonsScreen(
-        courseTitle: args?['courseTitle'] ?? 'Course Title',
-        courseImage: args?['courseImage'] ?? '',
-      );
-    },
-    AppConstants.routeCertificate: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-      return CertificateScreen(
-        courseTitle: args?['courseTitle'] ?? 'Course Title',
-        studentName: args?['studentName'] ?? 'Student Name',
-        completionDate: args?['completionDate'] ?? 'November 24, 2022',
-        certificateId: args?['certificateId'] ?? 'SK24568086',
-      );
-    },
-    AppConstants.routeMyCourseOngoing: (context) => const MyCourseOngoingScreen(),
     AppConstants.routeMyCourseOngoingLessons: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
       return MyCourseOngoingLessonsScreen(
@@ -169,33 +130,8 @@ class AppRoutes {
         totalTime: args?['totalTime'] ?? 0,
       );
     },
-    AppConstants.routeCourseCompleted: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-      return CourseCompletedScreen(
-        courseTitle: args?['courseTitle'] ?? 'Course Title',
-        courseImage: args?['courseImage'] ?? '',
-      );
-    },
-    AppConstants.routeTransactions: (context) => const TransactionsScreen(),
-    AppConstants.routeEReceipt: (context) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      return EReceiptScreen(
-        transaction: args?['transaction'] ?? TransactionItem(
-          id: '1',
-          courseTitle: 'Default Course',
-          category: 'Default Category',
-          price: '0/-',
-          status: 'Paid',
-          date: 'Nov 20, 2023',
-          imageUrl: 'https://via.placeholder.com/90x90/000000/FFFFFF?text=Course',
-          studentName: 'Default User',
-          email: 'default@email.com',
-          transactionId: 'SK000000000',
-        ),
-      );
-    },
-    AppConstants.routeEReceiptEdit: (context) => const EReceiptEditScreen(),
     AppConstants.routeInviteFriends: (context) => const InviteFriendsScreen(),
+    AppConstants.routeCart: (context) => const CartScreen(),
   };
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
@@ -254,24 +190,9 @@ class AppRoutes {
           builder: (context) => const CongratulationsScreen(),
           settings: settings,
         );
-      case AppConstants.routeCategories:
-        return MaterialPageRoute(
-          builder: (context) => const CategoryScreen(),
-          settings: settings,
-        );
-      case AppConstants.routeFillProfile:
-        return MaterialPageRoute(
-          builder: (context) => const FillProfileScreen(),
-          settings: settings,
-        );
       case AppConstants.routeCreatePin:
         return MaterialPageRoute(
           builder: (context) => const CreatePinScreen(),
-          settings: settings,
-        );
-      case AppConstants.routeSetFingerprint:
-        return MaterialPageRoute(
-          builder: (context) => const SetFingerprintScreen(),
           settings: settings,
         );
       case AppConstants.routeHome:
@@ -319,6 +240,7 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (context) => CourseDetailScreen(
             course: args?['course'] ?? CourseItem(
+              id: 'default_course_2',
               category: 'Graphic Design',
               title: 'Design Principles',
               price: '499/-',
@@ -327,11 +249,6 @@ class AppRoutes {
               imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course',
             ),
           ),
-          settings: settings,
-        );
-      case AppConstants.routeCategories:
-        return MaterialPageRoute(
-          builder: (context) => const CategoriesScreen(),
           settings: settings,
         );
       case AppConstants.routeLearning:
@@ -357,11 +274,6 @@ class AppRoutes {
           builder: (context) => const ProfileScreen(),
           settings: settings,
         );
-      case AppConstants.routeMyBookmark:
-        return MaterialPageRoute(
-          builder: (context) => const MyBookmarkScreen(),
-          settings: settings,
-        );
       case AppConstants.routeNotifications:
         return MaterialPageRoute(
           builder: (context) => const NotificationsScreen(),
@@ -378,16 +290,6 @@ class AppRoutes {
               time: '12:00',
               avatar: '',
             ),
-          ),
-          settings: settings,
-        );
-      case AppConstants.routeVoiceCall:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (context) => VoiceCallScreen(
-            contactName: args?['contactName'] ?? 'Unknown',
-            contactAvatar: args?['contactAvatar'],
-            callType: args?['callType'],
           ),
           settings: settings,
         );
@@ -421,31 +323,6 @@ class AppRoutes {
           builder: (context) => const MyCoursesScreen(),
           settings: settings,
         );
-      case AppConstants.routeMyCourseLessons:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (context) => MyCourseLessonsScreen(
-            courseTitle: args?['courseTitle'] ?? 'Course Title',
-            courseImage: args?['courseImage'] ?? '',
-          ),
-          settings: settings,
-        );
-      case AppConstants.routeCertificate:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (context) => CertificateScreen(
-            courseTitle: args?['courseTitle'] ?? 'Course Title',
-            studentName: args?['studentName'] ?? 'Student Name',
-            completionDate: args?['completionDate'] ?? 'November 24, 2022',
-            certificateId: args?['certificateId'] ?? 'SK24568086',
-          ),
-          settings: settings,
-        );
-      case AppConstants.routeMyCourseOngoing:
-        return MaterialPageRoute(
-          builder: (context) => const MyCourseOngoingScreen(),
-          settings: settings,
-        );
       case AppConstants.routeMyCourseOngoingLessons:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
@@ -467,47 +344,14 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case AppConstants.routeCourseCompleted:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (context) => CourseCompletedScreen(
-            courseTitle: args?['courseTitle'] ?? 'Course Title',
-            courseImage: args?['courseImage'] ?? '',
-          ),
-          settings: settings,
-        );
-      case AppConstants.routeTransactions:
-        return MaterialPageRoute(
-          builder: (context) => const TransactionsScreen(),
-          settings: settings,
-        );
-      case AppConstants.routeEReceipt:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (context) => EReceiptScreen(
-            transaction: args?['transaction'] ?? TransactionItem(
-              id: '1',
-              courseTitle: 'Default Course',
-              category: 'Default Category',
-              price: '0/-',
-              status: 'Paid',
-              date: 'Nov 20, 2023',
-              imageUrl: 'https://via.placeholder.com/90x90/000000/FFFFFF?text=Course',
-              studentName: 'Default User',
-              email: 'default@email.com',
-              transactionId: 'SK000000000',
-            ),
-          ),
-          settings: settings,
-        );
-      case AppConstants.routeEReceiptEdit:
-        return MaterialPageRoute(
-          builder: (context) => const EReceiptEditScreen(),
-          settings: settings,
-        );
       case AppConstants.routeInviteFriends:
         return MaterialPageRoute(
           builder: (context) => const InviteFriendsScreen(),
+          settings: settings,
+        );
+      case AppConstants.routeCart:
+        return MaterialPageRoute(
+          builder: (context) => const CartScreen(),
           settings: settings,
         );
       default:
@@ -559,9 +403,6 @@ class AppRoutes {
     );
   }
 
-  static void navigateToCategories(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeCategories);
-  }
 
   static void navigateToLearning(
     BuildContext context, {
@@ -597,9 +438,6 @@ class AppRoutes {
     Navigator.pushNamed(context, AppConstants.routeProfile);
   }
 
-  static void navigateToMyBookmark(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeMyBookmark);
-  }
 
   static void navigateToNotifications(BuildContext context) {
     Navigator.pushNamed(context, AppConstants.routeNotifications);
@@ -613,21 +451,6 @@ class AppRoutes {
     );
   }
 
-  static void navigateToVoiceCall(BuildContext context, {
-    required String contactName,
-    String? contactAvatar,
-    CallType? callType,
-  }) {
-    Navigator.pushNamed(
-      context,
-      AppConstants.routeVoiceCall,
-      arguments: {
-        'contactName': contactName,
-        'contactAvatar': contactAvatar,
-        'callType': callType,
-      },
-    );
-  }
 
   static void navigateToCurriculum(BuildContext context) {
     Navigator.pushNamed(context, AppConstants.routeCurriculum);
@@ -653,41 +476,8 @@ class AppRoutes {
     Navigator.pushNamed(context, AppConstants.routeMyCourses);
   }
 
-  static void navigateToMyCourseLessons(BuildContext context, {
-    required String courseTitle,
-    required String courseImage,
-  }) {
-    Navigator.pushNamed(
-      context,
-      AppConstants.routeMyCourseLessons,
-      arguments: {
-        'courseTitle': courseTitle,
-        'courseImage': courseImage,
-      },
-    );
-  }
 
-  static void navigateToCertificate(BuildContext context, {
-    required String courseTitle,
-    required String studentName,
-    required String completionDate,
-    required String certificateId,
-  }) {
-    Navigator.pushNamed(
-      context,
-      AppConstants.routeCertificate,
-      arguments: {
-        'courseTitle': courseTitle,
-        'studentName': studentName,
-        'completionDate': completionDate,
-        'certificateId': certificateId,
-      },
-    );
-  }
 
-  static void navigateToMyCourseOngoing(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeMyCourseOngoing);
-  }
 
   static void navigateToMyCourseOngoingLessons(BuildContext context, {
     required String courseTitle,
@@ -723,38 +513,15 @@ class AppRoutes {
     );
   }
 
-  static void navigateToCourseCompleted(BuildContext context, {
-    required String courseTitle,
-    required String courseImage,
-  }) {
-    Navigator.pushNamed(
-      context,
-      AppConstants.routeCourseCompleted,
-      arguments: {
-        'courseTitle': courseTitle,
-        'courseImage': courseImage,
-      },
-    );
-  }
 
-  static void navigateToTransactions(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeTransactions);
-  }
 
-  static void navigateToEReceipt(BuildContext context, {required TransactionItem transaction}) {
-    Navigator.pushNamed(
-      context,
-      AppConstants.routeEReceipt,
-      arguments: {'transaction': transaction},
-    );
-  }
-
-  static void navigateToEReceiptEdit(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeEReceiptEdit);
-  }
 
   static void navigateToInviteFriends(BuildContext context) {
     Navigator.pushNamed(context, AppConstants.routeInviteFriends);
+  }
+
+  static void navigateToCart(BuildContext context) {
+    Navigator.pushNamed(context, AppConstants.routeCart);
   }
 
   static void navigateBack(BuildContext context) {

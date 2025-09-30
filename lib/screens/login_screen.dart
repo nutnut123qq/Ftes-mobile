@@ -65,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Learn From Home',
+                      'Học Tập Tại Nhà',
                       style: AppTextStyles.body1.copyWith(
                         color: AppColors.textPrimary,
                         fontSize: 11,
@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 60),
               // Title
               Text(
-                'Let\'s Sign In.!',
+                'Đăng Nhập!',
                 style: AppTextStyles.heading1.copyWith(
                   color: AppColors.textPrimary,
                   fontSize: 24,
@@ -88,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                'Login to Your Account to Continue your Courses',
+                'Đăng nhập vào tài khoản để tiếp tục khóa học',
                 style: AppTextStyles.body1.copyWith(
                   color: AppColors.textSecondary,
                   fontSize: 14,
@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // Password input field
               _InputField(
                 controller: _passwordController,
-                hintText: 'Password',
+                hintText: 'Mật khẩu',
                 icon: Icons.lock_outline,
                 isPassword: true,
                 isPasswordVisible: _isPasswordVisible,
@@ -153,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Remember Me',
+                        'Ghi nhớ đăng nhập',
                         style: AppTextStyles.body1.copyWith(
                           color: AppColors.textSecondary,
                           fontSize: 13,
@@ -166,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   GestureDetector(
                     onTap: () => Navigator.pushNamed(context, AppConstants.routeForgotPassword),
                     child: Text(
-                      'Forgot Password?',
+                      'Quên mật khẩu?',
                       style: AppTextStyles.body1.copyWith(
                         color: AppColors.textSecondary,
                         fontSize: 13,
@@ -195,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Sign In',
+                        'Đăng Nhập',
                         style: AppTextStyles.button.copyWith(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -223,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // Or Continue With text
               Center(
                 child: Text(
-                  'Or Continue With',
+                  'Hoặc tiếp tục với',
                   style: AppTextStyles.body1.copyWith(
                     color: AppColors.textSecondary,
                     fontSize: 14,
@@ -241,10 +241,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     onTap: () => _showComingSoon(context),
                   ),
                   const SizedBox(width: 20),
-                  _SocialButton(
-                    icon: Icons.apple,
-                    onTap: () => _showComingSoon(context),
-                  ),
                 ],
               ),
               const SizedBox(height: 40),
@@ -254,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Don\'t have an Account? ',
+                      'Chưa có tài khoản? ',
                       style: AppTextStyles.body1.copyWith(
                         color: AppColors.textSecondary,
                         fontSize: 14,
@@ -266,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.pushReplacementNamed(context, AppConstants.routeSignUp);
                       },
                       child: Text(
-                        'SIGN UP',
+                        'ĐĂNG KÝ',
                         style: AppTextStyles.body1.copyWith(
                           color: AppColors.primary,
                           fontSize: 14,

@@ -81,7 +81,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
           ),
           const SizedBox(width: 12),
           Text(
-            'Terms & Conditions',
+            'Điều khoản & Điều kiện',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 21,
@@ -103,7 +103,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
           
           // Condition & Attending Section
           Text(
-            'Condition & Attending',
+            'Điều kiện & Tham gia',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 20,
@@ -127,7 +127,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
           
           // Terms & Use Section
           Text(
-            'Terms & Use',
+            'Điều khoản & Sử dụng',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 20,

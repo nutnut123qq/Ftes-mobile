@@ -11,7 +11,7 @@ class CategoriesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Categories', style: AppTextStyles.appBarTitle),
+        title: const Text('Danh mục', style: AppTextStyles.appBarTitle),
         backgroundColor: AppColors.primary,
       ),
       body: const Center(
@@ -20,9 +20,9 @@ class CategoriesScreen extends StatelessWidget {
           children: [
             Icon(Icons.category, size: AppConstants.iconXXL, color: AppColors.primary),
             SizedBox(height: AppConstants.spacingM),
-            Text('Categories Screen', style: AppTextStyles.h3),
+            Text('Màn hình danh mục', style: AppTextStyles.h3),
             SizedBox(height: AppConstants.spacingS),
-            Text('Coming Soon...', style: AppTextStyles.bodyMedium),
+            Text('Sắp ra mắt...', style: AppTextStyles.bodyMedium),
           ],
         ),
       ),

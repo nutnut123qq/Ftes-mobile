@@ -13,7 +13,6 @@ class WriteReviewScreen extends StatefulWidget {
 class _WriteReviewScreenState extends State<WriteReviewScreen> {
   final TextEditingController _reviewController = TextEditingController();
   final int _maxCharacters = 250;
-  String? _selectedImagePath;
 
   @override
   void initState() {
@@ -39,7 +38,6 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
             children: [
               _buildHeader(),
               _buildCourseInfo(),
-              _buildUploadSection(),
               _buildReviewSection(),
               _buildSubmitButton(),
               const SizedBox(height: 20),
@@ -100,7 +98,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Write a Reviews',
+                    'Viết đánh giá',
                     style: AppTextStyles.heading1.copyWith(
                       color: const Color(0xFF202244),
                       fontSize: 21,
@@ -157,7 +155,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
               children: [
                 // Category
                 Text(
-                  'Graphic Design',
+                  'Thiết kế đồ họa',
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFFFF6B00),
                     fontSize: 12,
@@ -169,7 +167,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                 
                 // Title
                 Text(
-                  'Setup your Graphic Design...',
+                  'Thiết lập Thiết kế đồ họa...',
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFF202244),
                     fontSize: 16,
@@ -184,97 +182,6 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
     );
   }
 
-  Widget _buildUploadSection() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(35, 30, 35, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Add Photo (or) Video',
-            style: AppTextStyles.body1.copyWith(
-              color: const Color(0xFF202244),
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          
-          const SizedBox(height: 20),
-          
-          // Upload Area
-          GestureDetector(
-            onTap: _selectImage,
-            child: Container(
-              height: 134,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                border: Border.all(
-                  color: const Color(0xFFE8F1FF),
-                  width: 2,
-                  style: BorderStyle.solid,
-                ),
-              ),
-              child: _selectedImagePath != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        _selectedImagePath!,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildUploadPlaceholder();
-                        },
-                      ),
-                    )
-                  : _buildUploadPlaceholder(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUploadPlaceholder() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8F1FF),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(
-              Icons.add,
-              color: Color(0xFF0961F5),
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Click here to Upload',
-            style: AppTextStyles.body1.copyWith(
-              color: const Color(0xFF545454),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildReviewSection() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(35, 30, 35, 0),
@@ -282,7 +189,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Write you Review',
+            'Viết đánh giá của bạn',
             style: AppTextStyles.body1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 18,
@@ -313,7 +220,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                 children: [
                   // Placeholder text
                   Text(
-                    'Would you like to write anything about this Product?',
+                    'Bạn có muốn viết gì về sản phẩm này không?',
                     style: AppTextStyles.body1.copyWith(
                       color: const Color(0xFFB4BDC4),
                       fontSize: 12,
@@ -346,7 +253,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      '*${_maxCharacters - _reviewController.text.length} Characters Remaining',
+                      '*${_maxCharacters - _reviewController.text.length} Ký tự còn lại',
                       style: AppTextStyles.body1.copyWith(
                         color: const Color(0xFFB4BDC4),
                         fontSize: 11,
@@ -409,7 +316,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
               // Button Text
               Expanded(
                 child: Text(
-                  'Submit Review',
+                  'Gửi đánh giá',
                   style: AppTextStyles.buttonLarge.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -427,19 +334,12 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
     );
   }
 
-  void _selectImage() {
-    // Simulate image selection
-    setState(() {
-      _selectedImagePath = 'https://via.placeholder.com/300x200/000000/FFFFFF?text=Selected+Image';
-    });
-  }
-
   void _submitReview() {
     if (_reviewController.text.trim().isNotEmpty) {
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Review submitted successfully!'),
+          content: Text('Đánh giá đã được gửi thành công!'),
           backgroundColor: Color(0xFF0961F5),
         ),
       );

@@ -84,7 +84,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
           const SizedBox(width: 12),
           Text(
-            'Edit Profile',
+            'Chỉnh sửa hồ sơ',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 21,
@@ -305,7 +305,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              'Update',
+              'Cập nhật',
               style: AppTextStyles.heading1.copyWith(
                 color: Colors.white,
                 fontSize: 18,
@@ -346,7 +346,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Select Gender',
+                'Chọn giới tính',
                 style: AppTextStyles.heading1.copyWith(
                   color: const Color(0xFF202244),
                   fontSize: 18,
@@ -355,7 +355,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 20),
               ListTile(
-                title: Text('Male'),
+                title: Text('Nam'),
                 onTap: () {
                   setState(() {
                     _genderController.text = 'Male';
@@ -364,7 +364,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 },
               ),
               ListTile(
-                title: Text('Female'),
+                title: Text('Nữ'),
                 onTap: () {
                   setState(() {
                     _genderController.text = 'Female';
@@ -373,7 +373,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 },
               ),
               ListTile(
-                title: Text('Other'),
+                title: Text('Khác'),
                 onTap: () {
                   setState(() {
                     _genderController.text = 'Other';

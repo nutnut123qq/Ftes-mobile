@@ -5,9 +5,7 @@ import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/routes/app_routes.dart';
 import 'package:ftes/screens/edit_profile_screen.dart';
 import 'package:ftes/screens/notifications_screen.dart';
-import 'package:ftes/screens/payment_options_screen.dart';
 import 'package:ftes/screens/security_screen.dart';
-import 'package:ftes/screens/language_screen.dart';
 import 'package:ftes/screens/terms_conditions_screen.dart';
 import 'package:ftes/screens/invite_friends_screen.dart';
 
@@ -77,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(width: 12),
           Text(
-            'Profile',
+            'Hồ sơ',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 21,
@@ -173,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           _buildProfileItem(
             icon: Icons.edit,
-            title: 'Edit Profile',
+            title: 'Chỉnh sửa hồ sơ',
             onTap: () {
               Navigator.push(
                 context,
@@ -185,21 +183,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           _buildDivider(),
           _buildProfileItem(
-            icon: Icons.payment,
-            title: 'Payment Option',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PaymentOptionsScreen(),
-                ),
-              );
-            },
-          ),
-          _buildDivider(),
-          _buildProfileItem(
             icon: Icons.notifications,
-            title: 'Notifications',
+            title: 'Thông báo',
             onTap: () {
               Navigator.push(
                 context,
@@ -212,7 +197,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildDivider(),
           _buildProfileItem(
             icon: Icons.security,
-            title: 'Security',
+            title: 'Bảo mật',
             onTap: () {
               Navigator.push(
                 context,
@@ -224,22 +209,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           _buildDivider(),
           _buildProfileItem(
-            icon: Icons.language,
-            title: 'Language',
-            subtitle: 'English (US)',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LanguageScreen(),
-                ),
-              );
-            },
-          ),
-          _buildDivider(),
-          _buildProfileItem(
             icon: Icons.dark_mode,
-            title: 'Dark Mode',
+            title: 'Chế độ tối',
             onTap: () {
               // Toggle Dark Mode
             },
@@ -247,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildDivider(),
           _buildProfileItem(
             icon: Icons.description,
-            title: 'Terms & Conditions',
+            title: 'Điều khoản & Điều kiện',
             onTap: () {
               Navigator.push(
                 context,
@@ -260,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildDivider(),
           _buildProfileItem(
             icon: Icons.help_center,
-            title: 'Help Center',
+            title: 'Trung tâm trợ giúp',
             onTap: () {
               // Navigate to Help Center
             },
@@ -268,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildDivider(),
           _buildProfileItem(
             icon: Icons.person_add,
-            title: 'Invite Friends',
+            title: 'Mời bạn bè',
             onTap: () {
               Navigator.push(
                 context,
@@ -281,7 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildDivider(),
           _buildProfileItem(
             icon: Icons.logout,
-            title: 'Logout',
+            title: 'Đăng xuất',
             isLogout: true,
             onTap: () {
               // Show logout confirmation
@@ -373,7 +344,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            'Logout',
+            'Đăng xuất',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 18,
@@ -381,7 +352,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           content: Text(
-            'Are you sure you want to logout?',
+            'Bạn có chắc chắn muốn đăng xuất?',
             style: AppTextStyles.body1.copyWith(
               color: const Color(0xFF545454),
               fontSize: 14,
@@ -392,7 +363,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                'Cancel',
+                'Hủy',
                 style: AppTextStyles.body1.copyWith(
                   color: const Color(0xFF545454),
                   fontSize: 14,
@@ -406,7 +377,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // Handle logout logic here
               },
               child: Text(
-                'Logout',
+                'Đăng xuất',
                 style: AppTextStyles.body1.copyWith(
                   color: const Color(0xFF0961F5),
                   fontSize: 14,

@@ -11,7 +11,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  String? selectedMethod;
+  String selectedMethod = 'email';
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +52,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Forgot Password',
+                    'Quên mật khẩu',
                     style: AppTextStyles.heading1.copyWith(
                       color: AppColors.textPrimary,
                       fontSize: 21,
@@ -65,7 +65,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               // Description text
               Center(
                 child: Text(
-                  'Select which contact details should we use to Reset Your Password',
+                  'Chọn thông tin liên lạc để chúng tôi đặt lại mật khẩu của bạn',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFF545454),
@@ -78,27 +78,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 30),
               // Email option
               _ContactOption(
-                title: 'Via Email',
+                title: 'Qua Email',
                 subtitle: 'priscilla.frank26@gmail.com',
                 icon: Icons.email_outlined,
-                isSelected: selectedMethod == 'email',
+                isSelected: true,
                 onTap: () {
-                  setState(() {
-                    selectedMethod = 'email';
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-              // SMS option
-              _ContactOption(
-                title: 'Via SMS',
-                subtitle: '( +91 ) 958-894-5529',
-                icon: Icons.sms_outlined,
-                isSelected: selectedMethod == 'sms',
-                onTap: () {
-                  setState(() {
-                    selectedMethod = 'sms';
-                  });
+                  // Email is always selected
                 },
               ),
               const SizedBox(height: 60),
@@ -107,11 +92,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 width: double.infinity,
                 height: 60,
                 child: ElevatedButton(
-                  onPressed: selectedMethod != null ? _continue : null,
+                  onPressed: _continue,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: selectedMethod != null 
-                        ? AppColors.primary 
-                        : AppColors.textSecondary.withOpacity(0.3),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
@@ -122,7 +105,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Continue',
+                        'Tiếp tục',
                         style: AppTextStyles.button.copyWith(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -155,21 +138,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   void _continue() {
-    if (selectedMethod != null) {
-      // Navigate to verify screen with contact info
-      final contactInfo = selectedMethod == 'email' 
-          ? 'priscilla.frank26@gmail.com'
-          : '( +91 ) 958-894-5529';
-      
-      Navigator.pushNamed(
-        context,
-        AppConstants.routeVerifyForgotPassword,
-        arguments: {
-          'contactInfo': contactInfo,
-          'method': selectedMethod,
-        },
-      );
-    }
+    // Navigate to verify screen with email contact info
+    Navigator.pushNamed(
+      context,
+      AppConstants.routeVerifyForgotPassword,
+      arguments: {
+        'contactInfo': 'priscilla.frank26@gmail.com',
+        'method': 'email',
+      },
+    );
   }
 }
 

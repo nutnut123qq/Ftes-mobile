@@ -5,7 +5,6 @@ import 'package:ftes/utils/constants.dart';
 import 'package:ftes/widgets/course_filter_screen.dart';
 import 'package:ftes/screens/mentors_list_screen.dart';
 import 'package:ftes/screens/course_detail_screen.dart';
-import 'package:ftes/screens/my_bookmark_screen.dart';
 import 'package:ftes/models/course_item.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 
@@ -20,7 +19,7 @@ class CoursesListScreen extends StatefulWidget {
 
 class _CoursesListScreenState extends State<CoursesListScreen> {
   int _selectedTabIndex = 0;
-  final List<String> _tabs = ['Courses', 'Mentors'];
+  final List<String> _tabs = ['Khóa học', 'Giảng viên'];
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   
@@ -38,100 +37,112 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
 
   final List<CourseItem> _courses = [
     CourseItem(
-      category: 'Graphic Design',
-      title: 'Graphic Design Advanced',
+      id: 'list_course_1',
+      category: 'Thiết kế đồ họa',
+      title: 'Thiết kế đồ họa nâng cao',
       price: '89/-',
       originalPrice: '499',
       rating: '4.2',
-      students: '7830 Std',
+      students: '7830 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course+1',
     ),
     CourseItem(
-      category: 'Web Development',
-      title: 'Web Developer conce..',
+      id: 'list_course_2',
+      category: 'Phát triển Web',
+      title: 'Phát triển Web...',
       price: '800/-',
       rating: '4.0',
-      students: '12680 Std',
+      students: '12680 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course+2',
     ),
     CourseItem(
-      category: '3D Animation',
-      title: '3D Animation Masterclass',
+      id: 'list_course_3',
+      category: 'Hoạt hình 3D',
+      title: 'Lớp học Hoạt hình 3D',
       price: '799/-',
       rating: '4.2',
-      students: '990 Std',
+      students: '990 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course+3',
     ),
     CourseItem(
-      category: 'Web Development',
-      title: 'React.js Complete Guide',
+      id: 'list_course_4',
+      category: 'Phát triển Web',
+      title: 'Hướng dẫn React.js',
       price: '999/-',
       rating: '4.9',
-      students: '14580 Std',
+      students: '14580 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course+4',
     ),
     CourseItem(
-      category: '3D Design',
-      title: '3D Design Fundamentals',
+      id: 'list_course_5',
+      category: 'Thiết kế 3D',
+      title: 'Cơ bản về Thiết kế 3D',
       price: '1200/-',
       rating: '4.8',
-      students: '8500 Std',
+      students: '8500 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course+5',
     ),
     CourseItem(
+      id: 'list_course_6',
       category: 'SEO & Marketing',
-      title: 'Digital Marketing Course',
+      title: 'Khóa học Marketing số',
       price: '1500/-',
       rating: '4.6',
-      students: '12000 Std',
+      students: '12000 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course+6',
     ),
     CourseItem(
-      category: 'Graphic Design',
-      title: 'Figma Masterclass',
+      id: 'list_course_7',
+      category: 'Thiết kế đồ họa',
+      title: 'Lớp học Figma',
       price: '600/-',
       rating: '4.7',
-      students: '6500 Std',
+      students: '6500 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course+7',
     ),
     CourseItem(
+      id: 'list_course_8',
       category: 'SEO & Marketing',
-      title: 'Social Media Marketing',
+      title: 'Marketing mạng xã hội',
       price: '400/-',
       rating: '4.3',
-      students: '9200 Std',
+      students: '9200 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course+8',
     ),
     CourseItem(
-      category: 'Arts & Humanities',
-      title: 'Creative Writing Course',
+      id: 'list_course_9',
+      category: 'Nghệ thuật & Nhân văn',
+      title: 'Khóa học Viết sáng tạo',
       price: '800/-',
       rating: '4.5',
-      students: '4800 Std',
+      students: '4800 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course+9',
     ),
     CourseItem(
-      category: 'Web Development',
-      title: 'Vue.js Complete Guide',
+      id: 'list_course_10',
+      category: 'Phát triển Web',
+      title: 'Hướng dẫn Vue.js',
       price: '1100/-',
       rating: '4.9',
-      students: '15000 Std',
+      students: '15000 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course+10',
     ),
     CourseItem(
-      category: 'Graphic Design',
-      title: 'Free Photoshop Basics',
+      id: 'list_course_11',
+      category: 'Thiết kế đồ họa',
+      title: 'Cơ bản Photoshop miễn phí',
       price: '0/-',
       rating: '4.1',
-      students: '25000 Std',
+      students: '25000 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Free+Course+1',
     ),
     CourseItem(
-      category: 'Web Development',
-      title: 'Free HTML & CSS Course',
+      id: 'list_course_12',
+      category: 'Phát triển Web',
+      title: 'Khóa học HTML & CSS miễn phí',
       price: '0/-',
       rating: '4.3',
-      students: '35000 Std',
+      students: '35000 HV',
       imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Free+Course+2',
     ),
   ];
@@ -224,7 +235,7 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Online Courses',
+              'Khóa học trực tuyến',
               style: AppTextStyles.heading1.copyWith(
                 color: const Color(0xFF202244),
                 fontSize: 21,
@@ -272,7 +283,7 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
                   fontWeight: FontWeight.w700,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Graphic Design',
+                  hintText: 'Thiết kế đồ họa',
                   hintStyle: AppTextStyles.body1.copyWith(
                     color: const Color(0xFFB4BDC4),
                     fontSize: 16,

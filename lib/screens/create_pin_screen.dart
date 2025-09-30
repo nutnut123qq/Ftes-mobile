@@ -4,22 +4,61 @@ import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/constants.dart';
 
 class CreatePinScreen extends StatefulWidget {
-  const CreatePinScreen({super.key});
+  const CreatePinScreen({super.key}); // Force rebuild
 
   @override
   State<CreatePinScreen> createState() => _CreatePinScreenState();
 }
 
 class _CreatePinScreenState extends State<CreatePinScreen> {
-  List<String> _pinDigits = ['', '', '', ''];
+  List<String> _pinDigits = ['', '', '', '', '', '']; // 6 digits
   int _currentIndex = 0;
+  int _resendCountdown = 59;
+  bool _isResendEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Ensure _pinDigits has exactly 6 elements
+    _pinDigits = List.filled(6, '');
+    print('_pinDigits length: ${_pinDigits.length}'); // Debug
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        setState(() {
+          if (_resendCountdown > 0) {
+            _resendCountdown--;
+          } else {
+            _isResendEnabled = true;
+          }
+        });
+      }
+      return mounted && _resendCountdown > 0;
+    });
+  }
+
+  void _resendPin() {
+    setState(() {
+      _resendCountdown = 59;
+      _isResendEnabled = false;
+    });
+    _startCountdown();
+    // TODO: Implement actual PIN resend logic
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('PIN đã được gửi lại!')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppConstants.spacingL),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,10 +113,14 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
               Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(4, (index) {
+                  children: List.generate(6, (index) {
+                    // Safety check to prevent index out of range
+                    if (index >= _pinDigits.length) {
+                      return Container(width: 50, height: 60);
+                    }
                     return Container(
-                      margin: EdgeInsets.only(right: index < 3 ? 10 : 0),
-                      width: 65,
+                      margin: EdgeInsets.only(right: index < 5 ? 6 : 0),
+                      width: 50,
                       height: 60,
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -151,13 +194,35 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 30),
+              // Resend PIN section
+              Center(
+                child: _isResendEnabled
+                    ? GestureDetector(
+                        onTap: _resendPin,
+                        child: Text(
+                          'Resend PIN',
+                          style: AppTextStyles.body1.copyWith(
+                            color: AppColors.primary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    : Text(
+                        'Resend PIN in ${_resendCountdown}s',
+                        style: AppTextStyles.body1.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+              const SizedBox(height: 30),
               // Number pad
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                       // Row 1: 1, 2, 3
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -207,8 +272,6 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                       ),
                     ],
                   ),
-                ),
-              ),
             ],
           ),
         ),
@@ -221,7 +284,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
   }
 
   void _onNumberPressed(String number) {
-    if (_currentIndex < 4) {
+    if (_currentIndex < 6) {
       setState(() {
         _pinDigits[_currentIndex] = number;
         _currentIndex++;
@@ -240,8 +303,8 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
 
   void _continue() {
     if (_isPinComplete()) {
-      // Navigate to set fingerprint screen
-      Navigator.pushReplacementNamed(context, AppConstants.routeSetFingerprint);
+      // Navigate directly to congratulations screen
+      Navigator.pushReplacementNamed(context, AppConstants.routeCongratulations);
     }
   }
 }

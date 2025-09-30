@@ -13,66 +13,26 @@ class MyCoursesScreen extends StatefulWidget {
 }
 
 class _MyCoursesScreenState extends State<MyCoursesScreen> {
-  String _selectedFilter = 'Completed';
   final TextEditingController _searchController = TextEditingController();
 
-  // Sample courses data
-  final List<Map<String, dynamic>> _completedCourses = [
-    {
-      'id': '1',
-      'category': 'Graphic Design',
-      'title': 'Graphic Design Advanced',
-      'rating': 4.2,
-      'duration': '2 Hrs 36 Mins',
-      'imageUrl': 'https://via.placeholder.com/130x130/000000/FFFFFF?text=Course',
-      'isCompleted': true,
-    },
-    {
-      'id': '2',
-      'category': 'Graphic Design',
-      'title': 'Advance Diploma in Gra...',
-      'rating': 4.7,
-      'duration': '3 Hrs 28 Mins',
-      'imageUrl': 'https://via.placeholder.com/130x130/000000/FFFFFF?text=Course',
-      'isCompleted': true,
-    },
-    {
-      'id': '3',
-      'category': 'Digital Marketing',
-      'title': 'Setup your Graphic Des...',
-      'rating': 4.2,
-      'duration': '4 Hrs 05 Mins',
-      'imageUrl': 'https://via.placeholder.com/130x130/000000/FFFFFF?text=Course',
-      'isCompleted': true,
-    },
-    {
-      'id': '4',
-      'category': 'Web Development',
-      'title': 'Web Developer conce...',
-      'rating': 4.7,
-      'duration': '5 Hrs 18 Mins',
-      'imageUrl': 'https://via.placeholder.com/130x130/000000/FFFFFF?text=Course',
-      'isCompleted': true,
-    },
-  ];
-
+  // Sample ongoing courses data
   final List<Map<String, dynamic>> _ongoingCourses = [
     {
       'id': '5',
-      'category': 'UI/UX Design',
-      'title': 'UI/UX Design Fundamentals',
+      'category': 'Thiết kế UI/UX',
+      'title': 'Cơ bản về Thiết kế UI/UX',
       'rating': 4.5,
-      'duration': '1 Hr 30 Mins',
+      'duration': '1 Giờ 30 Phút',
       'imageUrl': 'https://via.placeholder.com/130x130/000000/FFFFFF?text=Course',
       'isCompleted': false,
       'progress': 65,
     },
     {
       'id': '6',
-      'category': 'Mobile Development',
-      'title': 'Flutter Development',
+      'category': 'Phát triển Mobile',
+      'title': 'Phát triển Flutter',
       'rating': 4.8,
-      'duration': '2 Hrs 15 Mins',
+      'duration': '2 Giờ 15 Phút',
       'imageUrl': 'https://via.placeholder.com/130x130/000000/FFFFFF?text=Course',
       'isCompleted': false,
       'progress': 30,
@@ -89,7 +49,6 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
           children: [
             _buildHeader(),
             _buildSearchBar(),
-            _buildFilterTabs(),
             Expanded(
               child: _buildCoursesList(),
             ),
@@ -150,7 +109,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'My Courses',
+                    'Khóa học của tôi',
                     style: AppTextStyles.heading1.copyWith(
                       color: const Color(0xFF202244),
                       fontSize: 21,
@@ -189,7 +148,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search for ...',
+                  hintText: 'Tìm kiếm...',
                   hintStyle: AppTextStyles.body1.copyWith(
                     color: const Color(0xFFB4BDC4),
                     fontSize: 16,
@@ -215,87 +174,13 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
     );
   }
 
-  Widget _buildFilterTabs() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(34, 20, 34, 0),
-      child: Row(
-        children: [
-          // Completed Tab
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedFilter = 'Completed';
-                });
-              },
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: _selectedFilter == 'Completed' 
-                      ? const Color(0xFF167F71) 
-                      : const Color(0xFFE8F1FF),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Center(
-                  child: Text(
-                    'Completed',
-                    style: AppTextStyles.body1.copyWith(
-                      color: _selectedFilter == 'Completed' 
-                          ? Colors.white 
-                          : const Color(0xFF202244),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          
-          const SizedBox(width: 20),
-          
-          // Ongoing Tab
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                AppRoutes.navigateToMyCourseOngoing(context);
-              },
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: _selectedFilter == 'Ongoing' 
-                      ? const Color(0xFF167F71) 
-                      : const Color(0xFFE8F1FF),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Center(
-                  child: Text(
-                    'Ongoing',
-                    style: AppTextStyles.body1.copyWith(
-                      color: _selectedFilter == 'Ongoing' 
-                          ? Colors.white 
-                          : const Color(0xFF202244),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildCoursesList() {
-    final courses = _selectedFilter == 'Completed' ? _completedCourses : _ongoingCourses;
-    
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(34, 20, 34, 100),
       child: Column(
-        children: List.generate(courses.length, (index) {
-          return _buildCourseCard(courses[index]);
+        children: List.generate(_ongoingCourses.length, (index) {
+          return _buildCourseCard(_ongoingCourses[index]);
         }),
       ),
     );
@@ -304,7 +189,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
   Widget _buildCourseCard(Map<String, dynamic> course) {
     return GestureDetector(
       onTap: () {
-        AppRoutes.navigateToMyCourseLessons(
+        AppRoutes.navigateToMyCourseOngoingLessons(
           context,
           courseTitle: course['title'],
           courseImage: course['imageUrl'],
@@ -432,50 +317,27 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                   
                   const SizedBox(height: 8),
                   
-                  // Action Button
-                  if (course['isCompleted'])
-                    GestureDetector(
-                      onTap: () {
-                        AppRoutes.navigateToCertificate(
-                          context,
-                          courseTitle: course['title'],
-                          studentName: 'Alex', // Default student name
-                          completionDate: 'November 24, 2022',
-                          certificateId: 'SK24568086',
-                        );
-                      },
-                      child: Text(
-                        'View Certificate',
+                  // Progress Bar for ongoing courses
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${course['progress']}% Hoàn thành',
                         style: AppTextStyles.body1.copyWith(
-                          color: const Color(0xFF167F71),
+                          color: const Color(0xFF0961F5),
                           fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          decoration: TextDecoration.underline,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                    )
-                  else
-                    // Progress Bar for ongoing courses
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${course['progress']}% Complete',
-                          style: AppTextStyles.body1.copyWith(
-                            color: const Color(0xFF0961F5),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        LinearProgressIndicator(
-                          value: course['progress'] / 100,
-                          backgroundColor: const Color(0xFFE8F1FF),
-                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0961F5)),
-                        ),
-                      ],
-                    ),
+                      const SizedBox(height: 4),
+                      LinearProgressIndicator(
+                        value: course['progress'] / 100,
+                        backgroundColor: const Color(0xFFE8F1FF),
+                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0961F5)),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -513,7 +375,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.play_arrow, color: Color(0xFF0961F5)),
-              title: const Text('Continue Learning'),
+              title: const Text('Tiếp tục học'),
               onTap: () {
                 Navigator.pop(context);
                 AppRoutes.navigateToCurriculum(context);
@@ -521,12 +383,12 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.bookmark, color: Color(0xFF0961F5)),
-              title: const Text('Add to Bookmarks'),
+              title: const Text('Thêm vào dấu trang'),
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Added to bookmarks!'),
+                    content: Text('Đã thêm vào dấu trang!'),
                     backgroundColor: Color(0xFF0961F5),
                   ),
                 );
@@ -534,12 +396,12 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.share, color: Color(0xFF0961F5)),
-              title: const Text('Share Course'),
+              title: const Text('Chia sẻ khóa học'),
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Share feature coming soon!'),
+                    content: Text('Tính năng chia sẻ sẽ sớm ra mắt!'),
                     backgroundColor: Color(0xFF0961F5),
                   ),
                 );

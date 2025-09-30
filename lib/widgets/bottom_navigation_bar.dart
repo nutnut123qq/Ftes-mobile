@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/screens/my_courses_screen.dart';
-import 'package:ftes/screens/transactions_screen.dart';
-import 'package:ftes/screens/inbox_screen.dart';
+import 'package:ftes/screens/cart_screen.dart';
+import 'package:ftes/screens/blog_screen.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
@@ -37,35 +37,35 @@ class AppBottomNavigationBar extends StatelessWidget {
             _buildBottomNavItem(
               context,
               Icons.home,
-              'Home',
+              'Trang chủ',
               selectedIndex == 0,
               onTap: () => _handleTap(context, 0),
             ),
             _buildBottomNavItem(
               context,
               Icons.book,
-              'My Courses',
+              'Khóa học',
               selectedIndex == 1,
               onTap: () => _handleTap(context, 1),
             ),
             _buildBottomNavItem(
               context,
-              Icons.inbox,
-              'Inbox',
+              Icons.shopping_cart,
+              'Giỏ hàng',
               selectedIndex == 2,
               onTap: () => _handleTap(context, 2),
             ),
             _buildBottomNavItem(
               context,
-              Icons.receipt,
-              'Transaction',
+              Icons.article,
+              'Blog',
               selectedIndex == 3,
               onTap: () => _handleTap(context, 3),
             ),
             _buildBottomNavItem(
               context,
               Icons.person,
-              'Profile',
+              'Hồ sơ',
               selectedIndex == 4,
               onTap: () => _handleTap(context, 4),
             ),
@@ -98,19 +98,19 @@ class AppBottomNavigationBar extends StatelessWidget {
           ),
         );
         break;
-      case 2: // Inbox
+      case 2: // Cart
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const InboxScreen(),
+            builder: (context) => const CartScreen(),
           ),
         );
         break;
-      case 3: // Transaction
+      case 3: // Blog
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const TransactionsScreen(),
+            builder: (context) => const BlogScreen(),
           ),
         );
         break;

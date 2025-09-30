@@ -25,7 +25,7 @@ class LetsYouInScreen extends StatelessWidget {
                   children: [
                     // Title
                     Text(
-                      "Let's you in",
+                      "Chào mừng bạn",
                       style: AppTextStyles.heading1.copyWith(
                         fontSize: 24,
                         fontWeight: FontWeight.w600,
@@ -39,7 +39,7 @@ class LetsYouInScreen extends StatelessWidget {
                     // Social Media Login Options
                     _buildSocialLoginOption(
                       icon: Icons.g_mobiledata,
-                      text: "Continue with Google",
+                      text: "Tiếp tục với Google",
                       onTap: () {
                         // Handle Google login
                         _showComingSoon(context);
@@ -48,14 +48,6 @@ class LetsYouInScreen extends StatelessWidget {
                     
                     const SizedBox(height: 24),
                     
-                    _buildSocialLoginOption(
-                      icon: Icons.apple,
-                      text: "Continue with Apple",
-                      onTap: () {
-                        // Handle Apple login
-                        _showComingSoon(context);
-                      },
-                    ),
                     
                     const SizedBox(height: 49),
                     
@@ -71,7 +63,7 @@ class LetsYouInScreen extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
-                            "( Or )",
+                            "( Hoặc )",
                             style: AppTextStyles.body1.copyWith(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
@@ -111,7 +103,7 @@ class LetsYouInScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Sign In with Your Account',
+                              'Đăng nhập với tài khoản của bạn',
                               style: AppTextStyles.button.copyWith(
                                 color: Colors.white,
                                 fontSize: 18,
@@ -154,9 +146,9 @@ class LetsYouInScreen extends StatelessWidget {
                             color: const Color(0xFF545454),
                           ),
                           children: const [
-                            TextSpan(text: "Don't have an Account? "),
+                            TextSpan(text: "Chưa có tài khoản? "),
                             TextSpan(
-                              text: "SIGN UP",
+                              text: "ĐĂNG KÝ",
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w800,

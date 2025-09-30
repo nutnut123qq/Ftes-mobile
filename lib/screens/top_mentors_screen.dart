@@ -16,17 +16,17 @@ class _TopMentorsScreenState extends State<TopMentorsScreen> {
   final List<MentorItem> _mentors = [
     MentorItem.fromTopMentors(
       name: 'Jiya Shetty',
-      specialty: '3D Design',
+      specialty: 'Thiết kế 3D',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=JS',
     ),
     MentorItem.fromTopMentors(
       name: 'Donald S',
-      specialty: 'Arts & Humanities',
+      specialty: 'Nghệ thuật & Nhân văn',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=DS',
     ),
     MentorItem.fromTopMentors(
       name: 'Aman',
-      specialty: 'Personal Development',
+      specialty: 'Phát triển cá nhân',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=AM',
     ),
     MentorItem.fromTopMentors(
@@ -36,17 +36,17 @@ class _TopMentorsScreenState extends State<TopMentorsScreen> {
     ),
     MentorItem.fromTopMentors(
       name: 'Robert William',
-      specialty: 'Office Productivity',
+      specialty: 'Năng suất văn phòng',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=RW',
     ),
     MentorItem.fromTopMentors(
       name: 'Soman',
-      specialty: 'Web Development',
+      specialty: 'Phát triển Web',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=SM',
     ),
     MentorItem.fromTopMentors(
       name: 'Rahul kamal',
-      specialty: '3D Design',
+      specialty: 'Thiết kế 3D',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=RK',
     ),
   ];
@@ -109,7 +109,7 @@ class _TopMentorsScreenState extends State<TopMentorsScreen> {
           ),
           const SizedBox(width: 12),
           Text(
-            'Top Mentors',
+            'Giảng viên hàng đầu',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 21,

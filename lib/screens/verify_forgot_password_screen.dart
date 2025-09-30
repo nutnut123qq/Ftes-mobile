@@ -18,8 +18,8 @@ class VerifyForgotPasswordScreen extends StatefulWidget {
 }
 
 class _VerifyForgotPasswordScreenState extends State<VerifyForgotPasswordScreen> {
-  final List<TextEditingController> _otpControllers = List.generate(4, (index) => TextEditingController());
-  final List<FocusNode> _focusNodes = List.generate(4, (index) => FocusNode());
+  final List<TextEditingController> _otpControllers = List.generate(6, (index) => TextEditingController());
+  final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
   int _resendCountdown = 59;
   bool _isResendEnabled = false;
   String _otpCode = '';
@@ -59,13 +59,13 @@ class _VerifyForgotPasswordScreenState extends State<VerifyForgotPasswordScreen>
   }
 
   void _onNumberPressed(String number) {
-    if (_otpCode.length < 4) {
+    if (_otpCode.length < 6) {
       setState(() {
         _otpCode += number;
         _otpControllers[_otpCode.length - 1].text = number;
       });
       
-      if (_otpCode.length < 4) {
+      if (_otpCode.length < 6) {
         _focusNodes[_otpCode.length].requestFocus();
       }
     }
@@ -112,7 +112,7 @@ class _VerifyForgotPasswordScreenState extends State<VerifyForgotPasswordScreen>
   }
 
   void _verifyCode() {
-    if (_otpCode.length == 4) {
+    if (_otpCode.length == 6) {
       // Verification logic - placeholder for future implementation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Xác thực thành công!')),
@@ -191,9 +191,9 @@ class _VerifyForgotPasswordScreenState extends State<VerifyForgotPasswordScreen>
               // OTP input fields
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(4, (index) {
+                children: List.generate(6, (index) {
                   return Container(
-                    width: 75,
+                    width: 50,
                     height: 60,
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -283,9 +283,9 @@ class _VerifyForgotPasswordScreenState extends State<VerifyForgotPasswordScreen>
                 width: double.infinity,
                 height: 60,
                 child: ElevatedButton(
-                  onPressed: _otpCode.length == 4 ? _verifyCode : null,
+                  onPressed: _otpCode.length == 6 ? _verifyCode : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _otpCode.length == 4 
+                    backgroundColor: _otpCode.length == 6 
                         ? AppColors.primary 
                         : AppColors.textSecondary.withOpacity(0.3),
                     foregroundColor: Colors.white,
@@ -354,6 +354,7 @@ class _NumberPad extends StatelessWidget {
       width: 297,
       height: 267,
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           // Row 1: 1, 2, 3
           Row(
@@ -364,7 +365,6 @@ class _NumberPad extends StatelessWidget {
               _NumberButton('3', onNumberPressed),
             ],
           ),
-          const SizedBox(height: 32),
           // Row 2: 4, 5, 6
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -374,7 +374,6 @@ class _NumberPad extends StatelessWidget {
               _NumberButton('6', onNumberPressed),
             ],
           ),
-          const SizedBox(height: 32),
           // Row 3: 7, 8, 9
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -384,7 +383,6 @@ class _NumberPad extends StatelessWidget {
               _NumberButton('9', onNumberPressed),
             ],
           ),
-          const SizedBox(height: 32),
           // Row 4: *, 0, backspace
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -143,7 +143,7 @@ class _IntroScreenState extends State<IntroScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Get Started',
+                                'Bắt đầu',
                                 style: AppTextStyles.button.copyWith(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -200,52 +200,56 @@ class _IntroScreenState extends State<IntroScreen> {
   }
 
   Widget _buildIntroPage(IntroPage page) {
-    return Padding(
-      padding: const EdgeInsets.all(AppConstants.spacingL),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Icon
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: page.color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(60),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.spacingL),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 40),
+            // Icon
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: page.color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(60),
+              ),
+              child: Icon(
+                page.icon,
+                size: 60,
+                color: page.color,
+              ),
             ),
-            child: Icon(
-              page.icon,
-              size: 60,
-              color: page.color,
+            
+            const SizedBox(height: AppConstants.spacingXXL),
+            
+            // Title
+            Text(
+              page.title,
+              style: AppTextStyles.heading1.copyWith(
+                color: AppColors.textPrimary,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-          
-          const SizedBox(height: AppConstants.spacingXXL),
-          
-          // Title
-          Text(
-            page.title,
-            style: AppTextStyles.heading1.copyWith(
-              color: AppColors.textPrimary,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
+            
+            const SizedBox(height: AppConstants.spacingL),
+            
+            // Description
+            Text(
+              page.description,
+              style: AppTextStyles.body1.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 16,
+                height: 1.6,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          
-          const SizedBox(height: AppConstants.spacingL),
-          
-          // Description
-          Text(
-            page.description,
-            style: AppTextStyles.body1.copyWith(
-              color: AppColors.textSecondary,
-              fontSize: 16,
-              height: 1.6,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }

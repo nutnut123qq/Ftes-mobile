@@ -21,52 +21,52 @@ class _MentorsListScreenState extends State<MentorsListScreen> {
   final List<MentorItem> _mentors = [
     MentorItem(
       name: 'Ramal',
-      specialization: '3D Design',
+      specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=R',
     ),
     MentorItem(
       name: 'Aman MK',
-      specialization: '3D Design',
+      specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=A',
     ),
     MentorItem(
       name: 'Manav M',
-      specialization: '3D Design',
+      specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=M',
     ),
     MentorItem(
       name: 'Siya Dhawal',
-      specialization: '3D Design',
+      specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=S',
     ),
     MentorItem(
       name: 'Robert jr',
-      specialization: '3D Design',
+      specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=R',
     ),
     MentorItem(
       name: 'William K. Olivas',
-      specialization: '3D Design',
+      specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=W',
     ),
     MentorItem(
       name: 'Sarah Johnson',
-      specialization: 'Web Development',
+      specialization: 'Phát triển Web',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=S',
     ),
     MentorItem(
       name: 'Mike Chen',
-      specialization: 'Graphic Design',
+      specialization: 'Thiết kế đồ họa',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=M',
     ),
     MentorItem(
       name: 'Emma Wilson',
-      specialization: 'UI/UX Design',
+      specialization: 'Thiết kế UI/UX',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=E',
     ),
     MentorItem(
       name: 'David Lee',
-      specialization: 'Mobile Development',
+      specialization: 'Phát triển Mobile',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=D',
     ),
   ];
@@ -138,7 +138,7 @@ class _MentorsListScreenState extends State<MentorsListScreen> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Mentors',
+              'Giảng viên',
               style: AppTextStyles.h3.copyWith(
                 color: const Color(0xFF202244),
                 fontWeight: FontWeight.w600,
@@ -186,7 +186,7 @@ class _MentorsListScreenState extends State<MentorsListScreen> {
                   fontWeight: FontWeight.w700,
                 ),
                 decoration: InputDecoration(
-                  hintText: '3D Design',
+                  hintText: 'Thiết kế 3D',
                   hintStyle: AppTextStyles.body1.copyWith(
                     color: const Color(0xFFB4BDC4),
                     fontSize: 16,
@@ -239,7 +239,7 @@ class _MentorsListScreenState extends State<MentorsListScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    'Courses',
+                    'Khóa học',
                     style: AppTextStyles.body1.copyWith(
                       color: const Color(0xFF202244),
                       fontSize: 15,
@@ -263,7 +263,7 @@ class _MentorsListScreenState extends State<MentorsListScreen> {
               ),
               child: Center(
                 child: Text(
-                  'Mentors',
+                  'Giảng viên',
                   style: AppTextStyles.body1.copyWith(
                     color: Colors.white,
                     fontSize: 15,
@@ -320,7 +320,7 @@ class _MentorsListScreenState extends State<MentorsListScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '${_filteredMentors.length} Founds',
+                  '${_filteredMentors.length} Tìm thấy',
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFF0961F5),
                     fontSize: 12,

@@ -4,6 +4,7 @@ import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/constants.dart';
 import 'package:ftes/routes/app_routes.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
+import 'package:ftes/screens/notification_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,10 +16,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategoryIndex = 0;
   final List<String> _categories = [
-    'All',
-    'Graphic Design',
-    '3D Design',
-    'Arts & Humanities',
+    'Tất cả',
+    'Thiết kế đồ họa',
+    'Thiết kế 3D',
+    'Nghệ thuật & Nhân văn',
   ];
 
   @override
@@ -48,11 +49,6 @@ class _HomeScreenState extends State<HomeScreen> {
               
               const SizedBox(height: 30),
               
-              // Categories Section
-              _buildCategoriesSection(),
-              
-              const SizedBox(height: 40),
-              
               // Popular Courses Section
               _buildPopularCoursesSection(),
               
@@ -80,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hi, ALEX',
+                  'Xin chào, ALEX',
                   style: AppTextStyles.heading1.copyWith(
                     color: const Color(0xFF202244),
                     fontSize: 24,
@@ -89,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  'What Would you like to learn Today? Search Below.',
+                  'Bạn muốn học gì hôm nay? Tìm kiếm bên dưới.',
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFF545454).withOpacity(0.8),
                     fontSize: 13,
@@ -100,24 +96,34 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           // Notifications
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationListScreen(),
                 ),
-              ],
-            ),
-            child: const Icon(
-              Icons.notifications_outlined,
-              color: Color(0xFF202244),
-              size: 20,
+              );
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.notifications_outlined,
+                color: Color(0xFF202244),
+                size: 20,
+              ),
             ),
           ),
         ],
@@ -152,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 15),
             Expanded(
               child: Text(
-                'Search for..',
+                'Tìm kiếm...',
                 style: AppTextStyles.body1.copyWith(
                   color: const Color(0xFFB4BDC4),
                   fontSize: 16,
@@ -161,20 +167,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            Flexible(
-              child: Container(
-                width: 38,
-                height: 38,
-                margin: const EdgeInsets.only(right: 13),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0961F5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.tune,
-                  color: Colors.white,
-                  size: 20,
-                ),
+            Container(
+              width: 38,
+              height: 38,
+              margin: const EdgeInsets.only(right: 13),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0961F5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.tune,
+                color: Colors.white,
+                size: 20,
               ),
             ),
           ],
@@ -217,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '25% Off*',
+                    'Giảm 25%*',
                     style: AppTextStyles.body1.copyWith(
                       color: Colors.white,
                       fontSize: 15,
@@ -226,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    'Today\'s Special',
+                    'Ưu đãi hôm nay',
                     style: AppTextStyles.heading1.copyWith(
                       color: Colors.white,
                       fontSize: 22,
@@ -236,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 10),
                   Expanded(
                     child: Text(
-                      'Get a Discount for Every Course Order only Valid for Today.!',
+                      'Nhận giảm giá cho mọi đơn hàng khóa học chỉ có hiệu lực hôm nay!',
                       style: AppTextStyles.body1.copyWith(
                         color: Colors.white,
                         fontSize: 13,
@@ -280,84 +284,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoriesSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 34),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Categories',
-                  style: AppTextStyles.heading1.copyWith(
-                    color: const Color(0xFF202244),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, AppConstants.routeCategories);
-                  },
-                  child: Row(
-                    children: [
-                      Text(
-                        'See All',
-                        style: AppTextStyles.body1.copyWith(
-                          color: const Color(0xFF0961F5),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      const Icon(
-                        Icons.arrow_forward_ios,
-                        color: Color(0xFF0961F5),
-                        size: 12,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(height: 15),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildCategoryChip('3D Design', false),
-                const SizedBox(width: 25),
-                _buildCategoryChip('Arts & Humanities', true),
-                const SizedBox(width: 25),
-                _buildCategoryChip('Graphic Design', false),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryChip(String text, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF0961F5) : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        border: isSelected ? null : Border.all(color: const Color(0xFFE8F1FF)),
-      ),
-      child: Text(
-        text,
-        style: AppTextStyles.body1.copyWith(
-          color: isSelected ? Colors.white : const Color(0xFFA0A4AB),
-          fontSize: 15,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
 
   Widget _buildPopularCoursesSection() {
     return Padding(
@@ -369,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Popular Courses',
+                'Khóa học phổ biến',
                 style: AppTextStyles.heading1.copyWith(
                   color: const Color(0xFF202244),
                   fontSize: 18,
@@ -383,7 +309,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   children: [
                     Text(
-                      'See All',
+                      'Xem tất cả',
                       style: AppTextStyles.body1.copyWith(
                         color: const Color(0xFF0961F5),
                         fontSize: 12,
@@ -425,19 +351,19 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               children: [
                 _buildCourseCard(
-                  'Graphic Design',
-                  'Graphic Design Advanced',
-                  '\$28',
+                  'Thiết kế đồ họa',
+                  'Thiết kế đồ họa nâng cao',
+                  '28\$',
                   '4.2',
-                  '7830 Std',
+                  '7830 HV',
                 ),
                 const SizedBox(width: 20),
                 _buildCourseCard(
-                  'Graphic Design',
-                  'Advertisement Design',
-                  '\$42',
+                  'Thiết kế đồ họa',
+                  'Thiết kế quảng cáo',
+                  '42\$',
                   '4.2',
-                  '12580 Std',
+                  '12580 HV',
                 ),
               ],
             ),
@@ -615,7 +541,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Top Mentor',
+                'Giảng viên hàng đầu',
                 style: AppTextStyles.heading1.copyWith(
                   color: const Color(0xFF202244),
                   fontSize: 18,
@@ -629,7 +555,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   children: [
                     Text(
-                      'See All',
+                      'Xem tất cả',
                       style: AppTextStyles.body1.copyWith(
                         color: const Color(0xFF0961F5),
                         fontSize: 12,

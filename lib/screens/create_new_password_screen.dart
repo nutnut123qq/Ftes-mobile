@@ -117,7 +117,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Create New Password',
+                    'Tạo mật khẩu mới',
                     style: AppTextStyles.heading1.copyWith(
                       color: AppColors.textPrimary,
                       fontSize: 21,
@@ -129,7 +129,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
               const SizedBox(height: 371),
               // Title
               Text(
-                'Create Your New Password',
+                'Tạo mật khẩu mới của bạn',
                 style: AppTextStyles.heading1.copyWith(
                   color: AppColors.textPrimary,
                   fontSize: 19,
@@ -140,7 +140,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
               // Password input field
               _PasswordField(
                 controller: _passwordController,
-                hintText: 'Password',
+                hintText: 'Mật khẩu',
                 isPasswordVisible: _isPasswordVisible,
                 onTogglePassword: () {
                   setState(() {
@@ -154,7 +154,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
               // Confirm Password input field
               _PasswordField(
                 controller: _confirmPasswordController,
-                hintText: 'Password',
+                hintText: 'Xác nhận mật khẩu',
                 isPasswordVisible: _isConfirmPasswordVisible,
                 onTogglePassword: () {
                   setState(() {
@@ -185,7 +185,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Continue',
+                        'Tiếp tục',
                         style: AppTextStyles.button.copyWith(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,

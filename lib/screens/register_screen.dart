@@ -11,6 +11,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
@@ -18,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -65,7 +67,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Learn From Home',
+                      'Học Tập Tại Nhà',
                       style: AppTextStyles.body1.copyWith(
                         color: AppColors.textPrimary,
                         fontSize: 11,
@@ -79,7 +81,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 60),
               // Title
               Text(
-                'Getting Started.!',
+                'Bắt đầu!',
                 style: AppTextStyles.heading1.copyWith(
                   color: AppColors.textPrimary,
                   fontSize: 24,
@@ -88,7 +90,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                'Create an Account to Continue your allCourses',
+                'Tạo tài khoản để tiếp tục tất cả khóa học',
                 style: AppTextStyles.body1.copyWith(
                   color: AppColors.textSecondary,
                   fontSize: 14,
@@ -96,19 +98,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 40),
+              // Username input field
+              _InputField(
+                controller: _usernameController,
+                hintText: 'Tên người dùng',
+                icon: Icons.person_outline,
+                keyboardType: TextInputType.text,
+                isPassword: false,
+                isPasswordVisible: false,
+              ),
+              const SizedBox(height: 20),
               // Email input field
               _InputField(
                 controller: _emailController,
                 hintText: 'Email',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
+                isPassword: false,
+                isPasswordVisible: false,
               ),
               const SizedBox(height: 20),
               // Password input field
               _InputField(
                 controller: _passwordController,
-                hintText: 'Password',
+                hintText: 'Mật khẩu',
                 icon: Icons.lock_outline,
+                keyboardType: TextInputType.text,
                 isPassword: true,
                 isPasswordVisible: _isPasswordVisible,
                 onTogglePassword: () {
@@ -150,7 +165,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Agree to Terms & Conditions',
+                      'Đồng ý với Điều khoản & Điều kiện',
                       style: AppTextStyles.body1.copyWith(
                         color: AppColors.textSecondary,
                         fontSize: 13,
@@ -180,7 +195,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Sign Up',
+                        'Đăng Ký',
                         style: AppTextStyles.button.copyWith(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -208,7 +223,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Or Continue With text
               Center(
                 child: Text(
-                  'Or Continue With',
+                  'Hoặc tiếp tục với',
                   style: AppTextStyles.body1.copyWith(
                     color: AppColors.textSecondary,
                     fontSize: 14,
@@ -226,10 +241,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onTap: () => _showComingSoon(context),
                   ),
                   const SizedBox(width: 20),
-                  _SocialButton(
-                    icon: Icons.apple,
-                    onTap: () => _showComingSoon(context),
-                  ),
                 ],
               ),
               const SizedBox(height: 40),
@@ -239,7 +250,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Already have an Account? ',
+                      'Đã có tài khoản? ',
                       style: AppTextStyles.body1.copyWith(
                         color: AppColors.textSecondary,
                         fontSize: 14,
@@ -251,7 +262,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Navigator.pushReplacementNamed(context, AppConstants.routeSignIn);
                       },
                       child: Text(
-                        'SIGN IN',
+                        'ĐĂNG NHẬP',
                         style: AppTextStyles.body1.copyWith(
                           color: AppColors.primary,
                           fontSize: 14,
@@ -271,9 +282,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _signUp() {
-    if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
-      // Navigate to fill profile screen
-      Navigator.pushReplacementNamed(context, AppConstants.routeFillProfile);
+    if (_usernameController.text.isNotEmpty && 
+        _emailController.text.isNotEmpty && 
+        _passwordController.text.isNotEmpty) {
+      // Navigate directly to create PIN screen
+      Navigator.pushReplacementNamed(context, AppConstants.routeCreatePin);
     }
   }
 

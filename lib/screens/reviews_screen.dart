@@ -12,50 +12,50 @@ class ReviewsScreen extends StatefulWidget {
 }
 
 class _ReviewsScreenState extends State<ReviewsScreen> {
-  String _selectedFilter = 'Excellent';
+  String _selectedFilter = 'Xuất sắc';
 
   // Sample reviews data
   final List<Map<String, dynamic>> _reviews = [
     {
       'name': 'Heather S. McMullen',
       'rating': 4.2,
-      'comment': 'The Course is Very Good dolor sit amet, con sect tur adipiscing elit. Naturales divitias dixit parab les esse..',
-      'date': '2 Weeks Ago',
+      'comment': 'Khóa học rất tốt, nội dung chất lượng và dễ hiểu. Tôi đã học được nhiều kiến thức bổ ích từ khóa học này.',
+      'date': '2 tuần trước',
       'likes': 760,
       'avatar': 'https://via.placeholder.com/50x50/000000/FFFFFF?text=HS',
     },
     {
       'name': 'Natasha B. Lambert',
       'rating': 4.8,
-      'comment': 'The Course is Very Good dolor veterm, quo etiam utuntur hi capiamus..',
-      'date': '2 Weeks Ago',
+      'comment': 'Khóa học rất tốt, giảng viên giảng dạy rất chuyên nghiệp và nhiệt tình.',
+      'date': '2 tuần trước',
       'likes': 918,
       'avatar': 'https://via.placeholder.com/50x50/000000/FFFFFF?text=NL',
     },
     {
       'name': 'Marshall A. Lester',
       'rating': 4.6,
-      'comment': 'The Course is Very Good dolor sit amet, con sect tur adipiscing elit. Naturales divitias dixit parab les esse..',
-      'date': '2 Weeks Ago',
+      'comment': 'Khóa học rất tốt, nội dung chất lượng và dễ hiểu. Tôi đã học được nhiều kiến thức bổ ích từ khóa học này.',
+      'date': '2 tuần trước',
       'likes': 914,
       'avatar': 'https://via.placeholder.com/50x50/000000/FFFFFF?text=ML',
     },
     {
       'name': 'Frances D. Stanford',
       'rating': 4.8,
-      'comment': 'The Course is Very Good dolor veterm, Vestri hac verecundius constatius..',
-      'date': '2 Weeks Ago',
+      'comment': 'Khóa học rất tốt, giảng viên giảng dạy rất chuyên nghiệp và nhiệt tình.',
+      'date': '2 tuần trước',
       'likes': 967,
       'avatar': 'https://via.placeholder.com/50x50/000000/FFFFFF?text=FS',
     },
   ];
 
   final List<String> _filters = [
-    'Excellent',
-    'Good',
-    'Average',
-    'Below Average',
-    'Poor',
+    'Xuất sắc',
+    'Tốt',
+    'Trung bình',
+    'Dưới trung bình',
+    'Kém',
   ];
 
   @override
@@ -129,7 +129,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Reviews',
+                    'Đánh giá',
                     style: AppTextStyles.heading1.copyWith(
                       color: const Color(0xFF202244),
                       fontSize: 21,
@@ -181,7 +181,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           
           // Review Count
           Text(
-            'Based on 448 Reviews',
+            'Dựa trên 448 đánh giá',
             style: AppTextStyles.body1.copyWith(
               color: const Color(0xFF545454),
               fontSize: 13,
@@ -453,7 +453,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
               // Button Text
               Expanded(
                 child: Text(
-                  'Write a Review',
+                  'Viết đánh giá',
                   style: AppTextStyles.buttonLarge.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,

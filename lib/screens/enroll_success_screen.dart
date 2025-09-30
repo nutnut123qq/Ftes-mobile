@@ -93,7 +93,7 @@ class _EnrollSuccessScreenState extends State<EnrollSuccessScreen>
                   return Opacity(
                     opacity: _fadeAnimation.value,
                     child: Text(
-                      'Congratulations!',
+                      'Chúc mừng!',
                       style: AppTextStyles.heading1.copyWith(
                         color: const Color(0xFF202244),
                         fontSize: 28,
@@ -114,7 +114,7 @@ class _EnrollSuccessScreenState extends State<EnrollSuccessScreen>
                   return Opacity(
                     opacity: _fadeAnimation.value,
                     child: Text(
-                      'You have successfully enrolled in the course!',
+                      'Bạn đã đăng ký khóa học thành công!',
                       style: AppTextStyles.body1.copyWith(
                         color: const Color(0xFF545454),
                         fontSize: 16,
@@ -174,7 +174,7 @@ class _EnrollSuccessScreenState extends State<EnrollSuccessScreen>
                               children: [
                                 // Category
                                 Text(
-                                  'Graphic Design',
+                                  'Thiết kế đồ họa',
                                   style: AppTextStyles.body1.copyWith(
                                     color: const Color(0xFFFF6B00),
                                     fontSize: 12,
@@ -186,7 +186,7 @@ class _EnrollSuccessScreenState extends State<EnrollSuccessScreen>
                                 
                                 // Title
                                 Text(
-                                  'Setup your Graphic Design...',
+                                  'Thiết lập Thiết kế đồ họa...',
                                   style: AppTextStyles.body1.copyWith(
                                     color: const Color(0xFF202244),
                                     fontSize: 16,
@@ -252,7 +252,7 @@ class _EnrollSuccessScreenState extends State<EnrollSuccessScreen>
                                 ),
                                 const SizedBox(width: 12),
                                 Text(
-                                  'Start Learning',
+                                  'Bắt đầu học',
                                   style: AppTextStyles.buttonLarge.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
@@ -285,7 +285,7 @@ class _EnrollSuccessScreenState extends State<EnrollSuccessScreen>
                               ),
                             ),
                             child: Text(
-                              'Back to Home',
+                              'Về trang chủ',
                               style: AppTextStyles.buttonLarge.copyWith(
                                 color: const Color(0xFF0961F5),
                                 fontWeight: FontWeight.w600,

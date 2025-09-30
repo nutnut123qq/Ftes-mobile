@@ -19,7 +19,7 @@ class CourseDetailScreen extends StatefulWidget {
 
 class _CourseDetailScreenState extends State<CourseDetailScreen> {
   int _selectedTabIndex = 1;
-  final List<String> _tabs = ['About', 'Curriculum'];
+  final List<String> _tabs = ['Giới thiệu', 'Chương trình học'];
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +185,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           
           // Title
           Text(
-            'Design Principles: Organizing ..',
+            'Nguyên tắc thiết kế: Tổ chức...',
             style: AppTextStyles.h4.copyWith(
               color: const Color(0xFF202244),
               fontSize: 20,
@@ -208,7 +208,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '21 Class',
+                    '21 Bài học',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: const Color(0xFF202244),
                       fontSize: 11,
@@ -230,7 +230,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '42 Hours',
+                    '42 Giờ',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: const Color(0xFF202244),
                       fontSize: 11,
@@ -351,7 +351,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
       children: [
         // Main description
         Text(
-          'Graphic Design now a popular profession graphic design by off your career about tantas regiones barbarorum pedibus obiit',
+          'Thiết kế đồ họa hiện là một nghề phổ biến, thiết kế đồ họa giúp phát triển sự nghiệp của bạn trong nhiều lĩnh vực khác nhau',
           style: AppTextStyles.bodyMedium.copyWith(
             color: const Color(0xFFA0A4AB),
             fontSize: 13,
@@ -367,7 +367,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           text: TextSpan(
             children: [
               TextSpan(
-                text: 'Graphic Design is a popular profession in the current digital era. This course will teach you the fundamentals of graphic design, including color theory, typography, layout principles, and design software. You will learn how to create visually appealing designs that communicate effectively with your audience. The course covers both theoretical concepts and practical applications through hands-on projects.',
+                text: 'Thiết kế đồ họa là một nghề phổ biến trong thời đại số hiện tại. Khóa học này sẽ dạy bạn những kiến thức cơ bản về thiết kế đồ họa, bao gồm lý thuyết màu sắc, typography, nguyên tắc bố cục và phần mềm thiết kế. Bạn sẽ học cách tạo ra những thiết kế hấp dẫn về mặt thị giác và giao tiếp hiệu quả với khán giả. Khóa học bao gồm cả khái niệm lý thuyết và ứng dụng thực tế thông qua các dự án thực hành.',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: const Color(0xFFA0A4AB),
                   fontSize: 13,
@@ -376,7 +376,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                 ),
               ),
               TextSpan(
-                text: ' Read More',
+                text: ' Đọc thêm',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: const Color(0xFF0961F5),
                   fontSize: 13,
@@ -392,7 +392,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         
         // Course Features Section
         Text(
-          'What you will learn:',
+          'Bạn sẽ học được:',
           style: AppTextStyles.h5.copyWith(
             color: const Color(0xFF202244),
             fontSize: 16,
@@ -409,7 +409,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         
         // Prerequisites Section
         Text(
-          'Prerequisites:',
+          'Yêu cầu:',
           style: AppTextStyles.h5.copyWith(
             color: const Color(0xFF202244),
             fontSize: 16,
@@ -420,7 +420,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         const SizedBox(height: 12),
         
         Text(
-          '• Basic computer skills\n• No prior design experience required\n• Access to design software (will be provided)',
+          '• Kỹ năng máy tính cơ bản\n• Không cần kinh nghiệm thiết kế trước đó\n• Truy cập phần mềm thiết kế (sẽ được cung cấp)',
           style: AppTextStyles.bodyMedium.copyWith(
             color: const Color(0xFFA0A4AB),
             fontSize: 13,
@@ -434,12 +434,12 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   
   List<Widget> _buildFeatureList() {
     final features = [
-      'Master the fundamentals of graphic design',
-      'Learn color theory and typography',
-      'Create professional designs using industry tools',
-      'Build a portfolio of design projects',
-      'Understand design principles and composition',
-      'Work with clients and understand design briefs',
+      'Nắm vững kiến thức cơ bản về thiết kế đồ họa',
+      'Học lý thuyết màu sắc và typography',
+      'Tạo thiết kế chuyên nghiệp bằng công cụ ngành',
+      'Xây dựng portfolio các dự án thiết kế',
+      'Hiểu nguyên tắc thiết kế và bố cục',
+      'Làm việc với khách hàng và hiểu brief thiết kế',
     ];
     
     return features.map((feature) => Padding(
@@ -479,8 +479,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         // Section 01 - Introduction
         _buildCurriculumSection(
           sectionNumber: '01',
-          sectionTitle: 'Introduction',
-          duration: '25 Mins',
+          sectionTitle: 'Giới thiệu',
+          duration: '25 Phút',
         ),
         
         const SizedBox(height: 20),
@@ -488,15 +488,15 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         // Lesson 01
         _buildCurriculumLesson(
           lessonNumber: '01',
-          lessonTitle: 'Why Using Graphic De..',
-          duration: '15 Mins',
+          lessonTitle: 'Tại sao sử dụng thiết kế đồ họa...',
+          duration: '15 Phút',
         ),
         
         // Lesson 02
         _buildCurriculumLesson(
           lessonNumber: '02',
-          lessonTitle: 'Setup Your Graphic De..',
-          duration: '10 Mins',
+          lessonTitle: 'Thiết lập thiết kế đồ họa...',
+          duration: '10 Phút',
         ),
         
         const SizedBox(height: 20),
@@ -504,8 +504,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         // Section 02 - Graphic Design
         _buildCurriculumSection(
           sectionNumber: '02',
-          sectionTitle: 'Graphic Design',
-          duration: '55 Mins',
+          sectionTitle: 'Thiết kế đồ họa',
+          duration: '55 Phút',
         ),
       ],
     );
@@ -523,7 +523,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             text: TextSpan(
               children: [
                 TextSpan(
-                  text: 'Section $sectionNumber - ',
+                  text: 'Phần $sectionNumber - ',
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFF202244),
                     fontSize: 15,
@@ -649,7 +649,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Instructor',
+            'Giảng viên',
             style: AppTextStyles.h5.copyWith(
               color: const Color(0xFF202244),
               fontSize: 18,
@@ -712,7 +712,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                     const SizedBox(height: 4),
                     
                     Text(
-                      'Graphic Design',
+                      'Thiết kế đồ họa',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: const Color(0xFF545454),
                         fontSize: 13,
@@ -738,13 +738,13 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
   Widget _buildWhatYoullGetSection() {
     final features = [
-      {'icon': Icons.video_library, 'text': '25 Lessons'},
-      {'icon': Icons.devices, 'text': 'Access Mobile, Desktop & TV'},
-      {'icon': Icons.school, 'text': 'Beginner Level'},
-      {'icon': Icons.headphones, 'text': 'Audio Book'},
-      {'icon': Icons.all_inclusive, 'text': 'Lifetime Access'},
-      {'icon': Icons.quiz, 'text': '100 Quizzes'},
-      {'icon': Icons.workspace_premium, 'text': 'Certificate of Completion'},
+      {'icon': Icons.video_library, 'text': '25 Bài học'},
+      {'icon': Icons.devices, 'text': 'Truy cập Mobile, Desktop & TV'},
+      {'icon': Icons.school, 'text': 'Cấp độ cơ bản'},
+      {'icon': Icons.headphones, 'text': 'Sách nói'},
+      {'icon': Icons.all_inclusive, 'text': 'Truy cập trọn đời'},
+      {'icon': Icons.quiz, 'text': '100 Bài kiểm tra'},
+      {'icon': Icons.workspace_premium, 'text': 'Chứng chỉ hoàn thành'},
     ];
 
     return Container(
@@ -753,7 +753,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'What You\'ll Get',
+            'Bạn sẽ nhận được',
             style: AppTextStyles.h5.copyWith(
               color: const Color(0xFF202244),
               fontSize: 18,
@@ -798,7 +798,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           Row(
             children: [
               Text(
-                'Reviews',
+                'Đánh giá',
                 style: AppTextStyles.h5.copyWith(
                   color: const Color(0xFF202244),
                   fontSize: 18,
@@ -807,7 +807,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               ),
               const Spacer(),
               Text(
-                'See All',
+                'Xem tất cả',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: const Color(0xFF0961F5),
                   fontSize: 12,
@@ -830,9 +830,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             name: 'Will',
             avatar: 'https://via.placeholder.com/46x46/000000/FFFFFF?text=W',
             rating: 4.5,
-            comment: 'This course has been very useful. Mentor was well spoken totally loved it.',
+            comment: 'Khóa học này rất hữu ích. Giảng viên nói rất hay, tôi hoàn toàn yêu thích.',
             likes: 578,
-            timeAgo: '2 Weeks Ago',
+            timeAgo: '2 tuần trước',
           ),
           
           const SizedBox(height: 16),
@@ -842,9 +842,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             name: 'Martha E. Thompson',
             avatar: 'https://via.placeholder.com/46x46/000000/FFFFFF?text=M',
             rating: 4.5,
-            comment: 'This course has been very useful. Mentor was well spoken totally loved it. It had fun sessions as well.',
+            comment: 'Khóa học này rất hữu ích. Giảng viên nói rất hay, tôi hoàn toàn yêu thích. Các buổi học cũng rất thú vị.',
             likes: 578,
-            timeAgo: '2 Weeks Ago',
+            timeAgo: '2 tuần trước',
           ),
         ],
       ),
@@ -1031,7 +1031,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Enroll Course - 499/-',
+            'Đăng ký khóa học - 499/-',
             style: AppTextStyles.buttonLarge.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,

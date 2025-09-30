@@ -12,35 +12,6 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  String _selectedPaymentMethod = 'PayPal';
-
-  // Sample payment methods data
-  final List<Map<String, dynamic>> _paymentMethods = [
-    {
-      'id': 'PayPal',
-      'name': 'Paypal',
-      'icon': Icons.payment,
-      'isSelected': true,
-    },
-    {
-      'id': 'GooglePay',
-      'name': 'Google Pay',
-      'icon': Icons.account_balance_wallet,
-      'isSelected': false,
-    },
-    {
-      'id': 'ApplePay',
-      'name': 'Apple Pay',
-      'icon': Icons.apple,
-      'isSelected': false,
-    },
-    {
-      'id': 'CreditCard',
-      'name': '**** ****  **76  3054',
-      'icon': Icons.credit_card,
-      'isSelected': false,
-    },
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -52,8 +23,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             children: [
               _buildHeader(),
               _buildCourseInfo(),
-              _buildPaymentMethods(),
-              _buildAddNewCardButton(),
+              _buildQRCodeSection(),
               _buildEnrollButton(),
               const SizedBox(height: 20),
             ],
@@ -113,7 +83,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Payment Methods',
+                    'Phương thức thanh toán',
                     style: AppTextStyles.heading1.copyWith(
                       color: const Color(0xFF202244),
                       fontSize: 21,
@@ -170,7 +140,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               children: [
                 // Category
                 Text(
-                  'Graphic Design',
+                  'Thiết kế đồ họa',
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFFFF6B00),
                     fontSize: 12,
@@ -182,7 +152,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 
                 // Title
                 Text(
-                  'Setup your Graphic Design...',
+                  'Thiết lập Thiết kế đồ họa...',
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFF202244),
                     fontSize: 16,
@@ -197,135 +167,156 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildPaymentMethods() {
+  Widget _buildQRCodeSection() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(35, 30, 35, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Select the Payment Methods you Want to Use',
+            'Quét mã QR để thanh toán',
             style: AppTextStyles.body1.copyWith(
-              color: const Color(0xFF545454),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+              color: const Color(0xFF202244),
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
             ),
           ),
           
           const SizedBox(height: 20),
           
-          // Payment Methods List
-          ..._paymentMethods.map((method) => _buildPaymentMethodCard(method)).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethodCard(Map<String, dynamic> method) {
-    final isSelected = _selectedPaymentMethod == method['id'];
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedPaymentMethod = method['id'];
-          });
-        },
-        child: Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // Radio Button
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF0961F5) : Colors.transparent,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected ? const Color(0xFF0961F5) : const Color(0xFFB4BDC4),
-                    width: 2,
+          // QR Code Container
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // QR Code Placeholder
+                Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F9FF),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFE8F1FF),
+                      width: 2,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.qr_code,
+                        size: 80,
+                        color: const Color(0xFF0961F5),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Mã QR',
+                        style: AppTextStyles.body1.copyWith(
+                          color: const Color(0xFF0961F5),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Mẫu minh họa',
+                        style: AppTextStyles.body1.copyWith(
+                          color: const Color(0xFF545454),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: isSelected
-                    ? const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 12,
-                      )
-                    : null,
-              ),
-              
-              const SizedBox(width: 16),
-              
-              // Payment Method Icon
-              Icon(
-                method['icon'],
-                color: const Color(0xFF0961F5),
-                size: 24,
-              ),
-              
-              const SizedBox(width: 16),
-              
-              // Payment Method Name
-              Expanded(
-                child: Text(
-                  method['name'],
+                
+                const SizedBox(height: 20),
+                
+                // Payment Info
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F9FF),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Số tiền:',
+                            style: AppTextStyles.body1.copyWith(
+                              color: const Color(0xFF545454),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '\$55.00',
+                            style: AppTextStyles.body1.copyWith(
+                              color: const Color(0xFF202244),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Khóa học:',
+                            style: AppTextStyles.body1.copyWith(
+                              color: const Color(0xFF545454),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              'Thiết kế đồ họa nâng cao',
+                              style: AppTextStyles.body1.copyWith(
+                                color: const Color(0xFF202244),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              textAlign: TextAlign.end,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Instructions
+                Text(
+                  'Quét mã QR bằng ứng dụng ngân hàng để hoàn tất thanh toán',
                   style: AppTextStyles.body1.copyWith(
-                    color: const Color(0xFF202244),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF545454),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAddNewCardButton() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(35, 20, 35, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          GestureDetector(
-            onTap: () {
-              // Handle add new card action
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Add new card feature coming soon!'),
-                  backgroundColor: Color(0xFF0961F5),
-                ),
-              );
-            },
-            child: Container(
-              width: 62,
-              height: 62,
-              decoration: const BoxDecoration(
-                color: Color(0xFF0961F5),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-                size: 24,
-              ),
+              ],
             ),
           ),
         ],
@@ -377,7 +368,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               // Button Text
               Expanded(
                 child: Text(
-                  'Enroll Course - \$55',
+                  'Đăng ký khóa học - \$55',
                   style: AppTextStyles.buttonLarge.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,

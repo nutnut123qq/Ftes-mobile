@@ -96,9 +96,7 @@ class AppConstants {
   static const String routeVerifyForgotPassword = '/verify-forgot-password';
   static const String routeCreateNewPassword = '/create-new-password';
   static const String routeCongratulations = '/congratulations';
-  static const String routeFillProfile = '/fill-profile';
   static const String routeCreatePin = '/create-pin';
-  static const String routeSetFingerprint = '/set-fingerprint';
   static const String routeHome = '/home';
   static const String routeSearch = '/search';
   static const String routePopularCourses = '/popular-courses';
@@ -107,30 +105,21 @@ class AppConstants {
   static const String routeMentorsList = '/mentors-list';
   static const String routeSingleMentorDetails = '/single-mentor-details';
   static const String routeCourseDetail = '/course-detail';
-  static const String routeCategories = '/categories';
   static const String routeLearning = '/learning';
   static const String routeQuiz = '/quiz';
   static const String routeProfile = '/profile';
-  static const String routeMyBookmark = '/my-bookmark';
   static const String routeNotifications = '/notifications';
   static const String routeChatMessages = '/chat-messages';
-  static const String routeVoiceCall = '/voice-call';
   static const String routeCurriculum = '/curriculum';
   static const String routeReviews = '/reviews';
   static const String routeWriteReview = '/write-review';
   static const String routePayment = '/payment';
   static const String routeEnrollSuccess = '/enroll-success';
   static const String routeMyCourses = '/my-courses';
-  static const String routeMyCourseLessons = '/my-course-lessons';
-  static const String routeCertificate = '/certificate';
-  static const String routeMyCourseOngoing = '/my-course-ongoing';
   static const String routeMyCourseOngoingLessons = '/my-course-ongoing-lessons';
   static const String routeMyCourseOngoingVideo = '/my-course-ongoing-video';
-  static const String routeCourseCompleted = '/course-completed';
-  static const String routeTransactions = '/transactions';
-  static const String routeEReceipt = '/e-receipt';
-  static const String routeEReceiptEdit = '/e-receipt-edit';
   static const String routeInviteFriends = '/invite-friends';
+  static const String routeCart = '/cart';
   
   // Asset Paths
   static const String assetsImages = 'assets/images/';

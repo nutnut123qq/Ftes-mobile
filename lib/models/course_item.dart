@@ -1,4 +1,5 @@
 class CourseItem {
+  final String? id;
   final String category;
   final String title;
   final String price;
@@ -8,6 +9,7 @@ class CourseItem {
   final String imageUrl;
 
   CourseItem({
+    this.id,
     required this.category,
     required this.title,
     required this.price,

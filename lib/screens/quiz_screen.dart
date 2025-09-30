@@ -17,7 +17,7 @@ class QuizScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quiz', style: AppTextStyles.appBarTitle),
+        title: const Text('Bài kiểm tra', style: AppTextStyles.appBarTitle),
         backgroundColor: AppColors.primary,
       ),
       body: Center(
@@ -26,12 +26,12 @@ class QuizScreen extends StatelessWidget {
           children: [
             const Icon(Icons.quiz, size: AppConstants.iconXXL, color: AppColors.secondary),
             const SizedBox(height: AppConstants.spacingM),
-            const Text('Quiz Screen', style: AppTextStyles.h3),
+            const Text('Màn hình bài kiểm tra', style: AppTextStyles.h3),
             const SizedBox(height: AppConstants.spacingS),
-            Text('Quiz ID: $quizId', style: AppTextStyles.bodyMedium),
-            Text('Category ID: $categoryId', style: AppTextStyles.bodyMedium),
+            Text('ID Bài kiểm tra: $quizId', style: AppTextStyles.bodyMedium),
+            Text('ID Danh mục: $categoryId', style: AppTextStyles.bodyMedium),
             const SizedBox(height: AppConstants.spacingS),
-            const Text('Coming Soon...', style: AppTextStyles.bodyMedium),
+            const Text('Sắp ra mắt...', style: AppTextStyles.bodyMedium),
           ],
         ),
       ),

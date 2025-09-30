@@ -246,7 +246,7 @@ class _CongratulationsScreenState extends State<CongratulationsScreen>
           const SizedBox(height: 60),
           // Title
           Text(
-            'Congratulations',
+            'Chúc mừng',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 24,
@@ -257,7 +257,7 @@ class _CongratulationsScreenState extends State<CongratulationsScreen>
           const SizedBox(height: 20),
           // Description
           Text(
-            'Your Account is Ready to Use. You will be redirected to the Home Page in a Few Seconds.',
+            'Tài khoản của bạn đã sẵn sàng sử dụng. Bạn sẽ được chuyển hướng đến trang chủ trong vài giây.',
             style: AppTextStyles.body1.copyWith(
               color: const Color(0xFF545454),
               fontSize: 14,

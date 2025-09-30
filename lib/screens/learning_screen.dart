@@ -17,7 +17,7 @@ class LearningScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Learning', style: AppTextStyles.appBarTitle),
+        title: const Text('Học tập', style: AppTextStyles.appBarTitle),
         backgroundColor: AppColors.primary,
       ),
       body: Center(
@@ -26,12 +26,12 @@ class LearningScreen extends StatelessWidget {
           children: [
             const Icon(Icons.school, size: AppConstants.iconXXL, color: AppColors.primary),
             const SizedBox(height: AppConstants.spacingM),
-            const Text('Learning Screen', style: AppTextStyles.h3),
+            const Text('Màn hình học tập', style: AppTextStyles.h3),
             const SizedBox(height: AppConstants.spacingS),
-            Text('Lesson ID: $lessonId', style: AppTextStyles.bodyMedium),
-            Text('Category ID: $categoryId', style: AppTextStyles.bodyMedium),
+            Text('ID Bài học: $lessonId', style: AppTextStyles.bodyMedium),
+            Text('ID Danh mục: $categoryId', style: AppTextStyles.bodyMedium),
             const SizedBox(height: AppConstants.spacingS),
-            const Text('Coming Soon...', style: AppTextStyles.bodyMedium),
+            const Text('Sắp ra mắt...', style: AppTextStyles.bodyMedium),
           ],
         ),
       ),

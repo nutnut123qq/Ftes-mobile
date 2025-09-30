@@ -78,7 +78,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
           const SizedBox(width: 12),
           Text(
-            'Notification',
+            'Thông báo',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 21,
@@ -97,7 +97,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildNotificationItem(
-            title: 'Special Offers',
+            title: 'Ưu đãi đặc biệt',
             value: _specialOffers,
             onChanged: (value) {
               setState(() {
@@ -109,7 +109,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           const SizedBox(height: 40),
           
           _buildNotificationItem(
-            title: 'Sound',
+            title: 'Âm thanh',
             value: _sound,
             onChanged: (value) {
               setState(() {
@@ -121,7 +121,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           const SizedBox(height: 40),
           
           _buildNotificationItem(
-            title: 'Vibrate',
+            title: 'Rung',
             value: _vibrate,
             onChanged: (value) {
               setState(() {
@@ -133,7 +133,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           const SizedBox(height: 40),
           
           _buildNotificationItem(
-            title: 'General Notification',
+            title: 'Thông báo chung',
             value: _generalNotification,
             onChanged: (value) {
               setState(() {
@@ -145,7 +145,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           const SizedBox(height: 40),
           
           _buildNotificationItem(
-            title: 'Promo & Discount',
+            title: 'Khuyến mãi & Giảm giá',
             value: _promoDiscount,
             onChanged: (value) {
               setState(() {
@@ -157,7 +157,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           const SizedBox(height: 40),
           
           _buildNotificationItem(
-            title: 'Payment Options',
+            title: 'Tùy chọn thanh toán',
             value: _paymentOptions,
             onChanged: (value) {
               setState(() {
@@ -169,7 +169,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           const SizedBox(height: 40),
           
           _buildNotificationItem(
-            title: 'App Update',
+            title: 'Cập nhật ứng dụng',
             value: _appUpdate,
             onChanged: (value) {
               setState(() {
@@ -181,7 +181,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           const SizedBox(height: 40),
           
           _buildNotificationItem(
-            title: 'New Service Available',
+            title: 'Dịch vụ mới có sẵn',
             value: _newServiceAvailable,
             onChanged: (value) {
               setState(() {
@@ -193,7 +193,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           const SizedBox(height: 40),
           
           _buildNotificationItem(
-            title: 'New Tips Available',
+            title: 'Mẹo mới có sẵn',
             value: _newTipsAvailable,
             onChanged: (value) {
               setState(() {

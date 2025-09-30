@@ -64,7 +64,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Invite Friends',
+          'Mời bạn bè',
           style: TextStyle(
             fontSize: 21,
             fontWeight: FontWeight.w600,
@@ -109,9 +109,6 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 18),
-              // Share Options
-              _buildShareOptions(),
               const SizedBox(height: 50),
             ],
           ),
@@ -183,7 +180,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
               ),
               child: Center(
                 child: Text(
-                  'Invite',
+                  'Mời',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -201,49 +198,4 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
     );
   }
 
-  Widget _buildShareOptions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Share Invite Via',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-            fontFamily: 'Jost',
-          ),
-        ),
-        const SizedBox(height: 18),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildShareIcon(Icons.message, () {}),
-            _buildShareIcon(Icons.message_outlined, () {}),
-            _buildShareIcon(Icons.telegram, () {}),
-            _buildShareIcon(Icons.more_horiz, () {}),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildShareIcon(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.1),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          icon,
-          color: AppColors.primary,
-          size: 18,
-        ),
-      ),
-    );
-  }
 }

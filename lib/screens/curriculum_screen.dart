@@ -15,67 +15,56 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
   // Sample curriculum data
   final List<Map<String, dynamic>> _sections = [
     {
-      'title': 'Section 01 - Introduction',
-      'duration': '25 Mins',
+      'title': 'Phần 1 - Giới thiệu',
       'lessons': [
         {
           'number': '01',
-          'title': 'Why Using Graphic De...',
-          'duration': '15 Mins',
+          'title': 'Tại sao sử dụng Thiết kế đồ họa...',
           'isCompleted': false,
         },
         {
           'number': '02',
-          'title': 'Setup Your Graphic De...',
-          'duration': '10 Mins',
+          'title': 'Thiết lập Thiết kế đồ họa...',
           'isCompleted': false,
         },
       ],
     },
     {
-      'title': 'Section 02 - Graphic Design',
-      'duration': '55 Mins',
+      'title': 'Phần 2 - Thiết kế đồ họa',
       'lessons': [
         {
           'number': '03',
-          'title': 'Take a Look Graphic De...',
-          'duration': '08 Mins',
+          'title': 'Tìm hiểu Thiết kế đồ họa...',
           'isCompleted': false,
         },
         {
           'number': '04',
-          'title': 'Working with Graphic De...',
-          'duration': '25 Mins',
+          'title': 'Làm việc với Thiết kế đồ họa...',
           'isCompleted': false,
         },
         {
           'number': '05',
-          'title': 'Working with Frame & Lay...',
-          'duration': '12 Mins',
+          'title': 'Làm việc với Khung & Bố cục...',
           'isCompleted': false,
         },
         {
           'number': '06',
-          'title': 'Using Graphic Plugins',
-          'duration': '10 Mins',
+          'title': 'Sử dụng Plugin đồ họa',
           'isCompleted': false,
         },
       ],
     },
     {
-      'title': 'Section 03 - Let\'s Practice',
-      'duration': '35 Mins',
+      'title': 'Phần 3 - Thực hành',
       'lessons': [
         {
           'number': '07',
-          'title': 'Let\'s Design a Sign Up Fo...',
-          'duration': '15 Mins',
+          'title': 'Thiết kế Form đăng ký...',
           'isCompleted': false,
         },
         {
           'number': '08',
-          'title': 'Sharing work with Team',
-          'duration': '20 Mins',
+          'title': 'Chia sẻ công việc với nhóm',
           'isCompleted': false,
         },
       ],
@@ -150,14 +139,14 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    'Curriculum',
-                    style: AppTextStyles.heading1.copyWith(
-                      color: const Color(0xFF202244),
-                      fontSize: 21,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+          Text(
+            'Chương trình học',
+            style: AppTextStyles.heading1.copyWith(
+              color: const Color(0xFF202244),
+              fontSize: 21,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
                 ],
               ),
             ),
@@ -188,7 +177,7 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
         children: [
           // Course Title
           Text(
-            'Graphic Design Advanced Course',
+            'Khóa học Thiết kế đồ họa nâng cao',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 18,
@@ -222,14 +211,6 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
-                ),
-              ),
-              Text(
-                section['duration'],
-                style: AppTextStyles.body1.copyWith(
-                  color: const Color(0xFF0961F5),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
@@ -288,15 +269,6 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
                     color: const Color(0xFF202244),
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  lesson['duration'],
-                  style: AppTextStyles.body1.copyWith(
-                    color: const Color(0xFF545454),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -372,7 +344,7 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
               // Button Text
               Expanded(
                 child: Text(
-                  'Enroll Course - \$55',
+                  'Đăng ký khóa học - \$55',
                   style: AppTextStyles.buttonLarge.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,

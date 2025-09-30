@@ -25,67 +25,67 @@ class _MyCourseOngoingLessonsScreenState extends State<MyCourseOngoingLessonsScr
   // Sample curriculum data
   final List<Map<String, dynamic>> _sections = [
     {
-      'title': 'Section 01 - Introduction',
-      'duration': '25 Mins',
+      'title': 'Phần 01 - Giới thiệu',
+      'duration': '25 Phút',
       'lessons': [
         {
           'id': 1,
-          'title': 'Why Using Graphic Design',
-          'duration': '15 Mins',
+          'title': 'Tại sao sử dụng Thiết kế đồ họa',
+          'duration': '15 Phút',
           'isCompleted': true,
         },
         {
           'id': 2,
-          'title': 'Setup Your Graphic Design',
-          'duration': '10 Mins',
+          'title': 'Thiết lập Thiết kế đồ họa',
+          'duration': '10 Phút',
           'isCompleted': true,
         },
       ],
     },
     {
-      'title': 'Section 02 - Graphic Design',
-      'duration': '55 Mins',
+      'title': 'Phần 02 - Thiết kế đồ họa',
+      'duration': '55 Phút',
       'lessons': [
         {
           'id': 3,
-          'title': 'Take a Look Graphic Design',
-          'duration': '08 Mins',
+          'title': 'Tìm hiểu Thiết kế đồ họa',
+          'duration': '08 Phút',
           'isCompleted': false,
         },
         {
           'id': 4,
-          'title': 'Working with Graphic Design',
-          'duration': '25 Mins',
+          'title': 'Làm việc với Thiết kế đồ họa',
+          'duration': '25 Phút',
           'isCompleted': false,
         },
         {
           'id': 5,
-          'title': 'Working with Frame & Layout',
-          'duration': '12 Mins',
+          'title': 'Làm việc với Khung & Bố cục',
+          'duration': '12 Phút',
           'isCompleted': false,
         },
         {
           'id': 6,
-          'title': 'Using Graphic Plugins',
-          'duration': '10 Mins',
+          'title': 'Sử dụng Plugin đồ họa',
+          'duration': '10 Phút',
           'isCompleted': false,
         },
       ],
     },
     {
-      'title': 'Section 03 - Let\'s Practice',
-      'duration': '35 Mins',
+      'title': 'Phần 03 - Thực hành',
+      'duration': '35 Phút',
       'lessons': [
         {
           'id': 7,
-          'title': 'Let\'s Design a Sign Up Form',
-          'duration': '15 Mins',
+          'title': 'Thiết kế Form đăng ký',
+          'duration': '15 Phút',
           'isCompleted': false,
         },
         {
           'id': 8,
-          'title': 'Sharing work with Team',
-          'duration': '20 Mins',
+          'title': 'Chia sẻ công việc với nhóm',
+          'duration': '20 Phút',
           'isCompleted': false,
         },
       ],
@@ -137,7 +137,7 @@ class _MyCourseOngoingLessonsScreenState extends State<MyCourseOngoingLessonsScr
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'My Courses',
+              'Khóa học của tôi',
               style: AppTextStyles.heading1.copyWith(
                 color: const Color(0xFF202244),
                 fontSize: 21,
@@ -174,7 +174,7 @@ class _MyCourseOngoingLessonsScreenState extends State<MyCourseOngoingLessonsScr
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search for ...',
+                  hintText: 'Tìm kiếm...',
                   hintStyle: AppTextStyles.body1.copyWith(
                     color: const Color(0xFFB4BDC4),
                     fontSize: 16,
@@ -451,20 +451,20 @@ class _MyCourseOngoingLessonsScreenState extends State<MyCourseOngoingLessonsScr
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(lesson['title']),
-          content: Text('Duration: ${lesson['duration']}'),
+          content: Text('Thời lượng: ${lesson['duration']}'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Close'),
+              child: const Text('Đóng'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 // Start lesson logic here
               },
-              child: const Text('Start Lesson'),
+              child: const Text('Bắt đầu bài học'),
             ),
           ],
         );
@@ -490,11 +490,13 @@ class _MyCourseOngoingLessonsScreenState extends State<MyCourseOngoingLessonsScr
       }
     }
     
-    // If all lessons completed, show course completed screen
-    AppRoutes.navigateToCourseCompleted(
-      context,
-      courseTitle: widget.courseTitle,
-      courseImage: widget.courseImage,
+    // If all lessons completed, show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Chúc mừng! Bạn đã hoàn thành ${widget.courseTitle}'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 

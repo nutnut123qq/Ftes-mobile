@@ -16,35 +16,38 @@ class SingleMentorDetailsScreen extends StatefulWidget {
 }
 
 class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
-  int _selectedTabIndex = 0; // 0: Courses, 1: Ratings
+  int _selectedTabIndex = 0; // 0: Courses, 1: Blog
 
   // Sample courses data for this mentor
   final List<CourseItem> _courses = [
     CourseItem(
-      category: 'Graphic Design',
-      title: 'Graphic Design Advanced',
+      id: 'mentor_course_1',
+      category: 'Thiết kế đồ họa',
+      title: 'Thiết kế đồ họa nâng cao',
       price: '799/-',
       originalPrice: '\$42',
       rating: '4.2',
-      students: '7830 Std',
+      students: '7830 HV',
       imageUrl: 'https://via.placeholder.com/80x80/000000/FFFFFF?text=Course',
     ),
     CourseItem(
-      category: 'UI/UX Design',
-      title: 'UI/UX Design Basics',
+      id: 'mentor_course_2',
+      category: 'Thiết kế UI/UX',
+      title: 'Cơ bản về Thiết kế UI/UX',
       price: '599/-',
       originalPrice: '\$35',
       rating: '4.5',
-      students: '990 Std',
+      students: '990 HV',
       imageUrl: 'https://via.placeholder.com/80x80/000000/FFFFFF?text=Course',
     ),
     CourseItem(
-      category: 'Web Design',
-      title: 'Web Design Fundamentals',
+      id: 'mentor_course_3',
+      category: 'Thiết kế Web',
+      title: 'Cơ bản về Thiết kế Web',
       price: '899/-',
       originalPrice: '\$50',
       rating: '4.8',
-      students: '1200 Std',
+      students: '1200 HV',
       imageUrl: 'https://via.placeholder.com/80x80/000000/FFFFFF?text=Course',
     ),
   ];
@@ -59,29 +62,29 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
       {
         'name': 'Sarah Johnson',
         'rating': 5.0,
-        'comment': 'Excellent course! ${widget.mentor.name} explains everything clearly and the projects are very practical.',
-        'date': '2 days ago',
+        'comment': 'Khóa học xuất sắc! ${widget.mentor.name} giải thích mọi thứ rất rõ ràng và các dự án rất thực tế.',
+        'date': '2 ngày trước',
         'avatar': 'https://via.placeholder.com/40x40/000000/FFFFFF?text=SJ',
       },
       {
         'name': 'Michael Chen',
         'rating': 4.5,
-        'comment': 'Great content and well-structured. Learned a lot about design principles.',
-        'date': '1 week ago',
+        'comment': 'Nội dung tuyệt vời và được cấu trúc tốt. Tôi đã học được rất nhiều về nguyên tắc thiết kế.',
+        'date': '1 tuần trước',
         'avatar': 'https://via.placeholder.com/40x40/000000/FFFFFF?text=MC',
       },
       {
         'name': 'Emily Davis',
         'rating': 5.0,
-        'comment': 'Amazing instructor! The course exceeded my expectations. Highly recommended.',
-        'date': '2 weeks ago',
+        'comment': 'Giảng viên tuyệt vời! Khóa học vượt quá mong đợi của tôi. Rất được khuyến nghị.',
+        'date': '2 tuần trước',
         'avatar': 'https://via.placeholder.com/40x40/000000/FFFFFF?text=ED',
       },
       {
         'name': 'David Wilson',
         'rating': 4.0,
-        'comment': 'Good course overall. Some sections could be more detailed but still valuable.',
-        'date': '3 weeks ago',
+        'comment': 'Khóa học tổng thể tốt. Một số phần có thể chi tiết hơn nhưng vẫn có giá trị.',
+        'date': '3 tuần trước',
         'avatar': 'https://via.placeholder.com/40x40/000000/FFFFFF?text=DW',
       },
     ];
@@ -98,7 +101,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
               _buildProfileHeader(),
               _buildProfileDetailsCard(),
               _buildTabNavigation(),
-              if (_selectedTabIndex == 0) _buildCoursesList() else _buildRatingsList(),
+              if (_selectedTabIndex == 0) _buildCoursesList() else _buildBlogList(),
               const SizedBox(height: 100), // Space for bottom navigation
             ],
           ),
@@ -192,7 +195,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
             
             // Title
             Text(
-              '${widget.mentor.specialization} Expert',
+              'Chuyên gia ${widget.mentor.specialization}',
               style: AppTextStyles.body1.copyWith(
                 color: const Color(0xFF545454),
                 fontSize: 13,
@@ -207,8 +210,8 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
             
             const SizedBox(height: 40),
             
-            // Action Buttons
-            _buildActionButtons(),
+            // Social Media Icons
+            _buildSocialIcons(),
           ],
         ),
       ),
@@ -223,9 +226,6 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
         ),
         Expanded(
           child: _buildStatItem('15800', 'Students'),
-        ),
-        Expanded(
-          child: _buildStatItem('8750', 'Ratings'),
         ),
       ],
     );
@@ -258,60 +258,48 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildSocialIcons() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Expanded(
-          child: Container(
-            height: 56,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8F1FF),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: const Color(0xFFB4BDC4).withOpacity(0.4),
-                width: 2,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                'Follow',
-                style: AppTextStyles.buttonLarge.copyWith(
-                  color: const Color(0xFF202244),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Container(
-            height: 56,
-            decoration: BoxDecoration(
-              color: const Color(0xFF0961F5),
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(1, 2),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                'Message',
-                style: AppTextStyles.buttonLarge.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
-                ),
-              ),
-            ),
-          ),
-        ),
+        _buildSocialIcon(Icons.facebook, 'Facebook'),
+        const SizedBox(width: 24),
+        _buildSocialIcon(Icons.code, 'GitHub'),
       ],
+    );
+  }
+
+  Widget _buildSocialIcon(IconData icon, String platform) {
+    return GestureDetector(
+      onTap: () {
+        // Handle social media navigation
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đang mở $platform...'),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      },
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0961F5),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: Colors.white,
+          size: 24,
+        ),
+      ),
     );
   }
 
@@ -331,7 +319,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
         ],
       ),
       child: Text(
-        '"Passionate about ${widget.mentor.specialization.toLowerCase()} and helping students achieve their creative goals. With years of experience in the industry, I bring real-world insights to every course."',
+        '"Đam mê về ${widget.mentor.specialization.toLowerCase()} và giúp học viên đạt được mục tiêu sáng tạo của họ. Với nhiều năm kinh nghiệm trong ngành, tôi mang đến những hiểu biết thực tế cho mỗi khóa học."',
         style: AppTextStyles.body1.copyWith(
           color: const Color(0xFFA0A4AB),
           fontSize: 13,
@@ -370,7 +358,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    'Courses',
+                    'Khóa học',
                     style: AppTextStyles.body1.copyWith(
                       color: const Color(0xFF202244),
                       fontSize: 15,
@@ -398,7 +386,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    'Ratings',
+                    'Blog',
                     style: AppTextStyles.body1.copyWith(
                       color: const Color(0xFF202244),
                       fontSize: 15,
@@ -546,24 +534,6 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
                     
                     const Spacer(),
                     
-                    // Rating
-                    const Icon(
-                      Icons.star,
-                      color: Color(0xFFFFD700),
-                      size: 12,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      course.rating,
-                      style: AppTextStyles.body1.copyWith(
-                        color: const Color(0xFF202244),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    
-                    const SizedBox(width: 8),
-                    
                     // Students
                     Text(
                       course.students,
@@ -599,7 +569,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
     );
   }
 
-  Widget _buildRatingsList() {
+  Widget _buildBlogList() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 34),
       child: Column(
@@ -607,7 +577,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
         children: [
           const SizedBox(height: 20),
           Text(
-            'Ratings & Reviews',
+            'Blog Posts',
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 18,

@@ -3,7 +3,6 @@ import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../models/message_item.dart';
 import '../models/chat_item.dart';
-import 'voice_call_screen.dart';
 
 class ChatMessagesScreen extends StatefulWidget {
   final ChatItem chat;
@@ -103,14 +102,14 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.chat.name,
+                  'AI take care',
                   style: AppTextStyles.heading3.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
-                  'Online',
+                  'Trực tuyến',
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.success,
                     fontWeight: FontWeight.w500,
@@ -119,34 +118,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               ],
             ),
           ),
-          // Call button
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => VoiceCallScreen(
-                    contactName: widget.chat.name,
-                    contactAvatar: widget.chat.avatar,
-                  ),
-                ),
-              );
-            },
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.call,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
           // More options
           GestureDetector(
             onTap: () {
@@ -176,7 +147,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         ),
       ),
       child: Text(
-        'Today',
+        'Hôm nay',
         style: AppTextStyles.caption.copyWith(
           color: AppColors.textPrimary,
           fontWeight: FontWeight.w800,
@@ -376,7 +347,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               child: TextField(
                 controller: _messageController,
                 decoration: InputDecoration(
-                  hintText: 'Message',
+                  hintText: 'Tin nhắn',
                   hintStyle: AppTextStyles.bodyText.copyWith(
                     color: AppColors.textLight,
                     fontWeight: FontWeight.w600,
