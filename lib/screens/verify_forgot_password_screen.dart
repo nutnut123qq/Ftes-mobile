@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/constants.dart';
+import '../providers/auth_provider.dart';
 
 class VerifyForgotPasswordScreen extends StatefulWidget {
-  final String contactInfo;
-  final String method; // 'email' or 'sms'
+  final String? contactInfo;
+  final String? method; // 'email' or 'sms'
   
   const VerifyForgotPasswordScreen({
     super.key,
-    required this.contactInfo,
-    required this.method,
+    this.contactInfo,
+    this.method,
   });
 
   @override
@@ -23,11 +25,29 @@ class _VerifyForgotPasswordScreenState extends State<VerifyForgotPasswordScreen>
   int _resendCountdown = 59;
   bool _isResendEnabled = false;
   String _otpCode = '';
+  String _contactInfo = '';
+  String _method = 'email';
 
   @override
   void initState() {
     super.initState();
     _startCountdown();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Get arguments from navigation
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      _contactInfo = args['contactInfo'] ?? widget.contactInfo ?? '';
+      _method = args['method'] ?? widget.method ?? 'email';
+    } else {
+      _contactInfo = widget.contactInfo ?? '';
+      _method = widget.method ?? 'email';
+    }
+    
   }
 
   @override
@@ -86,7 +106,7 @@ class _VerifyForgotPasswordScreenState extends State<VerifyForgotPasswordScreen>
     }
   }
 
-  void _resendCode() {
+  void _resendCode() async {
     if (_isResendEnabled) {
       setState(() {
         _resendCountdown = 59;
@@ -99,29 +119,63 @@ class _VerifyForgotPasswordScreenState extends State<VerifyForgotPasswordScreen>
       });
       _startCountdown();
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            widget.method == 'email' 
-                ? 'Mã xác thực mới đã được gửi đến email của bạn!'
-                : 'Mã xác thực mới đã được gửi đến số điện thoại của bạn!',
-          ),
-        ),
-      );
+      // Call the backend to resend verification code
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      try {
+        final success = await authProvider.resendVerificationCode(_contactInfo);
+        if (success && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _method == 'email' 
+                    ? 'Mã xác thực mới đã được gửi đến email của bạn!'
+                    : 'Mã xác thực mới đã được gửi đến số điện thoại của bạn!',
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Gửi lại mã xác thực thất bại. Vui lòng thử lại.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gửi lại mã xác thực thất bại: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
-  void _verifyCode() {
+  Future<void> _verifyCode() async {
     if (_otpCode.length == 6) {
-      // Verification logic - placeholder for future implementation
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Xác thực thành công!')),
-      );
-      // Navigate to create new password screen
-      Navigator.pushNamed(context, AppConstants.routeCreateNewPassword);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      try {
+        final success = await authProvider.verifyEmailOTP(_contactInfo, _otpCode);
+          
+          if (success && mounted) {
+            // Navigate to congratulations screen after successful email verification
+            Navigator.pushReplacementNamed(context, AppConstants.routeCongratulations);
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Xác thực email thất bại: $e')),
+            );
+          }
+        }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập đầy đủ 4 số!')),
+        const SnackBar(content: Text('Vui lòng nhập đầy đủ 6 số!')),
       );
     }
   }
@@ -178,7 +232,7 @@ class _VerifyForgotPasswordScreenState extends State<VerifyForgotPasswordScreen>
               // Description text
               Center(
                 child: Text(
-                  'Code has been Send to ${widget.contactInfo}',
+                  'Code has been Send to $_contactInfo',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFF545454),

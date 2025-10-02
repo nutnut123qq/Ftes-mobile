@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
+import 'package:ftes/utils/constants.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/routes/app_routes.dart';
 import 'package:ftes/screens/edit_profile_screen.dart';
@@ -8,6 +10,8 @@ import 'package:ftes/screens/notifications_screen.dart';
 import 'package:ftes/screens/security_screen.dart';
 import 'package:ftes/screens/terms_conditions_screen.dart';
 import 'package:ftes/screens/invite_friends_screen.dart';
+import 'package:ftes/providers/auth_provider.dart';
+import 'package:ftes/models/auth_response.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,6 +21,40 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load user info when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserInfo();
+    });
+  }
+
+  void _loadUserInfo() async {
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      if (authProvider.isLoggedIn && authProvider.currentUser == null) {
+        await authProvider.refreshUserInfo();
+      } else if (authProvider.isLoggedIn && authProvider.currentUser != null) {
+      } else {
+      }
+    } catch (e) {
+    }
+  }
+
+  String _getDisplayName(UserInfo? user) {
+    if (user == null) return 'Chưa có tên';
+    
+    if (user.fullName != null && user.fullName!.isNotEmpty) {
+      return user.fullName!;
+    } else if (user.username != null && user.username!.isNotEmpty) {
+      return user.username!;
+    } else {
+      return 'Chưa có tên';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,22 +126,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileContent() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          // Profile Image and Info
-          _buildProfileHeader(),
-          
-          const SizedBox(height: 20),
-          
-          // Profile Details Card
-          _buildProfileDetailsCard(),
-        ],
-      ),
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        if (authProvider.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              // Profile Image and Info
+              _buildProfileHeader(authProvider),
+              
+              const SizedBox(height: 20),
+              
+              // Profile Details Card
+              _buildProfileDetailsCard(),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(AuthProvider authProvider) {
+    final user = authProvider.currentUser;
+    
+    // Debug logging
+    if (user != null) {
+    }
+    
     return Column(
       children: [
         // Profile Image
@@ -118,18 +172,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: 3,
             ),
           ),
-          child: const Icon(
-            Icons.person,
-            size: 60,
-            color: Color(0xFF0961F5),
-          ),
+          child: user?.avatar != null && user!.avatar!.isNotEmpty
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(55),
+                  child: Image.network(
+                    user.avatar!,
+                    width: 110,
+                    height: 110,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.person,
+                        size: 60,
+                        color: Color(0xFF0961F5),
+                      );
+                    },
+                  ),
+                )
+              : const Icon(
+                  Icons.person,
+                  size: 60,
+                  color: Color(0xFF0961F5),
+                ),
         ),
         
         const SizedBox(height: 20),
         
         // Name
         Text(
-          'Alex',
+          _getDisplayName(user),
           style: AppTextStyles.heading1.copyWith(
             color: const Color(0xFF202244),
             fontSize: 24,
@@ -141,7 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         
         // Email
         Text(
-          'hernandex.redial@gmail.ac.in',
+          user?.email ?? 'Chưa có email',
           style: AppTextStyles.body1.copyWith(
             color: const Color(0xFF545454),
             fontSize: 13,
@@ -374,7 +445,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                // Handle logout logic here
+                _handleLogout();
               },
               child: Text(
                 'Đăng xuất',
@@ -389,5 +460,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       },
     );
+  }
+
+  void _handleLogout() async {
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      );
+      
+      // Call logout API
+      await authProvider.logout();
+      
+      // Close loading dialog
+      if (mounted) {
+        Navigator.of(context).pop();
+        
+        // Navigate to login screen
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppConstants.routeSignIn,
+          (route) => false,
+        );
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đăng xuất thành công!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) {
+        Navigator.of(context).pop();
+        
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đăng xuất thất bại: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

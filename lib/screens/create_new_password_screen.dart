@@ -43,10 +43,6 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
         password.length >= 6 &&
         password == confirmPassword;
     
-    // Debug print
-    print('Password: $password (${password.length} chars), Confirm: $confirmPassword (${confirmPassword.length} chars)');
-    print('Password valid: $isPasswordValid, Confirm valid: $isConfirmPasswordValid');
-    print('Both valid: ${isPasswordValid && isConfirmPasswordValid}');
     
     if (_isPasswordValid != isPasswordValid || _isConfirmPasswordValid != isConfirmPasswordValid) {
       setState(() {

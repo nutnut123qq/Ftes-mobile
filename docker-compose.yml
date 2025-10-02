@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # Redis service
+  redis:
+    image: redis:7-alpine
+    container_name: ftes-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass FunnyCode2024!Redis@Cache
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ftes-network
+
+  # Flutter web app
+  ftes-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ftes-app
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASS=FunnyCode2024!Redis@Cache
+    networks:
+      - ftes-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Commander (Web UI for Redis)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: ftes-redis-commander
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:FunnyCode2024!Redis@Cache
+    depends_on:
+      - redis
+    networks:
+      - ftes-network
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  ftes-network:
+    driver: bridge
+
+

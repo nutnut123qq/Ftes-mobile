@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/constants.dart';
+import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -238,7 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   _SocialButton(
                     icon: Icons.g_mobiledata,
-                    onTap: () => _showComingSoon(context),
+                    onTap: () => _signInWithGoogle(context),
                   ),
                   const SizedBox(width: 20),
                 ],
@@ -281,14 +283,57 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _signIn() {
+  void _signIn() async {
     if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
-      // Sign in logic - placeholder for future implementation
-      Navigator.pushReplacementNamed(context, AppConstants.routeHome);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      try {
+        final success = await authProvider.login(
+          _emailController.text,
+          _passwordController.text,
+        );
+        
+        if (success && mounted) {
+          Navigator.pushReplacementNamed(context, AppConstants.routeHome);
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authProvider.errorMessage ?? 'Đăng nhập thất bại'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Đăng nhập thất bại: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin!')),
       );
+    }
+  }
+
+  Future<void> _signInWithGoogle(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    try {
+      final success = await authProvider.loginWithGoogle();
+      if (success && mounted) {
+        Navigator.pushReplacementNamed(context, AppConstants.routeHome);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đăng nhập Google thất bại: $e')),
+        );
+      }
     }
   }
 

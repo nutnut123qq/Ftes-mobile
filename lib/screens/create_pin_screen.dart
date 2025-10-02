@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/constants.dart';
+import '../providers/auth_provider.dart';
 
 class CreatePinScreen extends StatefulWidget {
   const CreatePinScreen({super.key}); // Force rebuild
@@ -21,8 +23,15 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
     super.initState();
     // Ensure _pinDigits has exactly 6 elements
     _pinDigits = List.filled(6, '');
-    print('_pinDigits length: ${_pinDigits.length}'); // Debug
     _startCountdown();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Don't send verification code automatically
+    // Backend already sends OTP during registration
+    // Only send when user clicks "Resend" button
   }
 
   void _startCountdown() {
@@ -41,16 +50,15 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
     });
   }
 
-  void _resendPin() {
+  void _resendPin() async {
     setState(() {
       _resendCountdown = 59;
       _isResendEnabled = false;
     });
     _startCountdown();
-    // TODO: Implement actual PIN resend logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('PIN đã được gửi lại!')),
-    );
+    
+    // Send verification code
+    await _sendVerificationCode();
   }
 
   @override
@@ -301,10 +309,93 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
     }
   }
 
-  void _continue() {
+  Future<void> _sendVerificationCode() async {
+    // Get contact info from route arguments
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final contactInfo = args?['contactInfo'] as String?;
+    final method = args?['method'] as String?;
+    
+    if (contactInfo != null && method == 'email') {
+      try {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.resendVerificationCode(contactInfo);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Mã xác thực đã được gửi đến email của bạn!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi gửi mã xác thực: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _continue() async {
     if (_isPinComplete()) {
-      // Navigate directly to congratulations screen
-      Navigator.pushReplacementNamed(context, AppConstants.routeCongratulations);
+      final pin = _pinDigits.join();
+      
+      // Validate PIN
+      if (pin.length != 6) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Vui lòng nhập đầy đủ 6 chữ số'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+      
+      // Get contact info from route arguments
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final contactInfo = args?['contactInfo'] as String?;
+      final method = args?['method'] as String?;
+      
+      if (contactInfo != null && method == 'email') {
+        // Verify email code
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final success = await authProvider.verifyEmailOTP(contactInfo, pin);
+        
+        if (success) {
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, AppConstants.routeCongratulations);
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Mã xác thực không đúng. Vui lòng thử lại.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } else {
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, AppConstants.routeCongratulations);
+        }
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Vui lòng nhập đầy đủ 6 chữ số'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

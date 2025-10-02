@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
+import '../widgets/bottom_navigation_bar.dart';
 
 class BlogScreen extends StatefulWidget {
   const BlogScreen({super.key});
@@ -53,9 +54,11 @@ class _BlogScreenState extends State<BlogScreen> {
             
             // Popular Posts
             _buildPopularPostsSection(),
+            const SizedBox(height: 100), // Space for bottom navigation
           ],
         ),
       ),
+      bottomNavigationBar: AppBottomNavigationBar(selectedIndex: 3),
     );
   }
 

@@ -1,7 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
+import 'package:ftes/services/auth_service.dart';
+import 'package:ftes/models/update_profile_request.dart' as update;
+import 'package:ftes/models/profile_response.dart' as profile;
+import 'package:ftes/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -11,45 +19,164 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final TextEditingController _fullNameController = TextEditingController(text: 'Alex');
-  final TextEditingController _nickNameController = TextEditingController(text: 'Alex');
-  final TextEditingController _dateOfBirthController = TextEditingController(text: '01/01/1990');
-  final TextEditingController _emailController = TextEditingController(text: 'hernandex.redial@gmail.ac.in');
-  final TextEditingController _phoneController = TextEditingController(text: '( +91 )  987-848-1225');
-  final TextEditingController _genderController = TextEditingController(text: 'Male');
-  final TextEditingController _studentController = TextEditingController(text: 'Student');
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _dateOfBirthController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _genderController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _jobNameController = TextEditingController();
+  final TextEditingController _facebookController = TextEditingController();
+  final TextEditingController _youtubeController = TextEditingController();
+  final TextEditingController _twitterController = TextEditingController();
+
+  final AuthService _authService = AuthService();
+  final ImagePicker _imagePicker = ImagePicker();
+  profile.ProfileResponse? _currentProfile;
+  bool _isLoading = true;
+  bool _isUpdating = false;
+  bool _isUploadingImage = false;
+  String? _selectedGender;
+  DateTime? _selectedDate;
+  File? _selectedImage;
+  String? _currentAvatarUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _addressController.dispose();
+    _dateOfBirthController.dispose();
+    _phoneController.dispose();
+    _genderController.dispose();
+    _descriptionController.dispose();
+    _jobNameController.dispose();
+    _facebookController.dispose();
+    _youtubeController.dispose();
+    _twitterController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userInfo = authProvider.currentUser;
+      
+      if (userInfo?.id != null) {
+        final profile = await _authService.getProfile(userInfo!.id);
+        setState(() {
+          _currentProfile = profile;
+          _populateFields(profile);
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        _showErrorDialog('Không thể lấy thông tin người dùng');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      _showErrorDialog('Lỗi khi tải thông tin hồ sơ: $e');
+    }
+  }
+
+  void _populateFields(profile.ProfileResponse profile) {
+    _fullNameController.text = profile.name ?? '';
+    _addressController.text = profile.address ?? '';
+    _phoneController.text = profile.phoneNumber ?? '';
+    _descriptionController.text = profile.description ?? '';
+    _jobNameController.text = profile.jobName ?? '';
+    _facebookController.text = profile.facebook ?? '';
+    _youtubeController.text = profile.youtube ?? '';
+    _twitterController.text = profile.twitter ?? '';
+    _currentAvatarUrl = profile.avatar;
+    
+    if (profile.dateOfBirth != null) {
+      _selectedDate = profile.dateOfBirth;
+      _dateOfBirthController.text = '${profile.dateOfBirth!.day.toString().padLeft(2, '0')}/'
+          '${profile.dateOfBirth!.month.toString().padLeft(2, '0')}/'
+          '${profile.dateOfBirth!.year}';
+    }
+    
+    if (profile.gender != null) {
+      _selectedGender = profile.gender!.name;
+      _genderController.text = _getGenderDisplayName(profile.gender!);
+    }
+  }
+
+  String _getGenderDisplayName(profile.Gender gender) {
+    switch (gender) {
+      case profile.Gender.male:
+        return 'Nam';
+      case profile.Gender.female:
+        return 'Nữ';
+      case profile.Gender.other:
+        return 'Khác';
+    }
+  }
+
+  update.Gender? _getGenderFromString(String? genderString) {
+    switch (genderString) {
+      case 'male':
+        return update.Gender.male;
+      case 'female':
+        return update.Gender.female;
+      case 'other':
+        return update.Gender.other;
+      default:
+        return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9FF),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Status Bar Space
-            const SizedBox(height: 25),
-            
-            // Navigation Bar
-            _buildNavigationBar(),
-            
-            const SizedBox(height: 20),
-            
-            // Profile Image
-            _buildProfileImage(),
-            
-            const SizedBox(height: 20),
-            
-            // Form Fields
-            Expanded(
-              child: _buildFormFields(),
-            ),
-            
-            // Update Button
-            _buildUpdateButton(),
-            
-            const SizedBox(height: 20),
-          ],
-        ),
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0961F5)),
+                ),
+              )
+            : Column(
+                children: [
+                  // Status Bar Space
+                  const SizedBox(height: 25),
+                  
+                  // Navigation Bar
+                  _buildNavigationBar(),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Profile Image
+                  _buildProfileImage(),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Form Fields
+                  Expanded(
+                    child: _buildFormFields(),
+                  ),
+                  
+                  // Update Button
+                  _buildUpdateButton(),
+                  
+                  const SizedBox(height: 20),
+                ],
+              ),
       ),
     );
   }
@@ -100,21 +227,62 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Column(
       children: [
         // Profile Image
-        Container(
-          width: 90,
-          height: 90,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE8F1FF),
-            borderRadius: BorderRadius.circular(45),
-            border: Border.all(
-              color: const Color(0xFF167F71),
-              width: 3,
+        GestureDetector(
+          onTap: (_isUploadingImage || kIsWeb) ? null : _selectImage,
+          child: Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F1FF),
+              borderRadius: BorderRadius.circular(45),
+              border: Border.all(
+                color: const Color(0xFF167F71),
+                width: 3,
+              ),
             ),
-          ),
-          child: const Icon(
-            Icons.person,
-            size: 50,
-            color: Color(0xFF0961F5),
+            child: _isUploadingImage
+                ? const Center(
+                    child: SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0961F5)),
+                      ),
+                    ),
+                  )
+                : _selectedImage != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(45),
+                        child: Image.file(
+                          _selectedImage!,
+                          width: 90,
+                          height: 90,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : _currentAvatarUrl != null && _currentAvatarUrl!.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(45),
+                            child: Image.network(
+                              _currentAvatarUrl!,
+                              width: 90,
+                              height: 90,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: Color(0xFF0961F5),
+                                );
+                              },
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Color(0xFF0961F5),
+                          ),
           ),
         ),
         
@@ -122,9 +290,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         
         // Edit Image Button
         GestureDetector(
-          onTap: () {
-            // Handle image selection
-          },
+          onTap: (_isUploadingImage || kIsWeb) ? null : _selectImage,
           child: Container(
             width: 32,
             height: 32,
@@ -136,11 +302,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 width: 3,
               ),
             ),
-            child: const Icon(
-              Icons.camera_alt,
-              color: Color(0xFF167F71),
-              size: 16,
-            ),
+            child: _isUploadingImage
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF167F71)),
+                    ),
+                  )
+                : Icon(
+                    kIsWeb ? Icons.block : Icons.camera_alt,
+                    color: kIsWeb ? Colors.grey : const Color(0xFF167F71),
+                    size: 16,
+                  ),
           ),
         ),
       ],
@@ -154,15 +329,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         children: [
           _buildTextField(
             controller: _fullNameController,
-            label: 'Full Name',
+            label: 'Họ và tên',
             icon: null,
           ),
           
           const SizedBox(height: 18),
           
           _buildTextField(
-            controller: _nickNameController,
-            label: 'Nick Name',
+            controller: _addressController,
+            label: 'Địa chỉ',
             icon: null,
           ),
           
@@ -170,7 +345,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           
           _buildTextField(
             controller: _dateOfBirthController,
-            label: 'Date of Birth',
+            label: 'Ngày sinh',
             icon: Icons.calendar_today,
             readOnly: true,
             onTap: () {
@@ -181,17 +356,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SizedBox(height: 18),
           
           _buildTextField(
-            controller: _emailController,
-            label: 'Email',
-            icon: Icons.email,
-            keyboardType: TextInputType.emailAddress,
-          ),
-          
-          const SizedBox(height: 18),
-          
-          _buildTextField(
             controller: _phoneController,
-            label: 'Phone',
+            label: 'Số điện thoại',
             icon: Icons.phone,
             keyboardType: TextInputType.phone,
           ),
@@ -200,7 +366,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           
           _buildTextField(
             controller: _genderController,
-            label: 'Gender',
+            label: 'Giới tính',
             icon: Icons.keyboard_arrow_down,
             readOnly: true,
             onTap: () {
@@ -211,9 +377,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SizedBox(height: 18),
           
           _buildTextField(
-            controller: _studentController,
-            label: 'Student',
+            controller: _descriptionController,
+            label: 'Mô tả',
             icon: null,
+            maxLines: 3,
+          ),
+          
+          const SizedBox(height: 18),
+          
+          _buildTextField(
+            controller: _jobNameController,
+            label: 'Nghề nghiệp',
+            icon: null,
+          ),
+          
+          const SizedBox(height: 18),
+          
+          _buildTextField(
+            controller: _facebookController,
+            label: 'Facebook',
+            icon: Icons.facebook,
+            keyboardType: TextInputType.url,
+          ),
+          
+          const SizedBox(height: 18),
+          
+          _buildTextField(
+            controller: _youtubeController,
+            label: 'YouTube',
+            icon: Icons.play_circle,
+            keyboardType: TextInputType.url,
+          ),
+          
+          const SizedBox(height: 18),
+          
+          _buildTextField(
+            controller: _twitterController,
+            label: 'Twitter',
+            icon: Icons.alternate_email,
+            keyboardType: TextInputType.url,
           ),
         ],
       ),
@@ -227,9 +429,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     bool readOnly = false,
     TextInputType? keyboardType,
     VoidCallback? onTap,
+    int maxLines = 1,
   }) {
     return Container(
-      height: 60,
+      constraints: BoxConstraints(
+        minHeight: maxLines > 1 ? 80 : 60,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -246,6 +451,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         readOnly: readOnly,
         keyboardType: keyboardType,
         onTap: onTap,
+        maxLines: maxLines,
         style: AppTextStyles.body1.copyWith(
           color: const Color(0xFF202244),
           fontSize: 16,
@@ -273,46 +479,58 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildUpdateButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 39),
-      child: Container(
-        height: 60,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: const Color(0xFF0961F5),
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(1, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
+      child: GestureDetector(
+        onTap: _isUpdating ? null : _updateProfile,
+        child: Container(
+          height: 60,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: _isUpdating ? Colors.grey : const Color(0xFF0961F5),
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(1, 2),
               ),
-              child: const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 20,
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: _isUpdating
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 20,
+                      ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'Cập nhật',
-              style: AppTextStyles.heading1.copyWith(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+              const SizedBox(width: 12),
+              Text(
+                _isUpdating ? 'Đang cập nhật...' : 'Cập nhật',
+                style: AppTextStyles.heading1.copyWith(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -321,12 +539,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _selectDate() {
     showDatePicker(
       context: context,
-      initialDate: DateTime(1990),
+      initialDate: _selectedDate ?? DateTime(1990),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     ).then((selectedDate) {
       if (selectedDate != null) {
         setState(() {
+          _selectedDate = selectedDate;
           _dateOfBirthController.text = 
               '${selectedDate.day.toString().padLeft(2, '0')}/'
               '${selectedDate.month.toString().padLeft(2, '0')}/'
@@ -358,7 +577,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 title: Text('Nam'),
                 onTap: () {
                   setState(() {
-                    _genderController.text = 'Male';
+                    _selectedGender = 'male';
+                    _genderController.text = 'Nam';
                   });
                   Navigator.pop(context);
                 },
@@ -367,7 +587,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 title: Text('Nữ'),
                 onTap: () {
                   setState(() {
-                    _genderController.text = 'Female';
+                    _selectedGender = 'female';
+                    _genderController.text = 'Nữ';
                   });
                   Navigator.pop(context);
                 },
@@ -376,13 +597,180 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 title: Text('Khác'),
                 onTap: () {
                   setState(() {
-                    _genderController.text = 'Other';
+                    _selectedGender = 'other';
+                    _genderController.text = 'Khác';
                   });
                   Navigator.pop(context);
                 },
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  Future<void> _updateProfile() async {
+    try {
+      setState(() {
+        _isUpdating = true;
+      });
+
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userInfo = authProvider.currentUser;
+      
+      if (userInfo?.id == null) {
+        _showErrorDialog('Không thể lấy thông tin người dùng');
+        return;
+      }
+
+      // Validate required fields
+      if (_fullNameController.text.trim().isEmpty) {
+        _showErrorDialog('Vui lòng nhập họ và tên');
+        return;
+      }
+
+      // Create update request
+      final request = update.UpdateProfileRequest(
+        name: _fullNameController.text.trim(),
+        address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
+        phoneNumber: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+        dateOfBirth: _selectedDate,
+        gender: _getGenderFromString(_selectedGender),
+        description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+        jobName: _jobNameController.text.trim().isEmpty ? null : _jobNameController.text.trim(),
+        facebook: _facebookController.text.trim().isEmpty ? null : _facebookController.text.trim(),
+        youtube: _youtubeController.text.trim().isEmpty ? null : _youtubeController.text.trim(),
+        twitter: _twitterController.text.trim().isEmpty ? null : _twitterController.text.trim(),
+        avatar: _currentAvatarUrl,
+      );
+
+      // Call API
+      final updatedProfile = await _authService.updateProfile(userInfo!.id, request);
+      
+      setState(() {
+        _currentProfile = updatedProfile;
+        _isUpdating = false;
+      });
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cập nhật hồ sơ thành công!'),
+          backgroundColor: Color(0xFF0961F5),
+        ),
+      );
+
+      // Navigate back
+      Navigator.pop(context);
+      
+    } catch (e) {
+      setState(() {
+        _isUpdating = false;
+      });
+      _showErrorDialog('Lỗi khi cập nhật hồ sơ: $e');
+    }
+  }
+
+  Future<void> _selectImage() async {
+    try {
+      if (kIsWeb) {
+        // For web platform, use HTML file input
+        _showWebImagePicker();
+      } else {
+        // For mobile platforms
+        final XFile? image = await _imagePicker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 1024,
+          maxHeight: 1024,
+          imageQuality: 80,
+        );
+        
+        if (image != null) {
+          setState(() {
+            _selectedImage = File(image.path);
+          });
+          
+          // Upload image immediately
+          await _uploadImage();
+        }
+      }
+    } catch (e) {
+      _showErrorDialog('Lỗi khi chọn ảnh: $e');
+    }
+  }
+
+  void _showWebImagePicker() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Chọn ảnh'),
+          content: const Text('Chức năng upload ảnh chưa hỗ trợ trên web. Vui lòng sử dụng ứng dụng mobile.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _uploadImage() async {
+    if (_selectedImage == null) return;
+    
+    try {
+      setState(() {
+        _isUploadingImage = true;
+      });
+      
+      String imageUrl;
+      if (kIsWeb) {
+        // For web, we can't upload files directly, so we'll skip upload
+        // and just show a message
+        setState(() {
+          _isUploadingImage = false;
+        });
+        _showErrorDialog('Chức năng upload ảnh chưa hỗ trợ trên web. Vui lòng sử dụng ứng dụng mobile.');
+        return;
+      } else {
+        imageUrl = await _authService.uploadImage(_selectedImage!);
+      }
+      
+      setState(() {
+        _currentAvatarUrl = imageUrl;
+        _isUploadingImage = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Upload ảnh thành công!'),
+          backgroundColor: Color(0xFF0961F5),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _isUploadingImage = false;
+      });
+      _showErrorDialog('Lỗi khi upload ảnh: $e');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Lỗi'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
         );
       },
     );

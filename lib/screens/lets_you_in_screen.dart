@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../utils/constants.dart';
+import 'login_screen.dart';
+import '../providers/auth_provider.dart';
 
 class LetsYouInScreen extends StatelessWidget {
   const LetsYouInScreen({super.key});
@@ -40,10 +43,7 @@ class LetsYouInScreen extends StatelessWidget {
                     _buildSocialLoginOption(
                       icon: Icons.g_mobiledata,
                       text: "Tiếp tục với Google",
-                      onTap: () {
-                        // Handle Google login
-                        _showComingSoon(context);
-                      },
+                      onTap: () => _signInWithGoogle(context),
                     ),
                     
                     const SizedBox(height: 24),
@@ -89,7 +89,12 @@ class LetsYouInScreen extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () {
                           // Navigate to sign in screen
-                          Navigator.pushNamed(context, '/signin');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
@@ -235,6 +240,23 @@ class LetsYouInScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _signInWithGoogle(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    try {
+      final success = await authProvider.loginWithGoogle();
+      if (success && context.mounted) {
+        Navigator.pushReplacementNamed(context, AppConstants.routeHome);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đăng nhập Google thất bại: $e')),
+        );
+      }
+    }
   }
 
   void _showComingSoon(BuildContext context) {
