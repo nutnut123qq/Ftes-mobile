@@ -3,6 +3,7 @@ import '../models/auth_response.dart';
 import '../models/auth_request.dart';
 import '../models/user_request.dart';
 import '../services/auth_service.dart';
+import '../utils/error_handler.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -54,7 +55,8 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _setError('Đăng nhập thất bại: $e');
+      final errorMessage = ErrorHandler.parseLoginError(e);
+      _setError(errorMessage);
       return false;
     } finally {
       _setLoading(false);
@@ -74,7 +76,8 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _setError('Đăng nhập Google thất bại: $e');
+      final errorMessage = ErrorHandler.parseError(e);
+      _setError(errorMessage);
       return false;
     } finally {
       _setLoading(false);
@@ -100,7 +103,8 @@ class AuthProvider extends ChangeNotifier {
       await _authService.register(request);
       return true;
     } catch (e) {
-      _setError('Đăng ký thất bại: $e');
+      final errorMessage = ErrorHandler.parseRegisterError(e);
+      _setError(errorMessage);
       return false;
     } finally {
       _setLoading(false);
@@ -129,7 +133,8 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _setError('Xác thực email thất bại: $e');
+      final errorMessage = ErrorHandler.parseVerificationError(e);
+      _setError(errorMessage);
       return false;
     } finally {
       _setLoading(false);

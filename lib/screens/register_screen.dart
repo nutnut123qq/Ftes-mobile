@@ -4,6 +4,7 @@ import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/constants.dart';
 import '../providers/auth_provider.dart';
+import '../utils/message_helper.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -362,12 +363,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         
         if (success && mounted) {
           // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.'),
-              backgroundColor: Colors.green,
-            ),
+          MessageHelper.showSuccess(
+            context,
+            'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.',
           );
+          
           // Navigate to create PIN screen after successful registration
           Navigator.pushReplacementNamed(
             context, 
@@ -378,44 +378,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
             },
           );
         } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Đăng ký thất bại. Vui lòng thử lại.'),
-                backgroundColor: Colors.red,
-              ),
-            );
+          // Display error from provider
+          if (mounted && authProvider.errorMessage != null) {
+            MessageHelper.showError(context, authProvider.errorMessage!);
           }
         }
       } catch (e) {
         if (mounted) {
-          String errorMessage = 'Đăng ký thất bại. Vui lòng thử lại.';
-          
-          // Provide more specific error messages based on the error
-          if (e.toString().contains('M004_DUPLICATE')) {
-            if (e.toString().contains('email')) {
-              errorMessage = 'Email này đã được sử dụng. Vui lòng sử dụng email khác.';
-            } else if (e.toString().contains('username')) {
-              errorMessage = 'Tên người dùng này đã được sử dụng. Vui lòng chọn tên khác.';
-            }
-          } else if (e.toString().contains('BACKEND_CONSTRAINT_VIOLATION')) {
-            // This is the known backend bug - show special message and suggest retry
-            _showConstraintViolationDialog();
-            return;
-          }
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: Colors.red,
-            ),
+          MessageHelper.showError(
+            context,
+            'Đăng ký thất bại: ${e.toString()}',
           );
         }
       }
     } else {
       if (!_agreeToTerms) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vui lòng đồng ý với điều khoản sử dụng')),
+        MessageHelper.showWarning(
+          context,
+          'Vui lòng đồng ý với điều khoản sử dụng',
         );
       }
     }

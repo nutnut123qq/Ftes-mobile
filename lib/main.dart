@@ -4,6 +4,9 @@ import 'routes/app_routes.dart';
 import 'utils/colors.dart';
 import 'utils/constants.dart';
 import 'providers/auth_provider.dart';
+import 'providers/app_data_provider.dart';
+import 'providers/blog_provider.dart';
+import 'providers/course_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,8 +17,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AuthProvider()..initialize(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
+        ChangeNotifierProvider(create: (context) => AppDataProvider()),
+        ChangeNotifierProvider(create: (context) => BlogProvider()..initialize()),
+        ChangeNotifierProvider(create: (context) => CourseProvider()),
+      ],
       child: MaterialApp(
         title: AppConstants.appName,
         debugShowCheckedModeBanner: false,

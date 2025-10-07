@@ -22,6 +22,27 @@ class ApiConstants {
   static const String changePasswordEndpoint = '/api/users/change-password';
   static const String myInfoEndpoint = '/api/users/my-info';
   static const String updateGmailEndpoint = '/api/users/update-gmail-for-user';
+  // Banner & Courses
+  static const String bannerEndpoint = '/api/banner';
+  static const String featuredCoursesEndpoint = '/api/courses/featured';
+  
+  // Course endpoints
+  static const String coursesEndpoint = '/api/courses';
+  static const String courseDetailEndpoint = '/api/courses/detail';
+  static const String coursesSearchEndpoint = '/api/courses/search';
+  static const String latestCoursesEndpoint = '/api/courses/latest';
+  static const String userCoursesEndpoint = '/api/courses/user';
+  static const String checkEnrollmentEndpoint = '/api/user-courses/check-enrollment';
+  static const String enrollCourseEndpoint = '/api/user-courses';
+  
+  // Part endpoints
+  static const String partsEndpoint = '/api/parts';
+  static const String coursePartsEndpoint = '/api/parts/course';
+  
+  // Lesson endpoints
+  static const String lessonsEndpoint = '/api/lessons';
+  static const String lessonDetailEndpoint = '/api/lessons';
+  static const String partLessonsEndpoint = '/api/lessons/part';
   
   // Profile endpoints
   static const String viewProfileEndpoint = '/api/profiles/view';
@@ -33,6 +54,12 @@ class ApiConstants {
   // Image upload endpoints
   static const String uploadImageEndpoint = '/api/images/upload';
   static const String githubUploadImageEndpoint = '/api/github/upload-image';
+  
+  // Blog endpoints
+  static const String blogsEndpoint = '/api/blogs';
+  static const String blogsByCategoryEndpoint = '/api/blogs/get-by-category';
+  static const String blogsSearchEndpoint = '/api/blogs/search';
+  static const String blogsInteractiveEndpoint = '/api/blogs/interactive';
   
   // Headers
   static const Map<String, String> defaultHeaders = {

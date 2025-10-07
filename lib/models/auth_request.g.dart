@@ -15,7 +15,10 @@ AuthenticationRequest _$AuthenticationRequestFromJson(
 
 Map<String, dynamic> _$AuthenticationRequestToJson(
   AuthenticationRequest instance,
-) => <String, dynamic>{'credential': instance.credential, 'password': instance.password};
+) => <String, dynamic>{
+  'credential': instance.credential,
+  'password': instance.password,
+};
 
 RefreshTokenRequest _$RefreshTokenRequestFromJson(Map<String, dynamic> json) =>
     RefreshTokenRequest(refreshToken: json['refreshToken'] as String);

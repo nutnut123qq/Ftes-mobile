@@ -120,6 +120,7 @@ class AppConstants {
   static const String routeMyCourseOngoingVideo = '/my-course-ongoing-video';
   static const String routeInviteFriends = '/invite-friends';
   static const String routeCart = '/cart';
+  static const String routeBlogDetail = '/blog-detail';
   
   // Asset Paths
   static const String assetsImages = 'assets/images/';

@@ -33,6 +33,7 @@ import '../screens/my_course_ongoing_lessons_screen.dart';
 import '../screens/my_course_ongoing_video_screen.dart';
 import '../screens/invite_friends_screen.dart';
 import '../screens/cart_screen.dart';
+import '../screens/blog_detail_screen.dart';
 import '../models/course_item.dart';
 import '../models/chat_item.dart';
 import '../models/call_item.dart';
@@ -354,6 +355,14 @@ class AppRoutes {
           builder: (context) => const CartScreen(),
           settings: settings,
         );
+      case AppConstants.routeBlogDetail:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (context) => BlogDetailScreen(
+            slugName: args?['slugName'] ?? '',
+          ),
+          settings: settings,
+        );
       default:
         return MaterialPageRoute(
           builder: (context) => const LoadingScreen(),
@@ -522,6 +531,14 @@ class AppRoutes {
 
   static void navigateToCart(BuildContext context) {
     Navigator.pushNamed(context, AppConstants.routeCart);
+  }
+
+  static void navigateToBlogDetail(BuildContext context, {required String slugName}) {
+    Navigator.pushNamed(
+      context,
+      AppConstants.routeBlogDetail,
+      arguments: {'slugName': slugName},
+    );
   }
 
   static void navigateBack(BuildContext context) {

@@ -50,6 +50,12 @@ dependencies:
   # State Management
   provider: ^6.1.1
   
+  # Date formatting
+  intl: ^0.19.0
+  
+  # HTML rendering for blog content
+  flutter_html: ^3.0.0-beta.2
+  
   # Redis client for caching
   redis: ^4.0.0
   

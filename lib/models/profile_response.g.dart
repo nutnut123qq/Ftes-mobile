@@ -16,9 +16,7 @@ ProfileResponse _$ProfileResponseFromJson(Map<String, dynamic> json) =>
       role: json['role'] as String?,
       phoneNumber: json['phoneNumber'] as String?,
       address: json['address'] as String?,
-      gender: json['gender'] == null ? null : _$GenderEnumMap.entries
-          .singleWhere((e) => e.value == json['gender'], orElse: () => MapEntry(Gender.male, 'MALE'))
-          .key,
+      gender: $enumDecodeNullable(_$GenderEnumMap, json['gender']),
       dateOfBirth: json['dateOfBirth'] == null
           ? null
           : DateTime.parse(json['dateOfBirth'] as String),
@@ -64,18 +62,24 @@ Map<String, dynamic> _$ProfileResponseToJson(ProfileResponse instance) =>
       'posts': instance.posts,
     };
 
+const _$GenderEnumMap = {
+  Gender.male: 'MALE',
+  Gender.female: 'FEMALE',
+  Gender.other: 'OTHER',
+};
+
 PostResponse _$PostResponseFromJson(Map<String, dynamic> json) => PostResponse(
-      id: json['id'] as String?,
-      title: json['title'] as String?,
-      content: json['content'] as String?,
-      authorId: json['authorId'] as String?,
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
-    );
+  id: json['id'] as String?,
+  title: json['title'] as String?,
+  content: json['content'] as String?,
+  authorId: json['authorId'] as String?,
+  createdAt: json['createdAt'] == null
+      ? null
+      : DateTime.parse(json['createdAt'] as String),
+  updatedAt: json['updatedAt'] == null
+      ? null
+      : DateTime.parse(json['updatedAt'] as String),
+);
 
 Map<String, dynamic> _$PostResponseToJson(PostResponse instance) =>
     <String, dynamic>{
@@ -86,9 +90,3 @@ Map<String, dynamic> _$PostResponseToJson(PostResponse instance) =>
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
     };
-
-const _$GenderEnumMap = {
-  Gender.male: 'MALE',
-  Gender.female: 'FEMALE',
-  Gender.other: 'OTHER',
-};

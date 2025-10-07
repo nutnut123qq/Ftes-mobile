@@ -118,7 +118,7 @@ class VerifyMailOTPResponse {
   Map<String, dynamic> toJson() => _$VerifyMailOTPResponseToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(genericArgumentFactories: true)
 class ApiResponse<T> {
   final T? result;
   final MessageDTO? messageDTO;
