@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
 
 class SecurityScreen extends StatefulWidget {
@@ -34,7 +33,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             ),
             
             // Home Indicator
-            Container(
+            SizedBox(
               height: 34,
               width: double.infinity,
               child: Center(

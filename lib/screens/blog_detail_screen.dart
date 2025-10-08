@@ -8,7 +8,7 @@ import '../utils/colors.dart';
 class BlogDetailScreen extends StatefulWidget {
   final String slugName;
 
-  const BlogDetailScreen({Key? key, required this.slugName}) : super(key: key);
+  const BlogDetailScreen({super.key, required this.slugName});
 
   @override
   State<BlogDetailScreen> createState() => _BlogDetailScreenState();

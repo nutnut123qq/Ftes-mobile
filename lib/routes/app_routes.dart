@@ -17,7 +17,6 @@ import '../screens/courses_list_screen.dart';
 import '../screens/mentors_list_screen.dart';
 import '../screens/single_mentor_details_screen.dart';
 import '../screens/course_detail_screen.dart';
-import '../screens/categories_screen.dart';
 import '../screens/learning_screen.dart';
 import '../screens/quiz_screen.dart';
 import '../screens/profile_screen.dart';
@@ -36,8 +35,6 @@ import '../screens/cart_screen.dart';
 import '../screens/blog_detail_screen.dart';
 import '../models/course_item.dart';
 import '../models/chat_item.dart';
-import '../models/call_item.dart';
-import '../models/transaction_item.dart';
 import '../models/mentor_item.dart';
 import '../utils/constants.dart';
 

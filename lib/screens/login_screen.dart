@@ -336,12 +336,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
-
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Tính năng này sẽ sớm ra mắt!')),
-    );
-  }
 }
 
 class _InputField extends StatelessWidget {

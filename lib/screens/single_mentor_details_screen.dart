@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/models/course_item.dart';

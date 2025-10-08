@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/utils/constants.dart';
 import 'package:ftes/widgets/course_filter_screen.dart';
 import 'package:ftes/screens/mentors_list_screen.dart';
 import 'package:ftes/screens/course_detail_screen.dart';

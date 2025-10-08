@@ -169,7 +169,7 @@ class LetsYouInScreen extends StatelessWidget {
             ),
             
             // Home indicator
-            Container(
+            SizedBox(
               height: 34,
               child: Center(
                 child: Container(
@@ -257,14 +257,5 @@ class LetsYouInScreen extends StatelessWidget {
         );
       }
     }
-  }
-
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tính năng này sẽ sớm có mặt!'),
-        backgroundColor: AppColors.primary,
-      ),
-    );
   }
 }

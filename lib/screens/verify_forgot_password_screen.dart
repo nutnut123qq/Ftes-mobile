@@ -404,7 +404,7 @@ class _NumberPad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 297,
       height: 267,
       child: Column(

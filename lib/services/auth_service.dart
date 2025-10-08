@@ -9,6 +9,8 @@ import '../models/update_profile_request.dart';
 import '../models/profile_response.dart';
 import '../utils/api_constants.dart';
 import 'http_client.dart';
+import 'profile_service.dart';
+import 'image_service.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
@@ -22,38 +24,56 @@ class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     clientId: '957561951017-38543te6feepe3geb5sh6ae2jpgsksi4.apps.googleusercontent.com',
   );
+  final ProfileService _profileService = ProfileService();
+  final ImageService _imageService = ImageService();
 
   // Initialize the service
   void initialize() {
     _httpClient.initialize();
+    _profileService.initialize();
+    _imageService.initialize();
   }
 
   // Dispose the service
   void dispose() {
     _httpClient.dispose();
+    _profileService.dispose();
+    _imageService.dispose();
+  }
+
+  // Helper method to handle standard API responses
+  Future<T> _handleResponse<T>(
+    http.Response response,
+    T Function(Map<String, dynamic>) fromJson,
+    String errorMessage,
+  ) async {
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return fromJson(data['result']);
+    } else {
+      throw Exception('$errorMessage: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  // Helper method to handle authentication responses with token storage
+  Future<AuthenticationResponse> _handleAuthResponse(http.Response response) async {
+    final authResponse = await _handleResponse<AuthenticationResponse>(
+      response,
+      AuthenticationResponse.fromJson,
+      'Authentication failed',
+    );
+    await _httpClient.setAccessToken(authResponse.accessToken);
+    return authResponse;
   }
 
   /// Login with email and password
   Future<AuthenticationResponse> login(AuthenticationRequest request) async {
     try {
-      
       final response = await _httpClient.post(
         ApiConstants.loginEndpoint,
         body: request.toJson(),
       );
-
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final authResponse = AuthenticationResponse.fromJson(data['result']);
-        
-        // Store access token
-        await _httpClient.setAccessToken(authResponse.accessToken);
-        
-        return authResponse;
-      } else {
-        throw Exception('Login failed: ${response.statusCode} - ${response.body}');
-      }
+      return await _handleAuthResponse(response);
     } catch (e) {
       throw Exception('Login error: $e');
     }
@@ -90,17 +110,7 @@ class AuthService {
         },
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final authResponse = AuthenticationResponse.fromJson(data['result']);
-        
-        // Store access token
-        await _httpClient.setAccessToken(authResponse.accessToken);
-        
-        return authResponse;
-      } else {
-        throw Exception('Google login failed: ${response.statusCode}');
-      }
+      return await _handleAuthResponse(response);
     } catch (e) {
       throw Exception('Google login error: $e');
     }
@@ -113,18 +123,7 @@ class AuthService {
         ApiConstants.refreshTokenEndpoint,
         body: request.toJson(),
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final authResponse = AuthenticationResponse.fromJson(data['result']);
-        
-        // Store new access token
-        await _httpClient.setAccessToken(authResponse.accessToken);
-        
-        return authResponse;
-      } else {
-        throw Exception('Token refresh failed: ${response.statusCode}');
-      }
+      return await _handleAuthResponse(response);
     } catch (e) {
       throw Exception('Token refresh error: $e');
     }
@@ -232,13 +231,11 @@ class AuthService {
         ApiConstants.introspectEndpoint,
         body: request.toJson(),
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return IntrospectResponse.fromJson(data['result']);
-      } else {
-        throw Exception('Token introspection failed: ${response.statusCode}');
-      }
+      return await _handleResponse<IntrospectResponse>(
+        response,
+        IntrospectResponse.fromJson,
+        'Token introspection failed',
+      );
     } catch (e) {
       throw Exception('Token introspection error: $e');
     }
@@ -251,13 +248,11 @@ class AuthService {
         ApiConstants.verifyOtpEndpoint,
         body: request.toJson(),
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return TwoFAResponse.fromJson(data['result']);
-      } else {
-        throw Exception('OTP verification failed: ${response.statusCode}');
-      }
+      return await _handleResponse<TwoFAResponse>(
+        response,
+        TwoFAResponse.fromJson,
+        'OTP verification failed',
+      );
     } catch (e) {
       throw Exception('OTP verification error: $e');
     }
@@ -267,13 +262,11 @@ class AuthService {
   Future<TwoFAResponse> sendSecretKeyFor2FA() async {
     try {
       final response = await _httpClient.post(ApiConstants.sendSecretKeyEndpoint);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return TwoFAResponse.fromJson(data['result']);
-      } else {
-        throw Exception('Send secret key failed: ${response.statusCode}');
-      }
+      return await _handleResponse<TwoFAResponse>(
+        response,
+        TwoFAResponse.fromJson,
+        'Send secret key failed',
+      );
     } catch (e) {
       throw Exception('Send secret key error: $e');
     }
@@ -286,13 +279,11 @@ class AuthService {
         ApiConstants.verifyEmailCodeEndpoint,
         body: request.toJson(),
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return VerifyMailOTPResponse.fromJson(data['result']);
-      } else {
-        throw Exception('Email code verification failed: ${response.statusCode}');
-      }
+      return await _handleResponse<VerifyMailOTPResponse>(
+        response,
+        VerifyMailOTPResponse.fromJson,
+        'Email code verification failed',
+      );
     } catch (e) {
       throw Exception('Email code verification error: $e');
     }
@@ -305,13 +296,11 @@ class AuthService {
         ApiConstants.verifyUpdateEmailEndpoint,
         body: request.toJson(),
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return VerifyMailOTPResponse.fromJson(data['result']);
-      } else {
-        throw Exception('Update email verification failed: ${response.statusCode}');
-      }
+      return await _handleResponse<VerifyMailOTPResponse>(
+        response,
+        VerifyMailOTPResponse.fromJson,
+        'Update email verification failed',
+      );
     } catch (e) {
       throw Exception('Update email verification error: $e');
     }
@@ -488,93 +477,21 @@ class AuthService {
 
   /// Get user profile
   Future<ProfileResponse> getProfile(String userId) async {
-    try {
-      final response = await _httpClient.get('${ApiConstants.viewProfileEndpoint}/$userId');
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return ProfileResponse.fromJson(data['result']);
-      } else if (response.statusCode == 400) {
-        // Profile doesn't exist, create it first
-        await createProfile(userId);
-        // Try to get profile again
-        final retryResponse = await _httpClient.get('${ApiConstants.viewProfileEndpoint}/$userId');
-        if (retryResponse.statusCode == 200) {
-          final data = jsonDecode(retryResponse.body);
-          return ProfileResponse.fromJson(data['result']);
-        } else {
-          throw Exception('Get profile failed after creation: ${retryResponse.statusCode}');
-        }
-      } else {
-        throw Exception('Get profile failed: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Get profile error: $e');
-    }
+    return await _profileService.getProfile(userId);
   }
 
   /// Create user profile
   Future<void> createProfile(String userId) async {
-    try {
-      final response = await _httpClient.post('${ApiConstants.createProfileEndpoint}/$userId');
-      
-      if (response.statusCode != 200) {
-        throw Exception('Create profile failed: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Create profile error: $e');
-    }
+    return await _profileService.createProfile(userId);
   }
 
   /// Update user profile
   Future<ProfileResponse> updateProfile(String userId, UpdateProfileRequest request) async {
-    try {
-      
-      final response = await _httpClient.put(
-        '${ApiConstants.updateProfileEndpoint}/$userId',
-        body: request.toJson(),
-      );
-      
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return ProfileResponse.fromJson(data['result']);
-      } else {
-        throw Exception('Update profile failed: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Update profile error: $e');
-    }
+    return await _profileService.updateProfile(userId, request);
   }
 
   /// Upload image
   Future<String> uploadImage(File imageFile) async {
-    try {
-      final token = await _httpClient.getAccessToken();
-      if (token == null) {
-        throw Exception('No access token available');
-      }
-
-      final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.uploadImageEndpoint}');
-      final request = http.MultipartRequest('POST', uri);
-      
-      // Add authorization header
-      request.headers['Authorization'] = 'Bearer $token';
-      
-      // Add image file
-      request.files.add(await http.MultipartFile.fromPath('file', imageFile.path));
-      
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['result']['url'] ?? data['result']['imageUrl'] ?? '';
-      } else {
-        throw Exception('Upload image failed: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Upload image error: $e');
-    }
+    return await _imageService.uploadImage(imageFile);
   }
 }

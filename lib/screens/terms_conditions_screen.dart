@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
 
 class TermsConditionsScreen extends StatefulWidget {
@@ -30,7 +29,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
             ),
             
             // Home Indicator
-            Container(
+            SizedBox(
               height: 34,
               width: double.infinity,
               child: Center(

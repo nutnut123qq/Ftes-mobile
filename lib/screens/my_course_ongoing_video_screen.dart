@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../utils/colors.dart';
-import '../utils/text_styles.dart';
 import '../utils/constants.dart';
-import '../routes/app_routes.dart';
 
 class MyCourseOngoingVideoScreen extends StatefulWidget {
   final String lessonTitle;
@@ -13,21 +10,21 @@ class MyCourseOngoingVideoScreen extends StatefulWidget {
   final int totalTime;
 
   const MyCourseOngoingVideoScreen({
-    Key? key,
+    super.key,
     required this.lessonTitle,
     required this.courseTitle,
     required this.videoUrl,
     this.currentTime = 0,
     this.totalTime = 0,
-  }) : super(key: key);
+  });
 
   @override
   State<MyCourseOngoingVideoScreen> createState() => _MyCourseOngoingVideoScreenState();
 }
 
 class _MyCourseOngoingVideoScreenState extends State<MyCourseOngoingVideoScreen> {
-  bool _isPlaying = false;
-  double _progress = 0.22; // 22% progress (140/630)
+  final bool _isPlaying = false;
+  final double _progress = 0.22; // 22% progress (140/630)
   int _currentTime = 274; // 04:34 in seconds
   int _totalTime = 2194; // 36:34 in seconds
 
@@ -58,7 +55,7 @@ class _MyCourseOngoingVideoScreenState extends State<MyCourseOngoingVideoScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Container(
+      body: SizedBox(
         width: double.infinity,
         height: double.infinity,
         child: Stack(
@@ -169,7 +166,7 @@ class _MyCourseOngoingVideoScreenState extends State<MyCourseOngoingVideoScreen>
             Positioned(
               left: 20,
               bottom: 50,
-              child: Container(
+              child: SizedBox(
                 width: 24,
                 height: 24,
                 child: Icon(
@@ -188,7 +185,7 @@ class _MyCourseOngoingVideoScreenState extends State<MyCourseOngoingVideoScreen>
                 angle: 1.5708, // +90 degrees in radians (clockwise)
                 child: GestureDetector(
                   onTap: () => Navigator.pushNamed(context, AppConstants.routeChatMessages),
-                  child: Container(
+                  child: SizedBox(
                     width: 24,
                     height: 24,
                     child: Icon(
@@ -207,7 +204,7 @@ class _MyCourseOngoingVideoScreenState extends State<MyCourseOngoingVideoScreen>
               right: 20,
               child: GestureDetector(
                 onTap: () => Navigator.pop(context),
-                child: Container(
+                child: SizedBox(
                   width: 30,
                   height: 30,
                   child: Icon(
@@ -227,7 +224,7 @@ class _MyCourseOngoingVideoScreenState extends State<MyCourseOngoingVideoScreen>
               child: Center(
                 child: Transform.rotate(
                   angle: 1.5708, // +90 degrees in radians (clockwise)
-                  child: Container(
+                  child: SizedBox(
                     width: 200,
                     height: 30,
                     child: Text(

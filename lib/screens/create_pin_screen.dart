@@ -124,7 +124,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                   children: List.generate(6, (index) {
                     // Safety check to prevent index out of range
                     if (index >= _pinDigits.length) {
-                      return Container(width: 50, height: 60);
+                      return SizedBox(width: 50, height: 60);
                     }
                     return Container(
                       margin: EdgeInsets.only(right: index < 5 ? 6 : 0),

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/colors.dart';
-import '../utils/text_styles.dart';
 import '../utils/constants.dart';
-import '../routes/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

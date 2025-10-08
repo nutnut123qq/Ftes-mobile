@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
 import '../utils/text_styles.dart';
-import '../utils/constants.dart';
 import '../routes/app_routes.dart';
-import '../widgets/bottom_navigation_bar.dart';
 
 class MyCourseOngoingLessonsScreen extends StatefulWidget {
   final String courseTitle;
   final String courseImage;
 
   const MyCourseOngoingLessonsScreen({
-    Key? key,
+    super.key,
     required this.courseTitle,
     required this.courseImage,
-  }) : super(key: key);
+  });
 
   @override
   State<MyCourseOngoingLessonsScreen> createState() => _MyCourseOngoingLessonsScreenState();
@@ -349,7 +346,7 @@ class _MyCourseOngoingLessonsScreenState extends State<MyCourseOngoingLessonsScr
                   const SizedBox(width: 8),
                   
                   // Play/Check Icon
-                  Container(
+                  SizedBox(
                     width: 18,
                     height: 18,
                     child: Icon(
@@ -442,33 +439,6 @@ class _MyCourseOngoingLessonsScreenState extends State<MyCourseOngoingLessonsScr
           ),
         ),
       ),
-    );
-  }
-
-  void _showLessonDialog(Map<String, dynamic> lesson) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(lesson['title']),
-          content: Text('Thời lượng: ${lesson['duration']}'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Đóng'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Start lesson logic here
-              },
-              child: const Text('Bắt đầu bài học'),
-            ),
-          ],
-        );
-      },
     );
   }
 

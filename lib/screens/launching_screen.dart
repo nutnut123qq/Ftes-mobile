@@ -3,7 +3,7 @@ import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 
 class LaunchingScreen extends StatelessWidget {
-  const LaunchingScreen({Key? key}) : super(key: key);
+  const LaunchingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

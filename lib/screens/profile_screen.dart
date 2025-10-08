@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/constants.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
-import 'package:ftes/routes/app_routes.dart';
 import 'package:ftes/screens/edit_profile_screen.dart';
 import 'package:ftes/screens/notifications_screen.dart';
 import 'package:ftes/screens/security_screen.dart';
@@ -153,10 +151,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildProfileHeader(AuthProvider authProvider) {
     final user = authProvider.currentUser;
-    
-    // Debug logging
-    if (user != null) {
-    }
     
     return Column(
       children: [
@@ -349,7 +343,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Row(
           children: [
             // Icon
-            Container(
+            SizedBox(
               width: 20,
               height: 20,
               child: Icon(

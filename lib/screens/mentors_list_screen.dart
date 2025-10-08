@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/utils/constants.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/screens/single_mentor_details_screen.dart';
-import 'package:ftes/routes/app_routes.dart';
 import 'package:ftes/models/mentor_item.dart';
 
 class MentorsListScreen extends StatefulWidget {
