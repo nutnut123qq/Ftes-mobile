@@ -61,6 +61,9 @@ dependencies:
   
   # Image picker for avatar upload
   image_picker: ^1.0.4
+  
+  # WebSocket STOMP client for real-time notifications
+  stomp_dart_client: ^2.0.0
 
 dev_dependencies:
   flutter_test:

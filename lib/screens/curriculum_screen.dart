@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/routes/app_routes.dart';
 
 class CurriculumScreen extends StatefulWidget {
   const CurriculumScreen({super.key});
@@ -315,7 +314,9 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            AppRoutes.navigateToPayment(context);
+            // Navigate to cart instead of directly to payment
+            // User should add course to cart first, then checkout from cart
+            Navigator.pushNamed(context, '/cart');
           },
           borderRadius: BorderRadius.circular(30),
           child: Row(

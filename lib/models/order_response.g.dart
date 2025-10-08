@@ -32,6 +32,9 @@ Map<String, dynamic> _$OrderItemResponseToJson(OrderItemResponse instance) =>
 
 OrderResponse _$OrderResponseFromJson(Map<String, dynamic> json) =>
     OrderResponse(
+      orderId: json['orderId'] as String?,
+      qrCodeUrl: json['qrCodeUrl'] as String?,
+      description: json['description'] as String?,
       id: json['id'] as String?,
       userId: json['userId'] as String?,
       subtotal: (json['subtotal'] as num?)?.toDouble(),
@@ -52,6 +55,9 @@ OrderResponse _$OrderResponseFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$OrderResponseToJson(OrderResponse instance) =>
     <String, dynamic>{
+      'orderId': instance.orderId,
+      'qrCodeUrl': instance.qrCodeUrl,
+      'description': instance.description,
       'id': instance.id,
       'userId': instance.userId,
       'subtotal': instance.subtotal,
@@ -75,6 +81,8 @@ OrderViewResponse _$OrderViewResponseFromJson(Map<String, dynamic> json) =>
       total: (json['total'] as num?)?.toDouble(),
       status: json['status'] as String?,
       couponCode: json['couponCode'] as String?,
+      qrCode: json['qrCode'] as String?,
+      description: json['description'] as String?,
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
@@ -97,6 +105,8 @@ Map<String, dynamic> _$OrderViewResponseToJson(OrderViewResponse instance) =>
       'total': instance.total,
       'status': instance.status,
       'couponCode': instance.couponCode,
+      'qrCode': instance.qrCode,
+      'description': instance.description,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
       'items': instance.items,

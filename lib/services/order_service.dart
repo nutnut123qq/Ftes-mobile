@@ -26,12 +26,20 @@ class OrderService {
       );
 
       final resp = await _http.post(
-        '${ApiConstants.baseUrl}${ApiConstants.orderEndpoint}',
-        body: jsonEncode(request.toJson()),
+        ApiConstants.orderEndpoint,
+        body: request.toJson(),
       );
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
         final data = jsonDecode(resp.body);
+        
+        // Check if backend returned error message despite 200 status
+        if (data['success'] == false || 
+            (data['messageDTO']?['message'] != null && 
+             data['messageDTO']['message'].toString().toLowerCase().contains('failed'))) {
+          final message = data['messageDTO']?['message'] ?? 'Failed to create order';
+          throw Exception(message);
+        }
         
         // Handle response wrapping
         final resultData = data['result'] ?? data['data'] ?? data;
@@ -44,6 +52,10 @@ class OrderService {
       final message = data['messageDTO']?['message'] ?? 'Failed to create order';
       throw Exception(message);
     } catch (e) {
+      // Re-throw without wrapping if it's already an Exception with message
+      if (e is Exception) {
+        rethrow;
+      }
       throw Exception('Failed to create order: $e');
     }
   }
@@ -53,7 +65,7 @@ class OrderService {
   Future<List<OrderViewResponse>> getAllOrders() async {
     try {
       final resp = await _http.get(
-        '${ApiConstants.baseUrl}${ApiConstants.orderEndpoint}',
+        ApiConstants.orderEndpoint,
       );
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -82,9 +94,12 @@ class OrderService {
   /// Returns OrderViewResponse với thông tin chi tiết đơn hàng
   Future<OrderViewResponse> getOrderById(String orderId) async {
     try {
-      final resp = await _http.get(
-        '${ApiConstants.baseUrl}${ApiConstants.orderEndpoint}/$orderId',
-      );
+      if (orderId.isEmpty) {
+        throw Exception('Order ID cannot be empty');
+      }
+      
+      final endpoint = '${ApiConstants.orderEndpoint}/$orderId';
+      final resp = await _http.get(endpoint);
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
         final data = jsonDecode(resp.body);
@@ -107,7 +122,7 @@ class OrderService {
   Future<bool> cancelPendingOrders() async {
     try {
       final resp = await _http.delete(
-        '${ApiConstants.baseUrl}${ApiConstants.orderCancelEndpoint}',
+        ApiConstants.orderCancelEndpoint,
       );
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -171,7 +186,7 @@ class OrderService {
   Future<bool> deleteOrderByAdmin(String orderId) async {
     try {
       final resp = await _http.delete(
-        '${ApiConstants.baseUrl}${ApiConstants.orderEndpoint}/admin/$orderId',
+        '${ApiConstants.orderEndpoint}/admin/$orderId',
       );
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {

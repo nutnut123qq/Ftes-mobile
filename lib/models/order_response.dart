@@ -34,6 +34,9 @@ class OrderItemResponse {
 /// Order Response sau khi tạo order
 @JsonSerializable()
 class OrderResponse {
+  final String? orderId;
+  final String? qrCodeUrl;
+  final String? description;
   final String? id;
   final String? userId;
   final double? subtotal;
@@ -46,6 +49,9 @@ class OrderResponse {
   final List<OrderItemResponse>? items;
 
   OrderResponse({
+    this.orderId,
+    this.qrCodeUrl,
+    this.description,
     this.id,
     this.userId,
     this.subtotal,
@@ -76,6 +82,8 @@ class OrderViewResponse {
   final double? total;
   final String? status;
   final String? couponCode;
+  final String? qrCode;  // QR code URL from backend
+  final String? description;  // Payment description
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final List<OrderItemResponse>? items;
@@ -90,6 +98,8 @@ class OrderViewResponse {
     this.total,
     this.status,
     this.couponCode,
+    this.qrCode,
+    this.description,
     this.createdAt,
     this.updatedAt,
     this.items,

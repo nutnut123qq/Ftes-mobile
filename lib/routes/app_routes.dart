@@ -125,7 +125,14 @@ class AppRoutes {
     AppConstants.routeCurriculum: (context) => const CurriculumScreen(),
     AppConstants.routeReviews: (context) => const ReviewsScreen(),
     AppConstants.routeWriteReview: (context) => const WriteReviewScreen(),
-    AppConstants.routePayment: (context) => const PaymentScreen(),
+    AppConstants.routePayment: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+      return PaymentScreen(
+        orderId: args?['orderId'] ?? '',
+        qrCodeUrl: args?['qrCodeUrl'],
+        description: args?['description'],
+      );
+    },
     AppConstants.routeEnrollSuccess: (context) => const EnrollSuccessScreen(),
     AppConstants.routeMyCourses: (context) => const MyCoursesScreen(),
     AppConstants.routeMyCourseOngoingLessons: (context) {
@@ -348,8 +355,13 @@ class AppRoutes {
           settings: settings,
         );
       case AppConstants.routePayment:
+        final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-          builder: (context) => const PaymentScreen(),
+          builder: (context) => PaymentScreen(
+            orderId: args?['orderId'] ?? '',
+            qrCodeUrl: args?['qrCodeUrl'],
+            description: args?['description'],
+          ),
           settings: settings,
         );
       case AppConstants.routeEnrollSuccess:
@@ -511,8 +523,21 @@ class AppRoutes {
     Navigator.pushNamed(context, AppConstants.routeWriteReview);
   }
 
-  static void navigateToPayment(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routePayment);
+  static void navigateToPayment(
+    BuildContext context, {
+    required String orderId,
+    String? qrCodeUrl,
+    String? description,
+  }) {
+    Navigator.pushNamed(
+      context,
+      AppConstants.routePayment,
+      arguments: {
+        'orderId': orderId,
+        'qrCodeUrl': qrCodeUrl,
+        'description': description,
+      },
+    );
   }
 
   static void navigateToEnrollSuccess(BuildContext context) {

@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/providers/cart_provider.dart';
 import 'package:ftes/models/cart_response.dart';
+import 'package:ftes/services/order_service.dart';
+import 'package:ftes/routes/app_routes.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 
 class CartScreen extends StatefulWidget {
@@ -14,6 +16,8 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final TextEditingController _couponController = TextEditingController();
+  final OrderService _orderService = OrderService();
+  bool _isCreatingOrder = false;
 
   @override
   void initState() {
@@ -460,22 +464,32 @@ class _CartScreenState extends State<CartScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _proceedToCheckout,
+              onPressed: _isCreatingOrder ? null : _proceedToCheckout,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0961F5),
+                disabledBackgroundColor: Colors.grey,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Text(
-                'Tiến hành thanh toán',
-                style: AppTextStyles.body1.copyWith(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: _isCreatingOrder
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      'Tiến hành thanh toán',
+                      style: AppTextStyles.body1.copyWith(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -605,8 +619,84 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  void _proceedToCheckout() {
-    // Navigate to payment screen
-    Navigator.pushNamed(context, '/payment');
+  Future<void> _proceedToCheckout() async {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final cartItems = cartProvider.cartItems;
+    
+    if (cartItems.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Giỏ hàng trống')),
+      );
+      return;
+    }
+    
+    setState(() {
+      _isCreatingOrder = true;
+    });
+    
+    try {
+      // Get course IDs from cart
+      final courseIds = cartItems
+          .map((item) => item.courseId)
+          .where((id) => id != null)
+          .cast<String>()
+          .toList();
+      
+      // Get coupon code if entered
+      final couponCode = _couponController.text.trim().isNotEmpty
+          ? _couponController.text.trim()
+          : null;
+      
+      // Create order
+      final orderResponse = await _orderService.createOrder(
+        courseIds: courseIds,
+        couponCode: couponCode,
+      );
+      
+      setState(() {
+        _isCreatingOrder = false;
+      });
+      
+      // Navigate to payment screen with orderId and qrCodeUrl
+      if (orderResponse.orderId != null && orderResponse.orderId!.isNotEmpty) {
+        if (!mounted) return;
+        AppRoutes.navigateToPayment(
+          context, 
+          orderId: orderResponse.orderId!,
+          qrCodeUrl: orderResponse.qrCodeUrl,
+          description: orderResponse.description,
+        );
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không thể tạo đơn hàng. Vui lòng thử lại.')),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isCreatingOrder = false;
+      });
+      
+      if (!mounted) return;
+      
+      // Extract clean error message
+      String errorMessage = 'Không thể tạo đơn hàng. Vui lòng thử lại.';
+      if (e.toString().contains('course bought')) {
+        errorMessage = 'Bạn đã mua khóa học này rồi!';
+      } else {
+        final match = RegExp(r'Exception: (.+)$').firstMatch(e.toString());
+        if (match != null) {
+          errorMessage = match.group(1) ?? errorMessage;
+        }
+      }
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 }

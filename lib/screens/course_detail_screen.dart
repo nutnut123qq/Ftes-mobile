@@ -4,7 +4,6 @@ import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/models/course_item.dart';
 import 'package:ftes/models/course_response.dart';
 import 'package:ftes/providers/course_provider.dart';
-import 'package:ftes/routes/app_routes.dart';
 
 class CourseDetailScreen extends StatefulWidget {
   final CourseItem course;
@@ -1157,7 +1156,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   Widget _buildEnrollButton() {
     return GestureDetector(
       onTap: () {
-        AppRoutes.navigateToPayment(context);
+        // Navigate to cart instead of directly to payment
+        // User should add course to cart first, then checkout from cart
+        Navigator.pushNamed(context, '/cart');
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 39, vertical: 20),
