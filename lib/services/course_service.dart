@@ -66,10 +66,36 @@ class CourseService {
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final data = jsonDecode(resp.body);
-      return CourseResponse.fromJson(data);
+      
+      // Handle different response formats
+      Map<String, dynamic> courseData;
+      if (data is Map<String, dynamic>) {
+        // Check if response is wrapped (e.g., {result: {...}}, {data: {...}})
+        if (data.containsKey('result') && data['result'] is Map) {
+          courseData = data['result'] as Map<String, dynamic>;
+        } else if (data.containsKey('data') && data['data'] is Map) {
+          courseData = data['data'] as Map<String, dynamic>;
+        } else {
+          courseData = data;
+        }
+      } else {
+        throw Exception('Unexpected response format: ${data.runtimeType}');
+      }
+      
+      return CourseResponse.fromJson(courseData);
     }
 
-    throw Exception('Failed to load course: ${resp.statusCode} ${resp.body}');
+    // Try to parse error message from API response
+    try {
+      final errorData = jsonDecode(resp.body);
+      final message = errorData['messageDTO']?['message'] ?? 
+                     errorData['message'] ?? 
+                     'Course not found';
+      throw Exception(message);
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Failed to load course: ${resp.statusCode}');
+    }
   }
 
   /// Search courses
@@ -118,28 +144,48 @@ class CourseService {
   /// Get latest courses
   /// [limit] - Số lượng courses cần lấy (default: 10)
   Future<List<CourseResponse>> getLatestCourses({int limit = 10}) async {
+    // Use /api/courses with pageSize and sort by createdAt desc
     final queryParams = {
-      'limit': limit.toString(),
+      'pageNumber': '1',
+      'pageSize': limit.toString(),
+      'sortField': 'createdAt',
+      'sortOrder': 'desc',
     };
 
-    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.latestCoursesEndpoint}')
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.coursesEndpoint}')
         .replace(queryParameters: queryParams);
 
     final resp = await _http.get(uri.toString());
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final data = jsonDecode(resp.body);
+      
+      // Handle PagingCourseResponse format
+      if (data is Map) {
+        // Check for result.data (common backend pattern)
+        if (data['result'] != null && data['result']['data'] is List) {
+          final list = data['result']['data'] as List;
+          return list.map((item) => CourseResponse.fromJson(item)).toList();
+        }
+        // Check for direct data field
+        if (data['data'] is List) {
+          final list = data['data'] as List;
+          return list.map((item) => CourseResponse.fromJson(item)).toList();
+        }
+        // Check for result as list
+        if (data['result'] is List) {
+          final list = data['result'] as List;
+          return list.map((item) => CourseResponse.fromJson(item)).toList();
+        }
+      }
+      
+      // Handle direct list
       if (data is List) {
         return data.map((item) => CourseResponse.fromJson(item)).toList();
       }
-      if (data is Map && data['result'] is List) {
-        return (data['result'] as List)
-            .map((item) => CourseResponse.fromJson(item))
-            .toList();
-      }
     }
 
-    throw Exception('Failed to load latest courses: ${resp.statusCode} ${resp.body}');
+    throw Exception('Failed to load latest courses: ${resp.statusCode}');
   }
 
   /// Get featured courses
@@ -200,41 +246,19 @@ class CourseService {
   }
 
   /// Get parts (sections) of a course
+  /// @deprecated Parts are now returned nested in getCourseBySlug/getCourseById
+  /// Use selectedCourse.parts instead
   Future<List<PartResponse>> getCourseParts(String courseId) async {
-    final resp = await _http.get('${ApiConstants.coursePartsEndpoint}/$courseId');
-
-    if (resp.statusCode >= 200 && resp.statusCode < 300) {
-      final data = jsonDecode(resp.body);
-      if (data is List) {
-        return data.map((item) => PartResponse.fromJson(item)).toList();
-      }
-      if (data is Map && data['result'] is List) {
-        return (data['result'] as List)
-            .map((item) => PartResponse.fromJson(item))
-            .toList();
-      }
-    }
-
-    throw Exception('Failed to load course parts: ${resp.statusCode} ${resp.body}');
+    // Return empty list to maintain compatibility with legacy code
+    return [];
   }
 
   /// Get lessons of a part
+  /// @deprecated Lessons are now returned nested in parts within Course response
+  /// Use selectedCourse.parts[].lessons instead
   Future<List<LessonResponse>> getPartLessons(String partId) async {
-    final resp = await _http.get('${ApiConstants.partLessonsEndpoint}/$partId');
-
-    if (resp.statusCode >= 200 && resp.statusCode < 300) {
-      final data = jsonDecode(resp.body);
-      if (data is List) {
-        return data.map((item) => LessonResponse.fromJson(item)).toList();
-      }
-      if (data is Map && data['result'] is List) {
-        return (data['result'] as List)
-            .map((item) => LessonResponse.fromJson(item))
-            .toList();
-      }
-    }
-
-    throw Exception('Failed to load part lessons: ${resp.statusCode} ${resp.body}');
+    // Return empty list to maintain compatibility with legacy code
+    return [];
   }
 
   /// Get lesson by ID

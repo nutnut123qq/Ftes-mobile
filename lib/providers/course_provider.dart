@@ -11,6 +11,10 @@ class CourseProvider extends ChangeNotifier {
   bool _isLoadingCourses = false;
   String? _errorMessage;
 
+  // State cho latest courses (Home screen)
+  List<CourseResponse> _latestCourses = [];
+  bool _isLoadingLatestCourses = false;
+
   // Pagination state
   int _currentPage = 1;
   int _totalPages = 1;
@@ -39,6 +43,10 @@ class CourseProvider extends ChangeNotifier {
   int get currentPage => _currentPage;
   int get totalPages => _totalPages;
   bool get hasMore => _hasMore;
+  
+  // Latest courses getters (for Home screen)
+  List<CourseResponse> get latestCourses => _latestCourses;
+  bool get isLoadingLatestCourses => _isLoadingLatestCourses;
   
   CourseResponse? get selectedCourse => _selectedCourse;
   List<PartResponse> get courseParts => _courseParts;
@@ -209,22 +217,27 @@ class CourseProvider extends ChangeNotifier {
   /// Get latest courses
   Future<void> fetchLatestCourses({int limit = 10}) async {
     try {
-      _isLoadingCourses = true;
+      _isLoadingLatestCourses = true;
       _errorMessage = null;
       notifyListeners();
 
-      _courses = await _courseService.getLatestCourses(limit: limit);
+      // Try featured courses first (known to work)
+      final allCourses = await _courseService.getFeaturedCourses();
       
-      // Latest courses don't have pagination, so disable load more
-      _currentPage = 1;
-      _totalPages = 1;
-      _hasMore = false;
+      // Take only the requested limit and sort by createdAt
+      allCourses.sort((a, b) {
+        final aDate = a.createdAt ?? DateTime(2000);
+        final bDate = b.createdAt ?? DateTime(2000);
+        return bDate.compareTo(aDate); // Descending order (newest first)
+      });
+      
+      _latestCourses = allCourses.take(limit).toList();
 
-      _isLoadingCourses = false;
+      _isLoadingLatestCourses = false;
       notifyListeners();
     } catch (e) {
       _errorMessage = e.toString();
-      _isLoadingCourses = false;
+      _isLoadingLatestCourses = false;
       notifyListeners();
     }
   }

@@ -7,6 +7,7 @@ import 'providers/auth_provider.dart';
 import 'providers/app_data_provider.dart';
 import 'providers/blog_provider.dart';
 import 'providers/course_provider.dart';
+import 'providers/cart_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => AppDataProvider()),
         ChangeNotifierProvider(create: (context) => BlogProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => CourseProvider()),
+        ChangeNotifierProvider(create: (context) => CartProvider()..initializeCart()),
       ],
       child: MaterialApp(
         title: AppConstants.appName,

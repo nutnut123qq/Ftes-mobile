@@ -61,6 +61,15 @@ class ApiConstants {
   static const String blogsSearchEndpoint = '/api/blogs/search';
   static const String blogsInteractiveEndpoint = '/api/blogs/interactive';
   
+  // Cart endpoints
+  static const String cartEndpoint = '/api/cart';
+  static const String cartCountEndpoint = '/api/cart/count';
+  static const String cartTotalEndpoint = '/api/cart/total';
+  
+  // Order endpoints
+  static const String orderEndpoint = '/api/order';
+  static const String orderCancelEndpoint = '/api/order/cancel';
+  
   // Headers
   static const Map<String, String> defaultHeaders = {
     'Content-Type': 'application/json',

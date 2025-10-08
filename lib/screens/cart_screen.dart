@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ftes/utils/text_styles.dart';
+import 'package:ftes/providers/cart_provider.dart';
+import 'package:ftes/models/cart_response.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 
 class CartScreen extends StatefulWidget {
@@ -10,69 +13,67 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  // Sample cart items data
-  final List<CartItem> _cartItems = [
-    CartItem(
-      id: '1',
-      title: 'Thiết kế UI/UX',
-      instructor: 'Alex Maxwell',
-      price: 499,
-      originalPrice: 799,
-      imageUrl: 'https://via.placeholder.com/80x80/000000/FFFFFF?text=UI',
-      rating: 4.2,
-      students: 7830,
-    ),
-    CartItem(
-      id: '2',
-      title: 'Thiết kế đồ họa',
-      instructor: 'Sarah Johnson',
-      price: 399,
-      originalPrice: 599,
-      imageUrl: 'https://via.placeholder.com/80x80/000000/FFFFFF?text=GD',
-      rating: 4.5,
-      students: 5420,
-    ),
-    CartItem(
-      id: '3',
-      title: 'Phát triển Web',
-      instructor: 'Mike Chen',
-      price: 599,
-      originalPrice: 899,
-      imageUrl: 'https://via.placeholder.com/80x80/000000/FFFFFF?text=WD',
-      rating: 4.8,
-      students: 12000,
-    ),
-  ];
+  final TextEditingController _couponController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Load cart data when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CartProvider>(context, listen: false).refreshCart();
+    });
+  }
+
+  @override
+  void dispose() {
+    _couponController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9FF),
       body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
+        child: Consumer<CartProvider>(
+          builder: (context, cartProvider, child) {
+            final cartItems = cartProvider.cartItems;
+            final isLoading = cartProvider.isLoading;
             
-            // Header
-            _buildHeader(),
-            
-            const SizedBox(height: 20),
-            
-            // Cart Items
-            Expanded(
-              child: _cartItems.isEmpty ? _buildEmptyCart() : _buildCartItems(),
-            ),
-            
-            // Checkout Section
-            if (_cartItems.isNotEmpty) _buildCheckoutSection(),
-          ],
+            return Column(
+              children: [
+                const SizedBox(height: 20),
+                
+                // Header
+                _buildHeader(cartItems.isNotEmpty),
+                
+                const SizedBox(height: 20),
+                
+                // Cart Items or Loading
+                Expanded(
+                  child: isLoading && cartItems.isEmpty
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF0961F5),
+                          ),
+                        )
+                      : cartItems.isEmpty
+                          ? _buildEmptyCart()
+                          : _buildCartItems(cartItems),
+                ),
+                
+                // Checkout Section
+                if (cartItems.isNotEmpty) _buildCheckoutSection(cartProvider),
+              ],
+            );
+          },
         ),
       ),
       bottomNavigationBar: const AppBottomNavigationBar(selectedIndex: 2),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool hasItems) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 35),
       child: Row(
@@ -110,7 +111,7 @@ class _CartScreenState extends State<CartScreen> {
             ),
           ),
           const Spacer(),
-          if (_cartItems.isNotEmpty)
+          if (hasItems)
             GestureDetector(
               onTap: _clearCart,
               child: Container(
@@ -200,18 +201,23 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartItems() {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 35),
-      itemCount: _cartItems.length,
-      itemBuilder: (context, index) {
-        final item = _cartItems[index];
-        return _buildCartItem(item, index);
+  Widget _buildCartItems(List<CartItemResponse> cartItems) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        await Provider.of<CartProvider>(context, listen: false).refreshCart();
       },
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 35),
+        itemCount: cartItems.length,
+        itemBuilder: (context, index) {
+          final item = cartItems[index];
+          return _buildCartItem(item);
+        },
+      ),
     );
   }
 
-  Widget _buildCartItem(CartItem item, int index) {
+  Widget _buildCartItem(CartItemResponse item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -229,17 +235,43 @@ class _CartScreenState extends State<CartScreen> {
       child: Row(
         children: [
           // Course Image
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8F1FF),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.play_circle_outline,
-              color: Color(0xFF0961F5),
-              size: 40,
+          GestureDetector(
+            onTap: () {
+              if (item.courseSlug != null) {
+                Navigator.pushNamed(
+                  context,
+                  '/course-detail',
+                  arguments: item.courseSlug,
+                );
+              }
+            },
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F1FF),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: item.courseImage != null && item.courseImage!.isNotEmpty
+                    ? Image.network(
+                        item.courseImage!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.play_circle_outline,
+                            color: Color(0xFF0961F5),
+                            size: 40,
+                          );
+                        },
+                      )
+                    : const Icon(
+                        Icons.play_circle_outline,
+                        color: Color(0xFF0961F5),
+                        size: 40,
+                      ),
+              ),
             ),
           ),
           
@@ -251,7 +283,7 @@ class _CartScreenState extends State<CartScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.title,
+                  item.courseTitle ?? 'Untitled Course',
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFF202244),
                     fontSize: 16,
@@ -261,64 +293,27 @@ class _CartScreenState extends State<CartScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  'bởi ${item.instructor}',
-                  style: AppTextStyles.body1.copyWith(
-                    color: const Color(0xFF545454),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                
+                // Instructor name
+                if (item.instructorName != null)
+                  Text(
+                    'Giảng viên: ${item.instructorName}',
+                    style: AppTextStyles.body1.copyWith(
+                      color: const Color(0xFF545454),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.star,
-                      color: Colors.amber,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${item.rating}',
-                      style: AppTextStyles.body1.copyWith(
-                        color: const Color(0xFF202244),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '(${item.students} học viên)',
-                      style: AppTextStyles.body1.copyWith(
-                        color: const Color(0xFF545454),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      '₹${item.price}',
-                      style: AppTextStyles.body1.copyWith(
-                        color: const Color(0xFF0961F5),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '₹${item.originalPrice}',
-                      style: AppTextStyles.body1.copyWith(
-                        color: const Color(0xFF545454),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        decoration: TextDecoration.lineThrough,
-                      ),
-                    ),
-                  ],
+                
+                // Price section
+                Text(
+                  '\$${item.finalPrice.toStringAsFixed(0)}',
+                  style: AppTextStyles.body1.copyWith(
+                    color: const Color(0xFF0961F5),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),
@@ -326,7 +321,7 @@ class _CartScreenState extends State<CartScreen> {
           
           // Remove Button
           GestureDetector(
-            onTap: () => _removeItem(index),
+            onTap: () => _removeItem(item),
             child: Container(
               width: 32,
               height: 32,
@@ -346,10 +341,13 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCheckoutSection() {
-    final totalPrice = _cartItems.fold(0, (sum, item) => sum + item.price);
-    final originalTotal = _cartItems.fold(0, (sum, item) => sum + item.originalPrice);
-    final savings = originalTotal - totalPrice;
+  Widget _buildCheckoutSection(CartProvider cartProvider) {
+    final cartItems = cartProvider.cartItems;
+    final cartTotal = cartProvider.cartTotal;
+    
+    // Calculate totals from cart items if cartTotal is not available
+    final totalPrice = cartTotal?.total ?? 
+        cartItems.fold<double>(0.0, (sum, item) => sum + item.finalPrice);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -369,12 +367,71 @@ class _CartScreenState extends State<CartScreen> {
       ),
       child: Column(
         children: [
+          // Coupon Code Input
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _couponController,
+                  decoration: InputDecoration(
+                    hintText: 'Nhập mã giảm giá',
+                    hintStyle: AppTextStyles.body1.copyWith(
+                      color: const Color(0xFFB4BDC4),
+                      fontSize: 14,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE8F1FF)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE8F1FF)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF0961F5)),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed: () {
+                  if (_couponController.text.trim().isNotEmpty) {
+                    _applyCoupon(_couponController.text.trim());
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0961F5),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Áp dụng',
+                  style: AppTextStyles.body1.copyWith(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 16),
+          
           // Price Summary
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Tổng cộng (${_cartItems.length} mục)',
+                'Tổng cộng (${cartItems.length} mục)',
                 style: AppTextStyles.body1.copyWith(
                   color: const Color(0xFF202244),
                   fontSize: 16,
@@ -385,22 +442,13 @@ class _CartScreenState extends State<CartScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '₹$totalPrice',
+                    '\$${totalPrice.toStringAsFixed(0)}',
                     style: AppTextStyles.body1.copyWith(
                       color: const Color(0xFF0961F5),
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  if (savings > 0)
-                    Text(
-                      'Bạn tiết kiệm ₹$savings',
-                      style: AppTextStyles.body1.copyWith(
-                        color: Colors.green,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                 ],
               ),
             ],
@@ -435,10 +483,56 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  void _removeItem(int index) {
-    setState(() {
-      _cartItems.removeAt(index);
-    });
+  void _applyCoupon(String couponCode) async {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    await cartProvider.loadCartTotal(couponCode: couponCode);
+    
+    if (cartProvider.errorMessage != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(cartProvider.errorMessage!),
+            backgroundColor: const Color(0xFFF44336),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã áp dụng mã giảm giá'),
+            backgroundColor: Color(0xFF4CAF50),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  void _removeItem(CartItemResponse item) async {
+    if (item.id == null) return;
+    
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final success = await cartProvider.removeFromCart(item.id!);
+    
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã xóa "${item.courseTitle}" khỏi giỏ hàng'),
+          backgroundColor: const Color(0xFF4CAF50),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(cartProvider.errorMessage ?? 'Không thể xóa khóa học'),
+          backgroundColor: const Color(0xFFF44336),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _clearCart() {
@@ -474,11 +568,28 @@ class _CartScreenState extends State<CartScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              setState(() {
-                _cartItems.clear();
-              });
+              final cartProvider = Provider.of<CartProvider>(context, listen: false);
+              final success = await cartProvider.clearCart();
+              
+              if (success && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Đã xóa tất cả khóa học khỏi giỏ hàng'),
+                    backgroundColor: Color(0xFF4CAF50),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              } else if (!success && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(cartProvider.errorMessage ?? 'Không thể xóa giỏ hàng'),
+                    backgroundColor: const Color(0xFFF44336),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
             },
             child: Text(
               'Xóa',
@@ -498,26 +609,4 @@ class _CartScreenState extends State<CartScreen> {
     // Navigate to payment screen
     Navigator.pushNamed(context, '/payment');
   }
-}
-
-class CartItem {
-  final String id;
-  final String title;
-  final String instructor;
-  final int price;
-  final int originalPrice;
-  final String imageUrl;
-  final double rating;
-  final int students;
-
-  CartItem({
-    required this.id,
-    required this.title,
-    required this.instructor,
-    required this.price,
-    required this.originalPrice,
-    required this.imageUrl,
-    required this.rating,
-    required this.students,
-  });
 }

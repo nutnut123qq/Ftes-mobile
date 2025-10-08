@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/models/course_response.dart';
 import 'package:ftes/providers/course_provider.dart';
+import 'package:ftes/providers/cart_provider.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/routes/app_routes.dart';
 
@@ -17,7 +18,6 @@ class _PopularCoursesScreenState extends State<PopularCoursesScreen> {
   int _selectedCategoryIndex = 0;
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  Set<String>? _cartItems; // Track which courses are in cart
   final List<String> _categories = [
     'Tất cả',
     'Thiết kế đồ họa',
@@ -504,34 +504,48 @@ class _PopularCoursesScreenState extends State<PopularCoursesScreen> {
           Positioned(
             top: 8,
             right: 8,
-            child: GestureDetector(
-              onTap: () {
-                _toggleCartForCourse(course);
-              },
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: ((course.id?.isNotEmpty ?? false) && (_cartItems?.contains(course.id ?? '') ?? false))
-                      ? const Color(0xFF4CAF50) // Green when in cart
-                      : const Color(0xFF0961F5), // Blue when not in cart
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+            child: Consumer<CartProvider>(
+              builder: (context, cartProvider, child) {
+                final isInCart = cartProvider.isCourseInCart(course.id ?? '');
+                final isAdding = cartProvider.isAddingToCart;
+                
+                return GestureDetector(
+                  onTap: isAdding ? null : () => _toggleCartForCourse(course),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isInCart
+                          ? const Color(0xFF4CAF50) // Green when in cart
+                          : const Color(0xFF0961F5), // Blue when not in cart
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Icon(
-                  ((course.id?.isNotEmpty ?? false) && (_cartItems?.contains(course.id ?? '') ?? false))
-                      ? Icons.check // Check mark when in cart
-                      : Icons.add_shopping_cart, // Cart icon when not in cart
-                  color: Colors.white,
-                  size: 16,
-                ),
-              ),
+                    child: isAdding
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Icon(
+                            isInCart
+                                ? Icons.check // Check mark when in cart
+                                : Icons.add_shopping_cart, // Cart icon when not in cart
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -539,7 +553,7 @@ class _PopularCoursesScreenState extends State<PopularCoursesScreen> {
     );
   }
 
-  void _toggleCartForCourse(CourseResponse course) {
+  void _toggleCartForCourse(CourseResponse course) async {
     try {
       final courseId = course.id ?? '';
       if (courseId.isEmpty) {
@@ -553,25 +567,39 @@ class _PopularCoursesScreenState extends State<PopularCoursesScreen> {
         return;
       }
       
-      setState(() {
-        _cartItems ??= <String>{};
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      final isInCart = cartProvider.isCourseInCart(courseId);
+      
+      if (isInCart) {
+        // Find cart item by courseId and remove it
+        final cartItem = cartProvider.cartItems.firstWhere(
+          (item) => item.courseId == courseId,
+          orElse: () => throw Exception('Cart item not found'),
+        );
         
-        if (_cartItems!.contains(courseId)) {
-          _cartItems!.remove(courseId);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Đã xóa "${course.title}" khỏi giỏ hàng'),
-              backgroundColor: const Color(0xFFF44336),
-              duration: const Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+        if (cartItem.id != null) {
+          final success = await cartProvider.removeFromCart(cartItem.id!);
+          
+          if (success && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Đã xóa "${course.title}" khỏi giỏ hàng'),
+                backgroundColor: const Color(0xFFF44336),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                margin: const EdgeInsets.all(16),
               ),
-              margin: const EdgeInsets.all(16),
-            ),
-          );
-        } else {
-          _cartItems!.add(courseId);
+            );
+          }
+        }
+      } else {
+        // Add to cart
+        final success = await cartProvider.addToCart(courseId);
+        
+        if (success && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Đã thêm "${course.title}" vào giỏ hàng'),
@@ -584,16 +612,26 @@ class _PopularCoursesScreenState extends State<PopularCoursesScreen> {
               margin: const EdgeInsets.all(16),
             ),
           );
+        } else if (!success && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(cartProvider.errorMessage ?? 'Không thể thêm vào giỏ hàng'),
+              backgroundColor: const Color(0xFFF44336),
+              duration: const Duration(seconds: 2),
+            ),
+          );
         }
-      });
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Có lỗi xảy ra, vui lòng thử lại'),
-          backgroundColor: Color(0xFFF44336),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Có lỗi xảy ra: ${e.toString()}'),
+            backgroundColor: const Color(0xFFF44336),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 

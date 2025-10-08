@@ -11,18 +11,19 @@ CourseResponse _$CourseResponseFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String?,
       title: json['title'] as String?,
       description: json['description'] as String?,
-      image: json['image'] as String?,
-      price: (json['price'] as num?)?.toDouble(),
+      image: json['imageHeader'] as String?,
+      price: (json['totalPrice'] as num?)?.toDouble(),
+      salePrice: (json['salePrice'] as num?)?.toDouble(),
       slugName: json['slugName'] as String?,
       categoryName: json['categoryName'] as String?,
       level: json['level'] as String?,
       language: json['language'] as String?,
       duration: (json['duration'] as num?)?.toInt(),
-      instructorId: json['instructorId'] as String?,
+      instructorId: json['userId'] as String?,
       instructorName: json['instructorName'] as String?,
       instructorAvatar: json['instructorAvatar'] as String?,
-      totalStudents: (json['totalStudents'] as num?)?.toInt(),
-      rating: (json['rating'] as num?)?.toDouble(),
+      totalStudents: (json['totalUser'] as num?)?.toInt(),
+      rating: (json['avgStar'] as num?)?.toDouble(),
       totalReviews: (json['totalReviews'] as num?)?.toInt(),
       isFeatured: json['isFeatured'] as bool?,
       isPublished: json['isPublished'] as bool?,
@@ -32,6 +33,14 @@ CourseResponse _$CourseResponseFromJson(Map<String, dynamic> json) =>
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
+      courseCode: json['courseCode'] as String?,
+      term: json['term'] as String?,
+      contentCourse: json['contentCourse'] as String?,
+      infoCourse: json['infoCourse'] as Map<String, dynamic>?,
+      parts: (json['parts'] as List<dynamic>?)
+          ?.map((e) => PartResponse.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      exercises: json['exercises'] as List<dynamic>?,
     );
 
 Map<String, dynamic> _$CourseResponseToJson(CourseResponse instance) =>
@@ -39,23 +48,30 @@ Map<String, dynamic> _$CourseResponseToJson(CourseResponse instance) =>
       'id': instance.id,
       'title': instance.title,
       'description': instance.description,
-      'image': instance.image,
-      'price': instance.price,
+      'imageHeader': instance.image,
+      'totalPrice': instance.price,
+      'salePrice': instance.salePrice,
       'slugName': instance.slugName,
       'categoryName': instance.categoryName,
       'level': instance.level,
       'language': instance.language,
       'duration': instance.duration,
-      'instructorId': instance.instructorId,
+      'userId': instance.instructorId,
       'instructorName': instance.instructorName,
       'instructorAvatar': instance.instructorAvatar,
-      'totalStudents': instance.totalStudents,
-      'rating': instance.rating,
+      'totalUser': instance.totalStudents,
+      'avgStar': instance.rating,
       'totalReviews': instance.totalReviews,
       'isFeatured': instance.isFeatured,
       'isPublished': instance.isPublished,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
+      'courseCode': instance.courseCode,
+      'term': instance.term,
+      'contentCourse': instance.contentCourse,
+      'infoCourse': instance.infoCourse,
+      'parts': instance.parts?.map((e) => e.toJson()).toList(),
+      'exercises': instance.exercises,
     };
 
 PagingCourseResponse _$PagingCourseResponseFromJson(
@@ -83,9 +99,9 @@ Map<String, dynamic> _$PagingCourseResponseToJson(
 PartResponse _$PartResponseFromJson(Map<String, dynamic> json) => PartResponse(
   id: json['id'] as String?,
   courseId: json['courseId'] as String?,
-  title: json['title'] as String?,
+  title: json['name'] as String?,
   description: json['description'] as String?,
-  orderIndex: (json['orderIndex'] as num?)?.toInt(),
+  orderIndex: (json['order'] as num?)?.toInt(),
   totalLessons: (json['totalLessons'] as num?)?.toInt(),
   totalDuration: (json['totalDuration'] as num?)?.toInt(),
   createdAt: json['createdAt'] == null
@@ -94,19 +110,25 @@ PartResponse _$PartResponseFromJson(Map<String, dynamic> json) => PartResponse(
   updatedAt: json['updatedAt'] == null
       ? null
       : DateTime.parse(json['updatedAt'] as String),
+  lessons: (json['lessons'] as List<dynamic>?)
+      ?.map((e) => LessonResponse.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  exercises: json['exercises'] as List<dynamic>?,
 );
 
 Map<String, dynamic> _$PartResponseToJson(PartResponse instance) =>
     <String, dynamic>{
       'id': instance.id,
       'courseId': instance.courseId,
-      'title': instance.title,
+      'name': instance.title,
       'description': instance.description,
-      'orderIndex': instance.orderIndex,
+      'order': instance.orderIndex,
       'totalLessons': instance.totalLessons,
       'totalDuration': instance.totalDuration,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
+      'lessons': instance.lessons?.map((e) => e.toJson()).toList(),
+      'exercises': instance.exercises,
     };
 
 LessonResponse _$LessonResponseFromJson(Map<String, dynamic> json) =>
@@ -114,13 +136,13 @@ LessonResponse _$LessonResponseFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String?,
       partId: json['partId'] as String?,
       courseId: json['courseId'] as String?,
-      title: json['title'] as String?,
+      title: json['name'] as String?,
       description: json['description'] as String?,
       content: json['content'] as String?,
-      videoUrl: json['videoUrl'] as String?,
+      videoUrl: json['video'] as String?,
       documentUrl: json['documentUrl'] as String?,
       duration: (json['duration'] as num?)?.toInt(),
-      orderIndex: (json['orderIndex'] as num?)?.toInt(),
+      orderIndex: (json['order'] as num?)?.toInt(),
       isFree: json['isFree'] as bool?,
       isCompleted: json['isCompleted'] as bool?,
       createdAt: json['createdAt'] == null
@@ -129,6 +151,7 @@ LessonResponse _$LessonResponseFromJson(Map<String, dynamic> json) =>
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
+      type: json['type'] as String?,
     );
 
 Map<String, dynamic> _$LessonResponseToJson(LessonResponse instance) =>
@@ -136,17 +159,18 @@ Map<String, dynamic> _$LessonResponseToJson(LessonResponse instance) =>
       'id': instance.id,
       'partId': instance.partId,
       'courseId': instance.courseId,
-      'title': instance.title,
+      'name': instance.title,
       'description': instance.description,
       'content': instance.content,
-      'videoUrl': instance.videoUrl,
+      'video': instance.videoUrl,
       'documentUrl': instance.documentUrl,
       'duration': instance.duration,
-      'orderIndex': instance.orderIndex,
+      'order': instance.orderIndex,
       'isFree': instance.isFree,
       'isCompleted': instance.isCompleted,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
+      'type': instance.type,
     };
 
 UserCourseResponse _$UserCourseResponseFromJson(Map<String, dynamic> json) =>

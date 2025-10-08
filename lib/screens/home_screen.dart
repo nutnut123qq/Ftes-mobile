@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/routes/app_routes.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/screens/notification_list_screen.dart';
+import 'package:ftes/providers/course_provider.dart';
+import 'package:ftes/models/course_response.dart';
+import 'package:ftes/models/course_item.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,6 +23,16 @@ class _HomeScreenState extends State<HomeScreen> {
     'Thiết kế 3D',
     'Nghệ thuật & Nhân văn',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch 3 latest courses when screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<CourseProvider>(context, listen: false);
+      provider.fetchLatestCourses(limit: 3);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -284,90 +298,104 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   Widget _buildPopularCoursesSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 34),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Consumer<CourseProvider>(
+      builder: (context, courseProvider, child) {
+        final courses = courseProvider.latestCourses;
+        final isLoading = courseProvider.isLoadingLatestCourses;
+        
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 34),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Khóa học phổ biến',
-                style: AppTextStyles.heading1.copyWith(
-                  color: const Color(0xFF202244),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Khóa học phổ biến',
+                    style: AppTextStyles.heading1.copyWith(
+                      color: const Color(0xFF202244),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      AppRoutes.navigateToPopularCourses(context);
+                    },
+                    child: Row(
+                      children: [
+                        Text(
+                          'Xem tất cả',
+                          style: AppTextStyles.body1.copyWith(
+                            color: const Color(0xFF0961F5),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        const Icon(
+                          Icons.arrow_forward_ios,
+                          color: Color(0xFF0961F5),
+                          size: 12,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              GestureDetector(
-                onTap: () {
-                  AppRoutes.navigateToPopularCourses(context);
-                },
+              const SizedBox(height: 20),
+              // Category filters
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: [
-                    Text(
-                      'Xem tất cả',
-                      style: AppTextStyles.body1.copyWith(
-                        color: const Color(0xFF0961F5),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Color(0xFF0961F5),
-                      size: 12,
-                    ),
-                  ],
+                  children: _categories.asMap().entries.map((entry) {
+                    int index = entry.key;
+                    String category = entry.value;
+                    bool isSelected = index == _selectedCategoryIndex;
+                    
+                    return Padding(
+                      padding: EdgeInsets.only(right: index < _categories.length - 1 ? 12 : 0),
+                      child: _buildCategoryFilter(category, isSelected, index),
+                    );
+                  }).toList(),
                 ),
               ),
+              const SizedBox(height: 20),
+              // Course cards - dynamic from API
+              if (isLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else if (courses.isEmpty)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Text('Không có khóa học nào'),
+                  ),
+                )
+              else
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: courses.take(3).toList().asMap().entries.map((entry) {
+                      int index = entry.key;
+                      CourseResponse course = entry.value;
+                      
+                      return Padding(
+                        padding: EdgeInsets.only(right: index < 2 ? 20 : 0),
+                        child: _buildCourseCard(course),
+                      );
+                    }).toList(),
+                  ),
+                ),
             ],
           ),
-          const SizedBox(height: 20),
-          // Category filters
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _categories.asMap().entries.map((entry) {
-                int index = entry.key;
-                String category = entry.value;
-                bool isSelected = index == _selectedCategoryIndex;
-                
-                return Padding(
-                  padding: EdgeInsets.only(right: index < _categories.length - 1 ? 12 : 0),
-                  child: _buildCategoryFilter(category, isSelected, index),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 20),
-          // Course cards
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildCourseCard(
-                  'Thiết kế đồ họa',
-                  'Thiết kế đồ họa nâng cao',
-                  '28\$',
-                  '4.2',
-                  '7830 HV',
-                ),
-                const SizedBox(width: 20),
-                _buildCourseCard(
-                  'Thiết kế đồ họa',
-                  'Thiết kế quảng cáo',
-                  '42\$',
-                  '4.2',
-                  '12580 HV',
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -396,135 +424,203 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCourseCard(String category, String title, String price, String rating, String students) {
-    return Container(
-      width: 280,
-      height: 240,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Course image
-          Container(
-            height: 134,
-            decoration: const BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
+  Widget _buildCourseCard(CourseResponse course) {
+    final category = course.categoryName ?? 'Chưa phân loại';
+    final title = course.title ?? 'Không có tiêu đề';
+    final price = course.salePrice != null && course.salePrice! > 0
+        ? '${course.salePrice!.toStringAsFixed(0)}\$'
+        : course.price != null
+            ? '${course.price!.toStringAsFixed(0)}\$'
+            : 'Miễn phí';
+    final rating = course.rating?.toStringAsFixed(1) ?? '0.0';
+    final students = course.totalStudents != null
+        ? '${course.totalStudents} HV'
+        : '0 HV';
+    final imageUrl = course.image;
+    
+    return GestureDetector(
+      onTap: () {
+        // Convert CourseResponse to CourseItem for navigation
+        final identifier = course.slugName ?? course.id ?? '';
+        final courseItem = CourseItem(
+          id: identifier,
+          category: category,
+          title: title,
+          price: price,
+          rating: rating,
+          students: students,
+          imageUrl: imageUrl ?? '',
+        );
+        
+        AppRoutes.navigateToCourseDetail(
+          context,
+          course: courseItem,
+        );
+      },
+      child: Container(
+        width: 280,
+        height: 240,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    category,
-                    style: AppTextStyles.body1.copyWith(
-                      color: const Color(0xFFFF6B00),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: AppTextStyles.heading1.copyWith(
-                        color: const Color(0xFF202244),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Course image
+            Container(
+              height: 134,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: imageUrl != null && imageUrl.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      child: Image.network(
+                        imageUrl,
+                        width: double.infinity,
+                        height: 134,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: Colors.grey,
+                                size: 40,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : Container(
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: Icon(
+                          Icons.image,
+                          color: Colors.grey,
+                          size: 40,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            price,
-                            style: AppTextStyles.body1.copyWith(
-                              color: const Color(0xFF0961F5),
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '|',
-                          style: AppTextStyles.body1.copyWith(
-                            color: Colors.black,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.star,
-                          color: Color(0xFFFFD700),
-                          size: 12,
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            rating,
-                            style: AppTextStyles.body1.copyWith(
-                              color: const Color(0xFF202244),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '|',
-                          style: AppTextStyles.body1.copyWith(
-                            color: Colors.black,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            students,
-                            style: AppTextStyles.body1.copyWith(
-                              color: const Color(0xFF202244),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      category,
+                      style: AppTextStyles.body1.copyWith(
+                        color: const Color(0xFFFF6B00),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 5),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: AppTextStyles.heading1.copyWith(
+                          color: const Color(0xFF202244),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              price,
+                              style: AppTextStyles.body1.copyWith(
+                                color: const Color(0xFF0961F5),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '|',
+                            style: AppTextStyles.body1.copyWith(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.star,
+                            color: Color(0xFFFFD700),
+                            size: 12,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              rating,
+                              style: AppTextStyles.body1.copyWith(
+                                color: const Color(0xFF202244),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '|',
+                            style: AppTextStyles.body1.copyWith(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              students,
+                              style: AppTextStyles.body1.copyWith(
+                                color: const Color(0xFF202244),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

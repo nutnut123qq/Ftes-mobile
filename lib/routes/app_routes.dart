@@ -78,18 +78,35 @@ class AppRoutes {
       );
     },
     AppConstants.routeCourseDetail: (context) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      return CourseDetailScreen(
-        course: args?['course'] ?? CourseItem(
-          id: 'default_course',
-          category: 'Graphic Design',
-          title: 'Design Principles',
-          price: '499/-',
-          rating: '4.2',
-          students: '7830 Std',
-          imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course',
-        ),
-      );
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      CourseItem? course;
+      
+      if (arguments is Map<String, dynamic>) {
+        course = arguments['course'] as CourseItem?;
+      } else if (arguments is String) {
+        // If slug is passed, create a CourseItem with just the id
+        course = CourseItem(
+          id: arguments,
+          category: '',
+          title: '',
+          price: '0',
+          rating: '0',
+          students: '0',
+          imageUrl: '',
+        );
+      }
+      
+      // If no valid course, navigate to home
+      if (course == null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.of(context).pushReplacementNamed(AppConstants.routeHome);
+        });
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+      }
+      
+      return CourseDetailScreen(course: course);
     },
     AppConstants.routeProfile: (context) => const ProfileScreen(),
     AppConstants.routeNotifications: (context) => const NotificationsScreen(),
@@ -234,19 +251,43 @@ class AppRoutes {
           settings: settings,
         );
       case AppConstants.routeCourseDetail:
-        final args = settings.arguments as Map<String, dynamic>?;
+        // Handle both Map (from navigation) and String (from deep linking/web)
+        CourseItem? course;
+        if (settings.arguments is Map<String, dynamic>) {
+          final args = settings.arguments as Map<String, dynamic>;
+          course = args['course'] as CourseItem?;
+        } else if (settings.arguments is String) {
+          // If slug is passed, create a CourseItem with just the id (slug)
+          // The CourseDetailScreen will fetch full details from API using this id
+          final slug = settings.arguments as String;
+          course = CourseItem(
+            id: slug,
+            category: '',
+            title: '',
+            price: '0',
+            rating: '0',
+            students: '0',
+            imageUrl: '',
+          );
+        }
+        
+        // If no valid course, redirect to home
+        if (course == null) {
+          return MaterialPageRoute(
+            builder: (context) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Navigator.of(context).pushReplacementNamed(AppConstants.routeHome);
+              });
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            },
+            settings: settings,
+          );
+        }
+        
         return MaterialPageRoute(
-          builder: (context) => CourseDetailScreen(
-            course: args?['course'] ?? CourseItem(
-              id: 'default_course_2',
-              category: 'Graphic Design',
-              title: 'Design Principles',
-              price: '499/-',
-              rating: '4.2',
-              students: '7830 Std',
-              imageUrl: 'https://via.placeholder.com/230x130/000000/FFFFFF?text=Course',
-            ),
-          ),
+          builder: (context) => CourseDetailScreen(course: course!),
           settings: settings,
         );
       case AppConstants.routeLearning:
