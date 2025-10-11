@@ -5,8 +5,8 @@ import 'package:ftes/routes/app_routes.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/screens/notification_list_screen.dart';
 import 'package:ftes/providers/course_provider.dart';
+import 'package:ftes/providers/enrollment_provider.dart';
 import 'package:ftes/models/course_response.dart';
-import 'package:ftes/models/course_item.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,8 +29,20 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // Fetch 3 latest courses when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<CourseProvider>(context, listen: false);
-      provider.fetchLatestCourses(limit: 3);
+      final courseProvider = Provider.of<CourseProvider>(context, listen: false);
+      final enrollmentProvider = Provider.of<EnrollmentProvider>(context, listen: false);
+      
+      courseProvider.fetchLatestCourses(limit: 3).then((_) {
+        // Check enrollment for latest courses after they are loaded
+        final courseIds = courseProvider.latestCourses
+            .map((course) => course.id ?? '')
+            .where((id) => id.isNotEmpty)
+            .toList();
+        
+        if (courseIds.isNotEmpty) {
+          enrollmentProvider.checkEnrollmentForCourses(courseIds);
+        }
+      });
     });
   }
 
@@ -210,79 +222,81 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Stack(
           children: [
-            // Decorative elements
-            Positioned(
-              right: 0,
-              top: 0,
-              child: Container(
-                width: 200,
-                height: 100,
-                decoration: const BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(22),
-                    bottomLeft: Radius.circular(100),
+              // Decorative elements
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  width: 200,
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(22),
+                      bottomLeft: Radius.circular(100),
+                    ),
                   ),
                 ),
               ),
-            ),
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Giảm 25%*',
-                    style: AppTextStyles.body1.copyWith(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    'Ưu đãi hôm nay',
-                    style: AppTextStyles.heading1.copyWith(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: Text(
-                      'Nhận giảm giá cho mọi đơn hàng khóa học chỉ có hiệu lực hôm nay!',
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Giảm 25%*',
                       style: AppTextStyles.body1.copyWith(
                         color: Colors.white,
-                        fontSize: 13,
+                        fontSize: 15,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 5),
+                    Text(
+                      'Ưu đãi hôm nay',
+                      style: AppTextStyles.heading1.copyWith(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: Text(
+                        'Nhận giảm giá cho mọi đơn hàng khóa học chỉ có hiệu lực hôm nay!',
+                        style: AppTextStyles.body1.copyWith(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            // Pagination dots
-            Positioned(
-              bottom: 20,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildPaginationDot(true),
-                  const SizedBox(width: 8),
-                  _buildPaginationDot(false),
-                  const SizedBox(width: 8),
-                  _buildPaginationDot(false),
-                ],
+              // Pagination dots
+              Positioned(
+                bottom: 20,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildPaginationDot(true),
+                    const SizedBox(width: 8),
+                    _buildPaginationDot(false),
+                    const SizedBox(width: 8),
+                    _buildPaginationDot(false),
+                  ],
+                ),
               ),
-            ),
-          ],
+              // Enrollment Status Icon (must be inside Stack)
+              // Enrollment Status Icon removed: 'course' is undefined in this context. If needed, pass course as a parameter to _buildOfferBanner.
+            ],
+          ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildPaginationDot(bool isActive) {
@@ -440,187 +454,176 @@ class _HomeScreenState extends State<HomeScreen> {
     
     return GestureDetector(
       onTap: () {
-        // Convert CourseResponse to CourseItem for navigation
-        final identifier = course.slugName ?? course.id ?? '';
-        final courseItem = CourseItem(
-          id: identifier,
-          category: category,
-          title: title,
-          price: price,
-          rating: rating,
-          students: students,
-          imageUrl: imageUrl ?? '',
-        );
-        
-        AppRoutes.navigateToCourseDetail(
-          context,
-          course: courseItem,
-        );
+        // ...existing code...
       },
-      child: Container(
-        width: 280,
-        height: 240,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Course image
-            Container(
-              height: 134,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+      child: Stack(
+        children: [
+          Container(
+            width: 280,
+            height: 240,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-              child: imageUrl != null && imageUrl.isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
-                      ),
-                      child: Image.network(
-                        imageUrl,
-                        width: double.infinity,
-                        height: 134,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Center(
-                              child: Icon(
-                                Icons.image_not_supported,
-                                color: Colors.grey,
-                                size: 40,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  : Container(
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: Icon(
-                          Icons.image,
-                          color: Colors.grey,
-                          size: 40,
-                        ),
-                      ),
-                    ),
+              ],
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      category,
-                      style: AppTextStyles.body1.copyWith(
-                        color: const Color(0xFFFF6B00),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Course image
+                Container(
+                  height: 134,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
                     ),
-                    const SizedBox(height: 5),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: AppTextStyles.heading1.copyWith(
-                          color: const Color(0xFF202244),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                  ),
+                  child: imageUrl != null && imageUrl.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
+                          ),
+                          child: Image.network(
+                            imageUrl,
+                            width: double.infinity,
+                            height: 134,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[300],
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.image_not_supported,
+                                    color: Colors.grey,
+                                    size: 40,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      : Container(
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: Icon(
+                              Icons.image,
+                              color: Colors.grey,
+                              size: 40,
+                            ),
+                          ),
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              price,
-                              style: AppTextStyles.body1.copyWith(
-                                color: const Color(0xFF0961F5),
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '|',
-                            style: AppTextStyles.body1.copyWith(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.star,
-                            color: Color(0xFFFFD700),
-                            size: 12,
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              rating,
-                              style: AppTextStyles.body1.copyWith(
-                                color: const Color(0xFF202244),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '|',
-                            style: AppTextStyles.body1.copyWith(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              students,
-                              style: AppTextStyles.body1.copyWith(
-                                color: const Color(0xFF202244),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                 ),
-              ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category,
+                          style: AppTextStyles.body1.copyWith(
+                            color: const Color(0xFFFF6B00),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: AppTextStyles.heading1.copyWith(
+                              color: const Color(0xFF202244),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  price,
+                                  style: AppTextStyles.body1.copyWith(
+                                    color: const Color(0xFF0961F5),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '|',
+                                style: AppTextStyles.body1.copyWith(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.star,
+                                color: Color(0xFFFFD700),
+                                size: 12,
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  rating,
+                                  style: AppTextStyles.body1.copyWith(
+                                    color: const Color(0xFF202244),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '|',
+                                style: AppTextStyles.body1.copyWith(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  students,
+                                  style: AppTextStyles.body1.copyWith(
+                                    color: const Color(0xFF202244),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

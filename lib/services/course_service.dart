@@ -275,14 +275,8 @@ class CourseService {
 
   /// Check enrollment status
   Future<bool> checkEnrollment(String courseId) async {
-    final queryParams = {
-      'courseId': courseId,
-    };
-
-    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.checkEnrollmentEndpoint}')
-        .replace(queryParameters: queryParams);
-
-    final resp = await _http.get(uri.toString());
+    final url = '${ApiConstants.checkEnrollmentEndpoint}?courseId=$courseId';
+    final resp = await _http.get(url);
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final data = jsonDecode(resp.body);

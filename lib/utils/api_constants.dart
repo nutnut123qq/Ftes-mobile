@@ -70,6 +70,16 @@ class ApiConstants {
   static const String orderEndpoint = '/api/order';
   static const String orderCancelEndpoint = '/api/order/cancel';
   
+  // Points & Affiliate endpoints
+  static const String userPointsEndpoint = '/api/points/user';
+  static const String pointTransactionsEndpoint = '/api/points/transactions';
+  static const String referralEndpoint = '/api/points/referral';
+  static const String referralCountEndpoint = '/api/points/referral/count';
+  static const String invitedUsersEndpoint = '/api/points/invited';
+  static const String pointsChartEndpoint = '/api/points/chart';
+  static const String withdrawPointsEndpoint = '/api/points/withdraw';
+  static const String setReferralEndpoint = '/api/points/set-referral';
+  
   // Headers
   static const Map<String, String> defaultHeaders = {
     'Content-Type': 'application/json',

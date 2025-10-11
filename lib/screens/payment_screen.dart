@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/services/order_service.dart';
 import 'package:ftes/models/order_response.dart';
+import 'package:ftes/providers/enrollment_provider.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 import 'package:ftes/utils/api_constants.dart';
 import 'package:ftes/utils/constants.dart';
@@ -81,10 +83,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _handlePaymentNotification(String status) {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     
     if (status == 'success') {
-      // Payment successful - redirect to enrollment success
+      // Payment successful - refresh enrollment status for all courses in order
+      if (_order != null && _order!.items != null) {
+        final enrollmentProvider = Provider.of<EnrollmentProvider>(context, listen: false);
+        
+        for (final item in _order!.items!) {
+          if (item.courseId != null) {
+            // Clear cache and force refresh to get updated enrollment status from backend
+            enrollmentProvider.refreshEnrollmentStatus(item.courseId!);
+          }
+        }
+      }
+      
+      // Redirect to enrollment success
       Navigator.of(context).pushReplacementNamed(AppConstants.routeEnrollSuccess);
     } else if (status == 'error_price') {
       // Price mismatch - show error dialog
@@ -221,7 +237,21 @@ class _PaymentScreenState extends State<PaymentScreen> {
           children: [
             // Back Button
             GestureDetector(
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                // When user goes back from payment screen without completing payment,
+                // refresh enrollment status to ensure correct state
+                if (_order != null && _order!.items != null) {
+                  final enrollmentProvider = Provider.of<EnrollmentProvider>(context, listen: false);
+                  
+                  for (final item in _order!.items!) {
+                    if (item.courseId != null) {
+                      enrollmentProvider.refreshEnrollmentStatus(item.courseId!);
+                    }
+                  }
+                }
+                
+                Navigator.pop(context);
+              },
               child: Container(
                 width: 26,
                 height: 20,

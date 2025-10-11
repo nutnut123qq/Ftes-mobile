@@ -4,6 +4,7 @@ import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/models/course_item.dart';
 import 'package:ftes/models/course_response.dart';
 import 'package:ftes/providers/course_provider.dart';
+import 'package:ftes/providers/enrollment_provider.dart';
 
 class CourseDetailScreen extends StatefulWidget {
   final CourseItem course;
@@ -30,6 +31,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     // Fetch course detail when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<CourseProvider>(context, listen: false);
+      final enrollmentProvider = Provider.of<EnrollmentProvider>(context, listen: false);
       
       if (widget.course.id != null && widget.course.id!.isNotEmpty) {
         // Skip API for hardcoded test IDs
@@ -39,6 +41,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             widget.course.id!.startsWith('default_course')) {
           return;
         }
+        
+        // Check enrollment status
+        enrollmentProvider.checkEnrollment(widget.course.id!);
         
         // Check if UUID or slug
         final isUUID = widget.course.id!.length == 36 && 
@@ -1154,55 +1159,112 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   }
 
   Widget _buildEnrollButton() {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to cart instead of directly to payment
-        // User should add course to cart first, then checkout from cart
-        Navigator.pushNamed(context, '/cart');
+    return Consumer2<CourseProvider, EnrollmentProvider>(
+      builder: (context, courseProvider, enrollmentProvider, child) {
+        final apiCourse = courseProvider.selectedCourse;
+        final courseId = widget.course.id ?? apiCourse?.id ?? '';
+        final isEnrolled = enrollmentProvider.isEnrolled(courseId);
+        final isCheckingEnrollment = enrollmentProvider.isCheckingEnrollment(courseId);
+        final apiPrice = apiCourse?.price ?? 0.0;
+        final coursePrice = double.tryParse(widget.course.price.replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
+        final price = apiPrice > 0 ? apiPrice : coursePrice;
+        
+        return GestureDetector(
+          onTap: isCheckingEnrollment ? null : () => _handleEnrollButtonTap(isEnrolled),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 39, vertical: 20),
+            height: 60,
+            decoration: BoxDecoration(
+              color: isEnrolled 
+                  ? const Color(0xFF4CAF50) // Green for enrolled
+                  : const Color(0xFF0961F5), // Blue for not enrolled
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(1, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (isCheckingEnrollment) ...[
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Đang kiểm tra...',
+                    style: AppTextStyles.buttonLarge.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                    ),
+                  ),
+                ] else if (isEnrolled) ...[
+                  const Icon(
+                    Icons.play_circle_filled,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Tiếp tục học',
+                    style: AppTextStyles.buttonLarge.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                    ),
+                  ),
+                ] else ...[
+                  Text(
+                    price > 0 
+                        ? 'Đăng ký khóa học - \$${price.toStringAsFixed(0)}'
+                        : 'Đăng ký miễn phí',
+                    style: AppTextStyles.buttonLarge.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward,
+                      color: Color(0xFF0961F5),
+                      size: 16,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
       },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 39, vertical: 20),
-        height: 60,
-        decoration: BoxDecoration(
-          color: const Color(0xFF0961F5),
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(1, 2),
-            ),
-          ],
-        ),
-        child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Đăng ký khóa học - 499/-',
-            style: AppTextStyles.buttonLarge.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.arrow_forward,
-              color: Color(0xFF0961F5),
-              size: 16,
-            ),
-          ),
-        ],
-      ),
-    ),
     );
+  }
+
+  void _handleEnrollButtonTap(bool isEnrolled) {
+    if (isEnrolled) {
+      // Navigate to course learning screen or my courses
+      Navigator.pushNamed(context, '/my-courses');
+    } else {
+      // Navigate to cart or enrollment process
+      Navigator.pushNamed(context, '/cart');
+    }
   }
 }
 

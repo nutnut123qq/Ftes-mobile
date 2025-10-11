@@ -4,6 +4,7 @@ import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/models/course_response.dart';
 import 'package:ftes/providers/course_provider.dart';
 import 'package:ftes/providers/cart_provider.dart';
+import 'package:ftes/providers/enrollment_provider.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/routes/app_routes.dart';
 
@@ -33,7 +34,19 @@ class _PopularCoursesScreenState extends State<PopularCoursesScreen> {
     // Fetch courses when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final courseProvider = Provider.of<CourseProvider>(context, listen: false);
-      courseProvider.fetchFeaturedCourses();
+      final enrollmentProvider = Provider.of<EnrollmentProvider>(context, listen: false);
+      
+      courseProvider.fetchFeaturedCourses().then((_) {
+        // Check enrollment for all courses after they are loaded
+        final courseIds = courseProvider.courses
+            .map((course) => course.id ?? '')
+            .where((id) => id.isNotEmpty)
+            .toList();
+        
+        if (courseIds.isNotEmpty) {
+          enrollmentProvider.checkEnrollmentForCourses(courseIds);
+        }
+      });
     });
   }
 
@@ -60,14 +73,33 @@ class _PopularCoursesScreenState extends State<PopularCoursesScreen> {
     });
     
     final courseProvider = Provider.of<CourseProvider>(context, listen: false);
+    final enrollmentProvider = Provider.of<EnrollmentProvider>(context, listen: false);
+    
+    Future<void> checkEnrollmentAfterFetch() async {
+      // Wait a frame to ensure courses are loaded
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      final courseIds = courseProvider.courses
+          .map((course) => course.id ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList();
+      
+      if (courseIds.isNotEmpty) {
+        enrollmentProvider.checkEnrollmentForCourses(courseIds);
+      }
+    }
     
     if (index == 0) {
       // "Tất cả" - fetch featured courses
-      courseProvider.fetchFeaturedCourses();
+      courseProvider.fetchFeaturedCourses().then((_) {
+        checkEnrollmentAfterFetch();
+      });
     } else {
       // Filter by category
       final category = _categories[index];
-      courseProvider.searchCourses(category: category);
+      courseProvider.searchCourses(category: category).then((_) {
+        checkEnrollmentAfterFetch();
+      });
     }
   }
 
@@ -500,50 +532,102 @@ class _PopularCoursesScreenState extends State<PopularCoursesScreen> {
             ),
           ),
           
-          // Add to Cart Button
+          // Enrollment Status & Cart Button
           Positioned(
             top: 8,
             right: 8,
-            child: Consumer<CartProvider>(
-              builder: (context, cartProvider, child) {
-                final isInCart = cartProvider.isCourseInCart(course.id ?? '');
+            child: Consumer2<EnrollmentProvider, CartProvider>(
+              builder: (context, enrollmentProvider, cartProvider, child) {
+                final courseId = course.id ?? '';
+                final isEnrolled = enrollmentProvider.isEnrolled(courseId);
+                final isCheckingEnrollment = enrollmentProvider.isCheckingEnrollment(courseId);
+                final isInCart = cartProvider.isCourseInCart(courseId);
                 final isAdding = cartProvider.isAddingToCart;
                 
-                return GestureDetector(
-                  onTap: isAdding ? null : () => _toggleCartForCourse(course),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: isInCart
-                          ? const Color(0xFF4CAF50) // Green when in cart
-                          : const Color(0xFF0961F5), // Blue when not in cart
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Enrollment Status Icon
+                    if (isCheckingEnrollment)
+                      Container(
+                        width: 32,
+                        height: 32,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                      ],
-                    ),
-                    child: isAdding
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Icon(
-                            isInCart
-                                ? Icons.check // Check mark when in cart
-                                : Icons.add_shopping_cart, // Cart icon when not in cart
+                        child: const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
                             color: Colors.white,
-                            size: 16,
+                            strokeWidth: 2,
                           ),
-                  ),
+                        ),
+                      )
+                    else if (isEnrolled)
+                      Container(
+                        width: 32,
+                        height: 32,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4CAF50), // Green for enrolled
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.school,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                    
+                    // Cart Button (only show if not enrolled)
+                    if (!isEnrolled)
+                      GestureDetector(
+                        onTap: isAdding ? null : () => _toggleCartForCourse(course),
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: isInCart
+                                ? const Color(0xFF4CAF50) // Green when in cart
+                                : const Color(0xFF0961F5), // Blue when not in cart
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: isAdding
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Icon(
+                                  isInCart
+                                      ? Icons.check // Check mark when in cart
+                                      : Icons.add_shopping_cart, // Cart icon when not in cart
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                        ),
+                      ),
+                  ],
                 );
               },
             ),

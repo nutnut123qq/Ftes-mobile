@@ -8,6 +8,8 @@ import 'providers/app_data_provider.dart';
 import 'providers/blog_provider.dart';
 import 'providers/course_provider.dart';
 import 'providers/cart_provider.dart';
+import 'providers/point_provider.dart';
+import 'providers/enrollment_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,6 +27,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => BlogProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => CourseProvider()),
         ChangeNotifierProvider(create: (context) => CartProvider()..initializeCart()),
+        ChangeNotifierProvider(create: (context) => PointProvider()),
+        ChangeNotifierProvider(create: (context) => EnrollmentProvider()),
       ],
       child: MaterialApp(
         title: AppConstants.appName,
