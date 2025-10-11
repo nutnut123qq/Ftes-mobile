@@ -1,54 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/routes/app_routes.dart';
+import 'package:provider/provider.dart';
+import '../providers/feedback_provider.dart';
+import '../models/feedback_response.dart';
 
 class ReviewsScreen extends StatefulWidget {
-  const ReviewsScreen({super.key});
+  final int courseId;
+  final String? courseName;
+  
+  const ReviewsScreen({
+    super.key,
+    required this.courseId,
+    this.courseName,
+  });
 
   @override
   State<ReviewsScreen> createState() => _ReviewsScreenState();
 }
 
 class _ReviewsScreenState extends State<ReviewsScreen> {
-  String _selectedFilter = 'Xuất sắc';
+  String _selectedFilter = 'Tất cả';
+  final ScrollController _scrollController = ScrollController();
 
-  // Sample reviews data
-  final List<Map<String, dynamic>> _reviews = [
-    {
-      'name': 'Heather S. McMullen',
-      'rating': 4.2,
-      'comment': 'Khóa học rất tốt, nội dung chất lượng và dễ hiểu. Tôi đã học được nhiều kiến thức bổ ích từ khóa học này.',
-      'date': '2 tuần trước',
-      'likes': 760,
-      'avatar': 'https://via.placeholder.com/50x50/000000/FFFFFF?text=HS',
-    },
-    {
-      'name': 'Natasha B. Lambert',
-      'rating': 4.8,
-      'comment': 'Khóa học rất tốt, giảng viên giảng dạy rất chuyên nghiệp và nhiệt tình.',
-      'date': '2 tuần trước',
-      'likes': 918,
-      'avatar': 'https://via.placeholder.com/50x50/000000/FFFFFF?text=NL',
-    },
-    {
-      'name': 'Marshall A. Lester',
-      'rating': 4.6,
-      'comment': 'Khóa học rất tốt, nội dung chất lượng và dễ hiểu. Tôi đã học được nhiều kiến thức bổ ích từ khóa học này.',
-      'date': '2 tuần trước',
-      'likes': 914,
-      'avatar': 'https://via.placeholder.com/50x50/000000/FFFFFF?text=ML',
-    },
-    {
-      'name': 'Frances D. Stanford',
-      'rating': 4.8,
-      'comment': 'Khóa học rất tốt, giảng viên giảng dạy rất chuyên nghiệp và nhiệt tình.',
-      'date': '2 tuần trước',
-      'likes': 967,
-      'avatar': 'https://via.placeholder.com/50x50/000000/FFFFFF?text=FS',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _loadData() {
+    final provider = context.read<FeedbackProvider>();
+    provider.loadFeedbacks(widget.courseId, refresh: true);
+    provider.loadAverageRating(widget.courseId);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= 
+        _scrollController.position.maxScrollExtent - 200) {
+      final provider = context.read<FeedbackProvider>();
+      if (!provider.isLoadingMore && provider.hasMore) {
+        provider.loadFeedbacks(widget.courseId);
+      }
+    }
+  }
 
   final List<String> _filters = [
+    'Tất cả',
     'Xuất sắc',
     'Tốt',
     'Trung bình',
@@ -61,17 +67,37 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9FF),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildHeader(),
-              _buildRatingOverview(),
-              _buildFilterChips(),
-              _buildReviewsList(),
-              _buildWriteReviewButton(),
-              const SizedBox(height: 20),
-            ],
-          ),
+        child: Consumer<FeedbackProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading && provider.feedbacks.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            return RefreshIndicator(
+              onRefresh: () async {
+                await provider.loadFeedbacks(widget.courseId, refresh: true);
+                await provider.loadAverageRating(widget.courseId);
+              },
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: Column(
+                  children: [
+                    _buildHeader(),
+                    _buildRatingOverview(provider),
+                    _buildFilterChips(),
+                    _buildReviewsList(provider),
+                    if (provider.isLoadingMore)
+                      const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: CircularProgressIndicator(),
+                      ),
+                    _buildWriteReviewButton(),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -143,14 +169,17 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     );
   }
 
-  Widget _buildRatingOverview() {
+  Widget _buildRatingOverview(FeedbackProvider provider) {
+    final rating = provider.averageRating;
+    final count = provider.totalElements;
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 20),
       child: Column(
         children: [
           // Overall Rating
           Text(
-            '4.8',
+            rating.toStringAsFixed(1),
             style: AppTextStyles.heading1.copyWith(
               color: const Color(0xFF202244),
               fontSize: 38,
@@ -164,14 +193,34 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Icon(
-                  index < 4 ? Icons.star : Icons.star_half,
-                  color: const Color(0xFFFFD700),
-                  size: 16,
-                ),
-              );
+              if (index < rating.floor()) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2),
+                  child: Icon(
+                    Icons.star,
+                    color: Color(0xFFFFD700),
+                    size: 16,
+                  ),
+                );
+              } else if (index < rating) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2),
+                  child: Icon(
+                    Icons.star_half,
+                    color: Color(0xFFFFD700),
+                    size: 16,
+                  ),
+                );
+              } else {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2),
+                  child: Icon(
+                    Icons.star_border,
+                    color: Color(0xFFFFD700),
+                    size: 16,
+                  ),
+                );
+              }
             }),
           ),
           
@@ -179,7 +228,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           
           // Review Count
           Text(
-            'Dựa trên 448 đánh giá',
+            'Dựa trên $count đánh giá',
             style: AppTextStyles.body1.copyWith(
               color: const Color(0xFF545454),
               fontSize: 13,
@@ -236,16 +285,62 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     );
   }
 
-  Widget _buildReviewsList() {
+  Widget _buildReviewsList(FeedbackProvider provider) {
+    if (provider.feedbacks.isEmpty && !provider.isLoading) {
+      return Padding(
+        padding: const EdgeInsets.all(40),
+        child: Center(
+          child: Column(
+            children: [
+              const Icon(
+                Icons.rate_review_outlined,
+                size: 60,
+                color: Color(0xFF9E9E9E),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Chưa có đánh giá nào',
+                style: AppTextStyles.body1.copyWith(
+                  color: const Color(0xFF545454),
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Filter reviews based on selected filter
+    List<FeedbackResponse> filteredReviews = provider.feedbacks;
+    if (_selectedFilter != 'Tất cả') {
+      filteredReviews = provider.feedbacks.where((review) {
+        switch (_selectedFilter) {
+          case 'Xuất sắc':
+            return review.rating == 5;
+          case 'Tốt':
+            return review.rating == 4;
+          case 'Trung bình':
+            return review.rating == 3;
+          case 'Dưới trung bình':
+            return review.rating == 2;
+          case 'Kém':
+            return review.rating == 1;
+          default:
+            return true;
+        }
+      }).toList();
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(34, 20, 34, 0),
       child: Column(
-        children: _reviews.map((review) => _buildReviewCard(review)).toList(),
+        children: filteredReviews.map((review) => _buildReviewCard(review)).toList(),
       ),
     );
   }
 
-  Widget _buildReviewCard(Map<String, dynamic> review) {
+  Widget _buildReviewCard(FeedbackResponse review) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -274,17 +369,26 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                   color: const Color(0xFFE8F1FF),
                   borderRadius: BorderRadius.circular(25),
                 ),
-                child: Image.network(
-                  review['avatar'],
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(
-                      Icons.person,
-                      color: Color(0xFF0961F5),
-                      size: 25,
-                    );
-                  },
-                ),
+                child: review.userAvatar != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(25),
+                        child: Image.network(
+                          review.userAvatar!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.person,
+                              color: Color(0xFF0961F5),
+                              size: 25,
+                            );
+                          },
+                        ),
+                      )
+                    : const Icon(
+                        Icons.person,
+                        color: Color(0xFF0961F5),
+                        size: 25,
+                      ),
               ),
               
               const SizedBox(width: 16),
@@ -295,7 +399,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review['name'],
+                      review.userName ?? 'Người dùng ẩn danh',
                       style: AppTextStyles.body1.copyWith(
                         color: const Color(0xFF202244),
                         fontSize: 17,
@@ -307,15 +411,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                       children: [
                         // Star Rating
                         ...List.generate(5, (index) {
-                          if (index < review['rating'].floor()) {
+                          if (index < review.rating) {
                             return const Icon(
                               Icons.star,
-                              color: Color(0xFFFFD700),
-                              size: 16,
-                            );
-                          } else if (index < review['rating']) {
-                            return const Icon(
-                              Icons.star_half,
                               color: Color(0xFFFFD700),
                               size: 16,
                             );
@@ -329,7 +427,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                         }),
                         const SizedBox(width: 8),
                         Text(
-                          review['rating'].toString(),
+                          review.rating.toString(),
                           style: AppTextStyles.body1.copyWith(
                             color: const Color(0xFF202244),
                             fontSize: 13,
@@ -348,7 +446,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           
           // Comment
           Text(
-            review['comment'],
+            review.comment,
             style: AppTextStyles.body1.copyWith(
               color: const Color(0xFF545454),
               fontSize: 13,
@@ -359,50 +457,37 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           
           const SizedBox(height: 16),
           
-          // Footer with likes and date
-          Row(
-            children: [
-              // Like button
-              GestureDetector(
-                onTap: () {
-                  // Handle like action
-                },
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.thumb_up_outlined,
-                      color: Color(0xFF0961F5),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      review['likes'].toString(),
-                      style: AppTextStyles.body1.copyWith(
-                        color: const Color(0xFF202244),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(width: 16),
-              
-              // Date
-              Text(
-                review['date'],
-                style: AppTextStyles.body1.copyWith(
-                  color: const Color(0xFF202244),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
+          // Footer with date
+          Text(
+            _formatDate(review.createdAt),
+            style: AppTextStyles.body1.copyWith(
+              color: const Color(0xFF202244),
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return 'Hôm nay';
+    } else if (difference.inDays == 1) {
+      return 'Hôm qua';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} ngày trước';
+    } else if (difference.inDays < 30) {
+      return '${(difference.inDays / 7).floor()} tuần trước';
+    } else if (difference.inDays < 365) {
+      return '${(difference.inDays / 30).floor()} tháng trước';
+    } else {
+      return '${(difference.inDays / 365).floor()} năm trước';
+    }
   }
 
   Widget _buildWriteReviewButton() {

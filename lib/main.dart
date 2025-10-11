@@ -10,6 +10,8 @@ import 'providers/course_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/point_provider.dart';
 import 'providers/enrollment_provider.dart';
+import 'providers/feedback_provider.dart';
+import 'providers/exercise_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,6 +31,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => CartProvider()..initializeCart()),
         ChangeNotifierProvider(create: (context) => PointProvider()),
         ChangeNotifierProvider(create: (context) => EnrollmentProvider()),
+        ChangeNotifierProvider(create: (context) => FeedbackProvider()),
+        ChangeNotifierProvider(create: (context) => ExerciseProvider()),
       ],
       child: MaterialApp(
         title: AppConstants.appName,

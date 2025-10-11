@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
+import 'package:provider/provider.dart';
+import '../providers/feedback_provider.dart';
+import '../models/create_feedback_request.dart';
 
 class WriteReviewScreen extends StatefulWidget {
-  const WriteReviewScreen({super.key});
+  final int courseId;
+  final int userId;
+  final String? courseName;
+  
+  const WriteReviewScreen({
+    super.key,
+    required this.courseId,
+    required this.userId,
+    this.courseName,
+  });
 
   @override
   State<WriteReviewScreen> createState() => _WriteReviewScreenState();
@@ -11,6 +23,7 @@ class WriteReviewScreen extends StatefulWidget {
 class _WriteReviewScreenState extends State<WriteReviewScreen> {
   final TextEditingController _reviewController = TextEditingController();
   final int _maxCharacters = 250;
+  int _rating = 5; // Default 5 stars
 
   @override
   void initState() {
@@ -186,6 +199,56 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Rating Section
+          Text(
+            'Đánh giá của bạn',
+            style: AppTextStyles.body1.copyWith(
+              color: const Color(0xFF202244),
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          
+          const SizedBox(height: 15),
+          
+          // Star Rating
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (index) {
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _rating = index + 1;
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Icon(
+                    index < _rating ? Icons.star : Icons.star_border,
+                    color: const Color(0xFFFFD700),
+                    size: 40,
+                  ),
+                ),
+              );
+            }),
+          ),
+          
+          const SizedBox(height: 10),
+          
+          // Rating Text
+          Center(
+            child: Text(
+              _getRatingText(_rating),
+              style: AppTextStyles.body1.copyWith(
+                color: const Color(0xFF202244),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 30),
+          
           Text(
             'Viết đánh giá của bạn',
             style: AppTextStyles.body1.copyWith(
@@ -218,7 +281,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                 children: [
                   // Placeholder text
                   Text(
-                    'Bạn có muốn viết gì về sản phẩm này không?',
+                    'Bạn có muốn viết gì về khóa học này không?',
                     style: AppTextStyles.body1.copyWith(
                       color: const Color(0xFFB4BDC4),
                       fontSize: 12,
@@ -232,6 +295,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                   Expanded(
                     child: TextField(
                       controller: _reviewController,
+                      maxLength: _maxCharacters,
                       maxLines: null,
                       expands: true,
                       textAlignVertical: TextAlignVertical.top,
@@ -243,6 +307,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         hintText: '',
+                        counterText: '',
                       ),
                     ),
                   ),
@@ -266,6 +331,23 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
         ],
       ),
     );
+  }
+
+  String _getRatingText(int rating) {
+    switch (rating) {
+      case 5:
+        return 'Xuất sắc';
+      case 4:
+        return 'Tốt';
+      case 3:
+        return 'Trung bình';
+      case 2:
+        return 'Dưới trung bình';
+      case 1:
+        return 'Kém';
+      default:
+        return '';
+    }
   }
 
   Widget _buildSubmitButton() {
@@ -332,19 +414,53 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
     );
   }
 
-  void _submitReview() {
-    if (_reviewController.text.trim().isNotEmpty) {
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đánh giá đã được gửi thành công!'),
-          backgroundColor: Color(0xFF0961F5),
-        ),
-      );
-      
-      // Navigate back to reviews screen
+  void _submitReview() async {
+    if (_reviewController.text.trim().isEmpty) return;
+    
+    final provider = context.read<FeedbackProvider>();
+    
+    final request = CreateFeedbackRequest(
+      userId: widget.userId,
+      courseId: widget.courseId,
+      rating: _rating,
+      comment: _reviewController.text.trim(),
+    );
+    
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+    
+    final success = await provider.createFeedback(request);
+    
+    // Hide loading indicator
+    if (mounted) {
       Navigator.pop(context);
+      
+      if (success) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đánh giá đã được gửi thành công!'),
+            backgroundColor: Color(0xFF0961F5),
+          ),
+        );
+        
+        // Navigate back
+        Navigator.pop(context, true); // Return true to indicate success
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(provider.error ?? 'Có lỗi xảy ra khi gửi đánh giá'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }
-

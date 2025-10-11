@@ -515,12 +515,38 @@ class AppRoutes {
     Navigator.pushNamed(context, AppConstants.routeCurriculum);
   }
 
-  static void navigateToReviews(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeReviews);
+  static void navigateToReviews(
+    BuildContext context, {
+    required int courseId,
+    String? courseName,
+  }) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReviewsScreen(
+          courseId: courseId,
+          courseName: courseName,
+        ),
+      ),
+    );
   }
 
-  static void navigateToWriteReview(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeWriteReview);
+  static void navigateToWriteReview(
+    BuildContext context, {
+    required int courseId,
+    required int userId,
+    String? courseName,
+  }) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WriteReviewScreen(
+          courseId: courseId,
+          userId: userId,
+          courseName: courseName,
+        ),
+      ),
+    );
   }
 
   static void navigateToPayment(
