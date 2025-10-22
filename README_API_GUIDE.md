@@ -6,6 +6,8 @@ Hướng dẫn này mô tả cách tích hợp API trong Flutter app dựa trên
 
 ## 🏗️ Cấu trúc thư mục
 
+
+
 ```
 lib/
 ├── main.dart                 # Entry point với Provider setup
@@ -40,15 +42,32 @@ lib/
 class HttpClient {
   static final HttpClient _instance = HttpClient._internal();
   factory HttpClient() => _instance;
+  HttpClient._internal();
+  
+  // Khởi tạo client
+  void initialize() {
+    _client = http.Client();
+  }
   
   // Token management
   Future<void> setAccessToken(String token) async
   Future<String?> getAccessToken() async
   Future<void> clearTokens() async
   
-  // HTTP methods
-  Future<http.Response> get(String endpoint, {...})
-  Future<http.Response> post(String endpoint, {...})
+  // HTTP methods with queryParameters support
+  Future<http.Response> get(
+    String endpoint, {
+    Map<String, String>? headers,
+    Map<String, dynamic>? queryParameters,
+  })
+  
+  Future<http.Response> post(
+    String endpoint, {
+    Map<String, String>? headers,
+    Object? body,
+    Map<String, dynamic>? queryParameters,
+  })
+  
   Future<http.Response> put(String endpoint, {...})
   Future<http.Response> delete(String endpoint, {...})
 }
@@ -57,8 +76,15 @@ class HttpClient {
 **Tính năng:**
 - ✅ Auto-inject Bearer token vào headers
 - ✅ Timeout handling (30s)
-- ✅ JSON serialization/deserialization
+- ✅ **Tự động thêm baseUrl** - KHÔNG cần truyền full URL
+- ✅ **Support queryParameters** - Tự động convert và append vào URL
+- ✅ JSON serialization tự động trong body
 - ✅ Persistent token storage (SharedPreferences)
+
+**⚠️ QUAN TRỌNG:**
+- HttpClient **tự động thêm baseUrl** vào endpoint
+- Chỉ truyền endpoint path (vd: `/api/courses/featured`)
+- KHÔNG tự construct full URL bằng `Uri.parse('${baseUrl}${endpoint}')`
 
 ### 2. API Constants (`utils/api_constants.dart`)
 
@@ -113,84 +139,140 @@ class UserRegistrationRequest {
 flutter packages pub run build_runner build
 ```
 
-### 4. Service Layer (`services/auth_service.dart`)
+### 4. Service Layer (`services/course_service.dart`)
 
 **Business logic cho API calls:**
 
 ```dart
-class AuthService {
-  final HttpClient _httpClient = HttpClient();
+class CourseService {
+  final HttpClient _http = HttpClient();
   
-  // Registration
-  Future<void> register(UserRegistrationRequest request) async {
-    final response = await _httpClient.post(
-      ApiConstants.userRegistrationEndpoint,
-      body: request.toJson(),
-    );
-    
-    if (response.statusCode != 200) {
-      throw Exception('Registration failed: ${response.statusCode}');
-    }
+  CourseService() {
+    _http.initialize();
   }
   
-  // Email verification
-  Future<void> verifyEmailOTP(String email, String code) async {
-    final intCode = int.tryParse(code);
-    if (intCode == null) {
-      throw Exception('Invalid OTP format: $code');
-    }
-    
-    final response = await _httpClient.post(
-      ApiConstants.verifyEmailCodeEndpoint,
-      body: {
-        'email': email,
-        'otp': intCode,  // Backend expects Integer
-      },
+  // ✅ ĐÚNG - Sử dụng queryParameters
+  Future<List<CourseResponse>> getFeaturedCourses() async {
+    final queryParams = {
+      'currentPage': 1,
+      'pageSize': 100,
+    };
+
+    final resp = await _http.get(
+      ApiConstants.featuredCoursesEndpoint,
+      queryParameters: queryParams,
     );
-    
-    if (response.statusCode != 200) {
-      throw Exception('Email verification failed: ${response.statusCode}');
+
+    if (resp.statusCode >= 200 && resp.statusCode < 300) {
+      final data = jsonDecode(resp.body);
+      
+      // Backend trả về ApiResponse<PagingResponse<GetCourseResponse>>
+      if (data is Map && data['result'] != null) {
+        final result = data['result'];
+        if (result is Map && result['data'] is List) {
+          return (result['data'] as List)
+              .map((item) => CourseResponse.fromJson(item))
+              .toList();
+        }
+      }
     }
+
+    throw Exception('Failed to load featured courses: ${resp.statusCode}');
+  }
+  
+  // ❌ SAI - Tự construct URL (cần refactor)
+  Future<PagingCourseResponse> getAllCourses({
+    int pageNumber = 1,
+    int pageSize = 10,
+  }) async {
+    final queryParams = {
+      'pageNumber': pageNumber.toString(),
+      'pageSize': pageSize.toString(),
+    };
+
+    // ❌ KHÔNG nên làm như này
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.coursesEndpoint}')
+        .replace(queryParameters: queryParams);
+    final resp = await _http.get(uri.toString());
+    
+    // ✅ NÊN làm như này thay thế
+    // final resp = await _http.get(
+    //   ApiConstants.coursesEndpoint,
+    //   queryParameters: queryParams,
+    // );
   }
 }
 ```
 
-### 5. State Management (`providers/auth_provider.dart`)
+### 5. State Management (`providers/course_provider.dart`)
 
 **Provider pattern cho state management:**
 
 ```dart
-class AuthProvider extends ChangeNotifier {
-  final AuthService _authService = AuthService();
+class CourseProvider extends ChangeNotifier {
+  final CourseService _courseService = CourseService();
   
-  UserInfo? _currentUser;
+  List<CourseResponse> _courses = [];
   bool _isLoading = false;
   String? _errorMessage;
-  bool _isLoggedIn = false;
+  int _currentPage = 1;
+  int _totalPages = 1;
+  bool _hasMore = true;
   
-  // Registration
-  Future<bool> register({
-    required String email,
-    required String password,
-    required String username,
-  }) async {
-    _setLoading(true);
-    _clearError();
+  // Fetch featured courses (non-paginated)
+  Future<void> fetchFeaturedCourses() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
     
     try {
-      final request = UserRegistrationRequest(
-        email: email,
-        password: password,
-        username: username,
+      _courses = await _courseService.getFeaturedCourses();
+      
+      // ⚠️ QUAN TRỌNG: Disable pagination cho non-paginated endpoints
+      _currentPage = 1;
+      _totalPages = 1;
+      _hasMore = false;  // Ngăn load more không cần thiết
+      
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = 'Failed to load courses: $e';
+      notifyListeners();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+  
+  // Fetch with pagination
+  Future<void> fetchAllCourses({int page = 1}) async {
+    if (_isLoading) return;
+    
+    _isLoading = true;
+    notifyListeners();
+    
+    try {
+      final response = await _courseService.getAllCourses(
+        pageNumber: page,
+        pageSize: 10,
       );
       
-      await _authService.register(request);
-      return true;
+      if (page == 1) {
+        _courses = response.courses;
+      } else {
+        _courses.addAll(response.courses);
+      }
+      
+      _currentPage = page;
+      _totalPages = response.totalPages;
+      _hasMore = page < _totalPages;
+      
+      notifyListeners();
     } catch (e) {
-      _setError('Đăng ký thất bại: $e');
-      return false;
+      _errorMessage = e.toString();
+      notifyListeners();
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }
@@ -201,36 +283,38 @@ class AuthProvider extends ChangeNotifier {
 **Sử dụng Provider trong UI:**
 
 ```dart
-class RegisterScreen extends StatefulWidget {
+class PopularCoursesScreen extends StatefulWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, child) {
-        return ElevatedButton(
-          onPressed: authProvider.isLoading ? null : _signUp,
-          child: authProvider.isLoading 
-            ? CircularProgressIndicator()
-            : Text('Đăng ký'),
+    return Consumer<CourseProvider>(
+      builder: (context, courseProvider, child) {
+        if (courseProvider.isLoading && courseProvider.courses.isEmpty) {
+          return Center(child: CircularProgressIndicator());
+        }
+        
+        if (courseProvider.errorMessage != null) {
+          return Center(child: Text(courseProvider.errorMessage!));
+        }
+        
+        return ListView.builder(
+          itemCount: courseProvider.courses.length,
+          itemBuilder: (context, index) {
+            final course = courseProvider.courses[index];
+            return CourseCard(course: course);
+          },
         );
       },
     );
   }
   
-  Future<void> _signUp() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.register(
-      email: _emailController.text,
-      password: _passwordController.text,
-      username: _usernameController.text,
-    );
-    
-    if (success) {
-      Navigator.pushNamed(context, AppConstants.routeCreatePin);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(authProvider.errorMessage ?? 'Lỗi không xác định')),
-      );
-    }
+  @override
+  void initState() {
+    super.initState();
+    // Fetch data khi màn hình load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CourseProvider>(context, listen: false)
+          .fetchFeaturedCourses();
+    });
   }
 }
 ```
@@ -273,55 +357,106 @@ class ApiConstants {
 ### Bước 3: Tạo Service Method
 
 ```dart
-// services/new_service.dart
-class NewService {
-  final HttpClient _httpClient = HttpClient();
+// services/course_service.dart
+class CourseService {
+  final HttpClient _http = HttpClient();
   
-  Future<NewResponse> callNewAPI(NewRequest request) async {
-    try {
-      final response = await _httpClient.post(
-        ApiConstants.newEndpoint,
-        body: request.toJson(),
-      );
+  CourseService() {
+    _http.initialize();
+  }
+  
+  // ✅ ĐÚNG - Pattern được khuyến nghị
+  Future<List<CourseResponse>> getFeaturedCourses() async {
+    final queryParams = {
+      'currentPage': 1,
+      'pageSize': 100,
+    };
+
+    final resp = await _http.get(
+      ApiConstants.featuredCoursesEndpoint,
+      queryParameters: queryParams,
+    );
+
+    if (resp.statusCode >= 200 && resp.statusCode < 300) {
+      final data = jsonDecode(resp.body);
       
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return NewResponse.fromJson(data['result']);
-      } else {
-        throw Exception('API call failed: ${response.statusCode}');
+      // Parse ApiResponse<PagingResponse<T>> format
+      if (data is Map && data['result'] != null) {
+        final result = data['result'];
+        if (result is Map && result['data'] is List) {
+          return (result['data'] as List)
+              .map((item) => CourseResponse.fromJson(item))
+              .toList();
+        }
       }
-    } catch (e) {
-      throw Exception('New service error: $e');
+      
+      // Fallback cho format khác
+      if (data is List) {
+        return data.map((item) => CourseResponse.fromJson(item)).toList();
+      }
+    }
+
+    throw Exception('Failed to load courses: ${resp.statusCode}');
+  }
+  
+  // POST request với body
+  Future<void> enrollCourse(String courseId) async {
+    final body = {
+      'courseId': courseId,
+    };
+
+    final resp = await _http.post(
+      ApiConstants.enrollCourseEndpoint,
+      body: body,
+    );
+
+    if (resp.statusCode < 200 || resp.statusCode >= 300) {
+      throw Exception('Failed to enroll: ${resp.statusCode}');
     }
   }
 }
 ```
 
-### Bước 4: Tạo Provider
+**⚠️ Pattern cần TRÁNH:**
+```dart
+// ❌ KHÔNG nên tự construct full URL
+final uri = Uri.parse('${ApiConstants.baseUrl}${endpoint}')
+    .replace(queryParameters: queryParams);
+final resp = await _http.get(uri.toString());
+
+// ✅ NÊN dùng queryParameters
+final resp = await _http.get(endpoint, queryParameters: queryParams);
+```
+
+### Bước 4: Tạo hoặc Cập nhật Provider
 
 ```dart
-// providers/new_provider.dart
-class NewProvider extends ChangeNotifier {
-  final NewService _newService = NewService();
+// providers/course_provider.dart
+class CourseProvider extends ChangeNotifier {
+  final CourseService _courseService = CourseService();
   
+  List<CourseResponse> _courses = [];
   bool _isLoading = false;
   String? _errorMessage;
-  NewData? _data;
   
-  Future<bool> callNewAPI(String field1, int field2) async {
-    _setLoading(true);
-    _clearError();
+  List<CourseResponse> get courses => _courses;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  
+  Future<void> fetchFeaturedCourses() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
     
     try {
-      final request = NewRequest(field1: field1, field2: field2);
-      _data = await _newService.callNewAPI(request);
+      _courses = await _courseService.getFeaturedCourses();
       notifyListeners();
-      return true;
     } catch (e) {
-      _setError('API call failed: $e');
-      return false;
+      _errorMessage = 'Failed to load courses: $e';
+      notifyListeners();
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }
@@ -336,15 +471,22 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
-        ChangeNotifierProvider(create: (context) => NewProvider()),
+        ChangeNotifierProvider(create: (context) => CourseProvider()),
+        ChangeNotifierProvider(create: (context) => BlogProvider()),
+        // Thêm providers khác ở đây
       ],
       child: MaterialApp(
-        // ... app configuration
+        title: 'Flutter App',
+        theme: ThemeData(primarySwatch: Colors.blue),
+        home: const HomeScreen(),
+        routes: AppRoutes.routes,
       ),
     );
   }
@@ -354,129 +496,435 @@ class MyApp extends StatelessWidget {
 ### Bước 6: Sử dụng trong UI
 
 ```dart
-// screens/new_screen.dart
-class NewScreen extends StatelessWidget {
+// screens/popular_courses_screen.dart
+class PopularCoursesScreen extends StatefulWidget {
+  const PopularCoursesScreen({Key? key}) : super(key: key);
+
+  @override
+  State<PopularCoursesScreen> createState() => _PopularCoursesScreenState();
+}
+
+class _PopularCoursesScreenState extends State<PopularCoursesScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Fetch data khi màn hình load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CourseProvider>(context, listen: false)
+          .fetchFeaturedCourses();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<NewProvider>(
-      builder: (context, newProvider, child) {
-        return ElevatedButton(
-          onPressed: newProvider.isLoading ? null : () => _callAPI(context),
-          child: newProvider.isLoading 
-            ? CircularProgressIndicator()
-            : Text('Call API'),
-        );
-      },
+    return Scaffold(
+      appBar: AppBar(title: const Text('Popular Courses')),
+      body: Consumer<CourseProvider>(
+        builder: (context, courseProvider, child) {
+          // Loading state
+          if (courseProvider.isLoading && courseProvider.courses.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          // Error state
+          if (courseProvider.errorMessage != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(courseProvider.errorMessage!),
+                  ElevatedButton(
+                    onPressed: () => courseProvider.fetchFeaturedCourses(),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+          
+          // Success state
+          return ListView.builder(
+            itemCount: courseProvider.courses.length,
+            itemBuilder: (context, index) {
+              final course = courseProvider.courses[index];
+              return CourseCard(course: course);
+            },
+          );
+        },
+      ),
     );
-  }
-  
-  Future<void> _callAPI(BuildContext context) async {
-    final newProvider = Provider.of<NewProvider>(context, listen: false);
-    final success = await newProvider.callNewAPI('value1', 123);
-    
-    if (success) {
-      // Handle success
-    } else {
-      // Handle error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(newProvider.errorMessage ?? 'Error')),
-      );
-    }
   }
 }
 ```
 
 ## ⚠️ Lưu ý quan trọng
 
-### 1. Data Type Mapping
+### 1. URL Construction - QUAN TRỌNG NHẤT
 
-**Backend expects specific types:**
+**❌ KHÔNG BAO GIỜ tự construct full URL:**
+```dart
+// ❌ SAI - Sẽ gây lỗi "Invalid port" hoặc duplicate baseUrl
+final uri = Uri.parse('${ApiConstants.baseUrl}${endpoint}')
+    .replace(queryParameters: queryParams);
+final resp = await _http.get(uri.toString());
+```
+
+**✅ LUÔN LUÔN dùng queryParameters:**
+```dart
+// ✅ ĐÚNG - HttpClient tự động thêm baseUrl
+final resp = await _http.get(
+  ApiConstants.featuredCoursesEndpoint,  // Chỉ truyền endpoint path
+  queryParameters: {'currentPage': 1, 'pageSize': 100},
+);
+```
+
+**Lý do:**
+- `HttpClient.get()` đã tự động thêm `baseUrl` vào endpoint
+- Tự construct URL sẽ tạo ra: `http://localhost:8081http://localhost:8081/api/...`
+- Gây lỗi "Invalid port" hoặc 404 Not Found
+
+### 2. Response Format Handling
+
+**Backend có 2 loại response format:**
+
+```dart
+// Format 1: ApiResponse<PagingResponse<T>>
+{
+  "success": true,
+  "messageDTO": null,
+  "result": {
+    "data": [...],  // Array of items
+    "paging": {...},
+    "totalElements": 30,
+    "totalPages": 1
+  }
+}
+
+// Format 2: ApiResponse<T> (single object)
+{
+  "success": true,
+  "messageDTO": null,
+  "result": {...}  // Single object
+}
+
+// Format 3: Direct array (legacy)
+[...]  // Direct array
+```
+
+**Parse đúng format:**
+```dart
+Future<List<CourseResponse>> getFeaturedCourses() async {
+  final resp = await _http.get(endpoint, queryParameters: params);
+  
+  if (resp.statusCode >= 200 && resp.statusCode < 300) {
+    final data = jsonDecode(resp.body);
+    
+    // Check ApiResponse<PagingResponse> format
+    if (data is Map && data['result'] != null) {
+      final result = data['result'];
+      if (result is Map && result['data'] is List) {
+        return (result['data'] as List)
+            .map((item) => CourseResponse.fromJson(item))
+            .toList();
+      }
+    }
+    
+    // Fallback: Direct array
+    if (data is List) {
+      return data.map((item) => CourseResponse.fromJson(item)).toList();
+    }
+  }
+  
+  throw Exception('Failed to load: ${resp.statusCode}');
+}
+```
+
+### 3. Pagination State Management
+
+**Cho non-paginated endpoints, BẮT BUỘC disable pagination:**
+
+```dart
+Future<void> fetchFeaturedCourses() async {
+  try {
+    _courses = await _courseService.getFeaturedCourses();
+    
+    // ⚠️ QUAN TRỌNG: Disable pagination
+    _currentPage = 1;
+    _totalPages = 1;
+    _hasMore = false;  // Ngăn load more không cần thiết
+    
+    notifyListeners();
+  } catch (e) {
+    // Error handling
+  }
+}
+```
+
+**Lý do:**
+- Featured/Latest courses trả về tất cả items (không có pagination)
+- Nếu không set `_hasMore = false`, UI sẽ cố gắng load more
+- Gây ra API calls không cần thiết
+
+### 4. Data Type Mapping
+
+**Backend expects specific types - CHÚ Ý type conversion:**
 ```dart
 // ❌ Wrong - Backend expects Integer
 body: {
   'email': email,
-  'code': code,  // String
+  'code': code,  // String "123456"
 }
 
 // ✅ Correct - Backend expects Integer
+final intCode = int.parse(code);  // Convert to int
 body: {
   'email': email,
-  'otp': intCode,  // Integer
+  'otp': intCode,  // Integer 123456
 }
 ```
 
-### 2. Error Handling
+### 5. Error Handling
 
 **Comprehensive error handling:**
 ```dart
 try {
-  final response = await _httpClient.post(endpoint, body: data);
+  final response = await _http.post(endpoint, body: data);
   
-  if (response.statusCode == 200) {
+  if (response.statusCode >= 200 && response.statusCode < 300) {
     // Success
+    final data = jsonDecode(response.body);
+    return DataModel.fromJson(data);
   } else {
     // Handle specific error codes
     if (response.statusCode == 400) {
       throw Exception('Bad Request: ${response.body}');
     } else if (response.statusCode == 401) {
-      throw Exception('Unauthorized');
+      throw Exception('Unauthorized - Please login again');
+    } else if (response.statusCode == 404) {
+      throw Exception('Not Found');
     }
+    throw Exception('HTTP ${response.statusCode}: ${response.body}');
   }
+} on HttpException catch (e) {
+  print('HTTP Error: $e');
+  throw Exception('Network error: $e');
+} on FormatException catch (e) {
+  print('JSON Parse Error: $e');
+  throw Exception('Invalid response format');
 } catch (e) {
-  // Log error for debugging
-  print('API Error: $e');
+  print('Unexpected Error: $e');
   throw Exception('API call failed: $e');
 }
 ```
 
-### 3. Debug Logging
+### 6. Debug Logging
 
 **Add debug logs for troubleshooting:**
 ```dart
 Future<void> apiCall() async {
-  print('=== DEBUG: API call started ===');
-  print('Request data: $requestData');
+  print('=== DEBUG: Calling ${ApiConstants.endpoint} ===');
+  print('Query params: $queryParams');
+  print('Request body: $requestBody');
   
-  final response = await _httpClient.post(endpoint, body: requestData);
+  final response = await _http.post(endpoint, body: requestBody);
   
-  print('=== DEBUG: Response status: ${response.statusCode} ===');
-  print('=== DEBUG: Response body: ${response.body} ===');
+  print('=== Response status: ${response.statusCode} ===');
+  print('=== Response body: ${response.body} ===');
+  
+  if (response.statusCode >= 200 && response.statusCode < 300) {
+    print('✅ API call successful');
+  } else {
+    print('❌ API call failed');
+  }
 }
 ```
 
-### 4. Token Management
+### 7. Token Management
 
-**Automatic token injection:**
+**Automatic token injection - KHÔNG cần manual setup:**
 ```dart
-// HttpClient automatically adds Bearer token
-Map<String, String> _getHeaders() {
-  final headers = Map<String, String>.from(ApiConstants.defaultHeaders);
-  
-  if (_accessToken != null) {
-    headers['Authorization'] = 'Bearer $_accessToken';
-  }
-  
-  return headers;
-}
+// ❌ KHÔNG cần làm thế này
+final headers = {
+  'Authorization': 'Bearer $token',
+  'Content-Type': 'application/json',
+};
+final resp = await http.get(url, headers: headers);
+
+// ✅ HttpClient tự động inject token
+final resp = await _http.get(endpoint);
+// Token tự động được thêm vào header nếu đã login
 ```
 
 ## 🎯 Best Practices
 
-1. **Always use models** cho request/response
-2. **Centralize API constants** trong một file
-3. **Handle loading states** trong UI
-4. **Show meaningful error messages** cho user
-5. **Add debug logs** cho development
-6. **Use Provider pattern** cho state management
-7. **Validate data types** trước khi gửi API
-8. **Handle network timeouts** appropriately
+### 1. Always use queryParameters
+```dart
+// ✅ ĐÚNG
+final resp = await _http.get(endpoint, queryParameters: {'page': 1});
 
-## 🔄 Testing Flow
+// ❌ SAI
+final uri = Uri.parse('${baseUrl}${endpoint}?page=1');
+final resp = await _http.get(uri.toString());
+```
 
-1. **Registration** → User tạo account
-2. **Email Verification** → User nhập OTP từ email
-3. **Login** → User đăng nhập với credentials
-4. **Token Management** → Auto-refresh và logout
+### 2. Use models cho request/response
+- Tạo model classes với `@JsonSerializable()`
+- Generate code với `build_runner`
+- Type-safe và dễ maintain
+
+### 3. Centralize API constants
+- Tất cả endpoints trong `api_constants.dart`
+- Dễ dàng update khi backend thay đổi
+- Tránh hardcode URL trong code
+
+### 4. Handle loading states properly
+```dart
+// Show loading khi đang fetch
+if (provider.isLoading && provider.data.isEmpty) {
+  return CircularProgressIndicator();
+}
+
+// Show error với retry button
+if (provider.errorMessage != null) {
+  return ErrorWidget(onRetry: () => provider.fetchData());
+}
+```
+
+### 5. Show meaningful error messages
+- Parse error response từ backend
+- Hiển thị message user-friendly
+- Log chi tiết error cho debugging
+
+### 6. Add debug logs cho development
+- Log request parameters
+- Log response status & body
+- Giúp troubleshoot nhanh hơn
+
+### 7. Use Provider pattern correctly
+- Provider ở top level (main.dart)
+- Use `Consumer` cho rebuild widget
+- Use `Provider.of(context, listen: false)` cho actions
+
+### 8. Validate data types trước khi gửi API
+- Check null values
+- Convert types nếu cần (String → int)
+- Validate format (email, phone, etc.)
+
+### 9. Handle network timeouts
+- HttpClient đã set timeout 30s
+- Catch `TimeoutException` riêng
+- Show appropriate error message
+
+### 10. Disable pagination cho non-paginated APIs
+```dart
+// Featured courses không có pagination
+_hasMore = false;  // QUAN TRỌNG
+_currentPage = 1;
+_totalPages = 1;
+```
+
+### 11. KHÔNG tự construct URL
+- Luôn dùng `_http.get(endpoint, queryParameters: ...)`
+- HttpClient tự động thêm baseUrl
+- Tránh lỗi duplicate baseUrl
+
+### 12. Parse response format correctly
+- Check `data['result']['data']` cho PagingResponse
+- Check `data['result']` cho single object
+- Fallback cho direct array (legacy)
+
+## 🔄 Common Issues & Solutions
+
+### Issue 1: "Invalid port" Error
+**Nguyên nhân:** Tự construct URL gây duplicate baseUrl
+```
+http://localhost:8081http://localhost:8081/api/courses
+```
+
+**Giải pháp:**
+```dart
+// ❌ SAI
+final uri = Uri.parse('${ApiConstants.baseUrl}${endpoint}');
+final resp = await _http.get(uri.toString());
+
+// ✅ ĐÚNG
+final resp = await _http.get(endpoint, queryParameters: params);
+```
+
+### Issue 2: "Page index must not be less than zero"
+**Nguyên nhân:** Backend pagination bắt đầu từ 0, Flutter gửi currentPage=0
+
+**Giải pháp:**
+```dart
+// ✅ Luôn gửi currentPage từ 1 trở lên
+final queryParams = {
+  'currentPage': 1,  // Không bao giờ gửi 0
+  'pageSize': 100,
+};
+```
+
+### Issue 3: Pagination không tắt cho Featured Courses
+**Nguyên nhân:** Quên set `_hasMore = false`
+
+**Giải pháp:**
+```dart
+Future<void> fetchFeaturedCourses() async {
+  _courses = await _courseService.getFeaturedCourses();
+  
+  // ⚠️ BẮT BUỘC cho non-paginated endpoints
+  _hasMore = false;
+  _currentPage = 1;
+  _totalPages = 1;
+}
+```
+
+### Issue 4: Cannot parse JSON response
+**Nguyên nhân:** Backend response format khác expected
+
+**Giải pháp:**
+```dart
+// Handle multiple response formats
+if (data is Map && data['result'] != null) {
+  final result = data['result'];
+  
+  // PagingResponse format
+  if (result is Map && result['data'] is List) {
+    return (result['data'] as List).map(...).toList();
+  }
+  
+  // Single object format
+  if (result is Map) {
+    return Model.fromJson(result);
+  }
+}
+
+// Fallback: Direct array
+if (data is List) {
+  return data.map(...).toList();
+}
+```
+
+### Issue 5: Token not being sent
+**Nguyên nhân:** Chưa login hoặc token bị clear
+
+**Kiểm tra:**
+```dart
+final token = await HttpClient().getAccessToken();
+print('Current token: $token');
+
+// Nếu null, cần login lại
+if (token == null) {
+  // Redirect to login
+}
+```
+
+### Issue 6: Inconsistent API patterns trong codebase
+**Nguyên nhân:** Một số methods dùng cách cũ, một số dùng cách mới
+
+**Giải pháp:**
+- Refactor tất cả methods theo pattern mới (queryParameters)
+- Reference: `getFeaturedCourses()` là pattern đúng
+- Cần refactor: `getAllCourses()`, `searchCourses()`, `checkEnrollment()`
 
 ## 📝 Dependencies
 
