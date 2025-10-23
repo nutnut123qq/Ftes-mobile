@@ -21,17 +21,18 @@ class AuthService {
   }
 
   final HttpClient _httpClient = HttpClient();
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: '957561951017-38543te6feepe3geb5sh6ae2jpgsksi4.apps.googleusercontent.com',
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   final ProfileService _profileService = ProfileService();
   final ImageService _imageService = ImageService();
 
   // Initialize the service
-  void initialize() {
+  Future<void> initialize() async {
     _httpClient.initialize();
     _profileService.initialize();
     _imageService.initialize();
+    
+    // Initialize GoogleSignIn (required in 7.x)
+    await _googleSignIn.initialize();
   }
 
   // Dispose the service
@@ -82,24 +83,25 @@ class AuthService {
   /// Login with Google OAuth
   Future<AuthenticationResponse> loginWithGoogle({bool isAdmin = false}) async {
     try {
-      // Sign in with Google
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      // Use the new authenticate method from 7.x
+      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
       if (googleUser == null) {
-        throw Exception('Google sign in cancelled');
+        throw Exception('Google authentication cancelled');
       }
 
-      // Get authentication details
+      // Get authentication details using the new API
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final String? authCode = googleAuth.serverAuthCode;
-      final String? accessToken = googleAuth.accessToken;
+      
+      // In 7.x, we need to get tokens differently
+      final String? idToken = googleAuth.idToken;
 
-      if (authCode == null && accessToken == null) {
+      if (idToken == null) {
         throw Exception('Failed to get Google authentication details');
       }
 
-      // For development, use access token directly if auth code is not available
-      String authParam = authCode ?? accessToken!;
-      String paramName = authCode != null ? 'code' : 'access_token';
+      // Use id token for authentication
+      String authParam = idToken;
+      String paramName = 'id_token';
 
       // Send auth code/token to backend
       final response = await _httpClient.post(

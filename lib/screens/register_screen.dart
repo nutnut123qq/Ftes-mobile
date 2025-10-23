@@ -66,7 +66,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(height: 8),
                       // App name
                       Text(
-                        'EDUPRO',
+                        'FTES - AI Learning Platform',
                         style: AppTextStyles.heading1.copyWith(
                           color: AppColors.primary,
                           fontSize: 30,

@@ -7,15 +7,15 @@ class AuthExample {
   final AuthService _authService = AuthService();
 
   /// Initialize the auth service
-  void initialize() {
-    _authService.initialize();
+  Future<void> initialize() async {
+    await _authService.initialize();
   }
 
   /// Example: Login with email and password
   Future<void> loginExample() async {
     try {
       final request = AuthenticationRequest(
-        email: 'user@example.com',
+        credential: 'user@example.com',
         password: 'password123',
       );
 
@@ -40,8 +40,7 @@ class AuthExample {
       final request = UserRegistrationRequest(
         email: 'newuser@example.com',
         password: 'password123',
-        firstName: 'John',
-        lastName: 'Doe',
+        username: 'johndoe',
       );
 
       await _authService.register(request);
