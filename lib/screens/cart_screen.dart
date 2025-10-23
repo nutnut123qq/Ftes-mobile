@@ -637,6 +637,13 @@ class _CartScreenState extends State<CartScreen> {
     });
     
     try {
+      // Trước khi tạo đơn mới, hủy mọi đơn đang pending để tránh trạng thái sai
+      try {
+        await _orderService.cancelPendingOrders();
+      } catch (_) {
+        // Bỏ qua lỗi hủy nếu có, tiếp tục tạo đơn mới
+      }
+
       // Get course IDs from cart
       final courseIds = cartItems
           .map((item) => item.courseId)

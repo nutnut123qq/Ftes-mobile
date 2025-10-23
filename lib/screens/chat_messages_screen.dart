@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../models/message_item.dart';
 import '../models/chat_item.dart';
+import '../providers/ai_chat_provider.dart';
 
 class ChatMessagesScreen extends StatefulWidget {
-  final ChatItem chat;
+  final ChatItem? chat;
+  final String? lessonId;
+  final String? lessonTitle;
 
   const ChatMessagesScreen({
     super.key,
-    required this.chat,
+    this.chat,
+    this.lessonId,
+    this.lessonTitle,
   });
 
   @override
@@ -23,15 +29,21 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   @override
   void initState() {
     super.initState();
+    
+    // Initialize AI chat if lessonId is provided
+    if (widget.lessonId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final aiChatProvider = Provider.of<AIChatProvider>(context, listen: false);
+        aiChatProvider.initializeLessonChat(
+          widget.lessonId!,
+          widget.lessonTitle ?? 'Lesson',
+        );
+      });
+    }
+    
     // Scroll to bottom when messages load
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+      _scrollToBottom();
     });
   }
 
@@ -40,6 +52,16 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
@@ -102,7 +124,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'AI take care',
+                  widget.lessonId != null 
+                      ? 'AI Trợ Giảng - ${widget.lessonTitle ?? "Lesson"}'
+                      : 'AI take care',
                   style: AppTextStyles.heading3.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -158,16 +182,93 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   }
 
   Widget _buildMessagesList() {
-    final messages = _getMessages();
-    
-    return ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 8),
-      itemCount: messages.length,
-      itemBuilder: (context, index) {
-        final message = messages[index];
-        return _buildMessageBubble(message, index);
+    return Consumer<AIChatProvider>(
+      builder: (context, aiChatProvider, child) {
+        // Use AI messages if lessonId is provided, otherwise use mock data
+        final messages = widget.lessonId != null 
+            ? aiChatProvider.messages 
+            : _getMessages();
+        
+        return ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 8),
+          itemCount: messages.length + (aiChatProvider.isLoading ? 1 : 0),
+          itemBuilder: (context, index) {
+            // Show loading indicator at the end
+            if (index == messages.length && aiChatProvider.isLoading) {
+              return _buildLoadingIndicator();
+            }
+            
+            final message = messages[index];
+            return _buildMessageBubble(message, index);
+          },
+        );
       },
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // Avatar for AI
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: AppColors.lightBlue,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.smart_toy,
+              color: AppColors.primary,
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Loading bubble
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16).copyWith(
+                bottomLeft: const Radius.circular(4),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'AI đang suy nghĩ...',
+                  style: AppTextStyles.bodyText.copyWith(
+                    color: AppColors.textLight,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -192,7 +293,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(
-                Icons.person,
+                Icons.smart_toy, // Robot icon for AI
                 color: AppColors.primary,
                 size: 16,
               ),
@@ -394,23 +495,30 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     );
   }
 
-  void _sendMessage(String content) {
+  void _sendMessage(String content) async {
     if (content.isEmpty) return;
     
-    setState(() {
-      _messageController.clear();
-    });
+    // Clear input
+    _messageController.clear();
     
-    // Scroll to bottom after sending message
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
+    // If using AI chat
+    if (widget.lessonId != null) {
+      final aiChatProvider = Provider.of<AIChatProvider>(context, listen: false);
+      await aiChatProvider.sendMessage(content);
+      
+      // Scroll to bottom after sending
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
+    } else {
+      // Mock behavior for non-AI chat
+      setState(() {});
+      
+      // Scroll to bottom after sending message
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
+    }
   }
 
   List<MessageItem> _getMessages() {

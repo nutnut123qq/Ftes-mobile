@@ -12,6 +12,8 @@ import 'providers/point_provider.dart';
 import 'providers/enrollment_provider.dart';
 import 'providers/feedback_provider.dart';
 import 'providers/exercise_provider.dart';
+import 'providers/video_provider.dart';
+import 'providers/ai_chat_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,6 +35,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => EnrollmentProvider()),
         ChangeNotifierProvider(create: (context) => FeedbackProvider()),
         ChangeNotifierProvider(create: (context) => ExerciseProvider()),
+        ChangeNotifierProvider(create: (context) => VideoProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, AIChatProvider>(
+          create: (context) => AIChatProvider(Provider.of<AuthProvider>(context, listen: false)),
+          update: (context, auth, previous) => previous ?? AIChatProvider(auth),
+        ),
       ],
       child: MaterialApp(
         title: AppConstants.appName,

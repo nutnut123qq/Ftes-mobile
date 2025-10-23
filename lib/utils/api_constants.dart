@@ -31,7 +31,7 @@ class ApiConstants {
   static const String courseDetailEndpoint = '/api/courses/detail';
   static const String coursesSearchEndpoint = '/api/courses/search';
   static const String latestCoursesEndpoint = '/api/courses/latest';
-  static const String userCoursesEndpoint = '/api/courses/user';
+  static const String userCoursesEndpoint = '/api/courses/join';
   static const String checkEnrollmentEndpoint = '/api/user-courses/check-enrollment';
   static const String enrollCourseEndpoint = '/api/user-courses';
   

@@ -5,8 +5,8 @@ import '../providers/feedback_provider.dart';
 import '../models/create_feedback_request.dart';
 
 class WriteReviewScreen extends StatefulWidget {
-  final int courseId;
-  final int userId;
+  final String courseId;
+  final String userId;
   final String? courseName;
   
   const WriteReviewScreen({
@@ -419,9 +419,12 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
     
     final provider = context.read<FeedbackProvider>();
     
+    final userIdInt = int.tryParse(widget.userId) ?? 0;
+    final courseIdInt = int.tryParse(widget.courseId) ?? 0;
+    
     final request = CreateFeedbackRequest(
-      userId: widget.userId,
-      courseId: widget.courseId,
+      userId: userIdInt,
+      courseId: courseIdInt,
       rating: _rating,
       comment: _reviewController.text.trim(),
     );

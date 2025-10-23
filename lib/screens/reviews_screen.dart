@@ -3,10 +3,11 @@ import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/routes/app_routes.dart';
 import 'package:provider/provider.dart';
 import '../providers/feedback_provider.dart';
+import '../providers/auth_provider.dart';
 import '../models/feedback_response.dart';
 
 class ReviewsScreen extends StatefulWidget {
-  final int courseId;
+  final String courseId;
   final String? courseName;
   
   const ReviewsScreen({
@@ -39,8 +40,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
 
   void _loadData() {
     final provider = context.read<FeedbackProvider>();
-    provider.loadFeedbacks(widget.courseId, refresh: true);
-    provider.loadAverageRating(widget.courseId);
+    final courseIdInt = int.tryParse(widget.courseId) ?? 0;
+    provider.loadFeedbacks(courseIdInt, refresh: true);
+    provider.loadAverageRating(courseIdInt);
   }
 
   void _onScroll() {
@@ -48,7 +50,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<FeedbackProvider>();
       if (!provider.isLoadingMore && provider.hasMore) {
-        provider.loadFeedbacks(widget.courseId);
+        final courseIdInt = int.tryParse(widget.courseId) ?? 0;
+        provider.loadFeedbacks(courseIdInt);
       }
     }
   }
@@ -75,8 +78,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
 
             return RefreshIndicator(
               onRefresh: () async {
-                await provider.loadFeedbacks(widget.courseId, refresh: true);
-                await provider.loadAverageRating(widget.courseId);
+                final courseIdInt = int.tryParse(widget.courseId) ?? 0;
+                await provider.loadFeedbacks(courseIdInt, refresh: true);
+                await provider.loadAverageRating(courseIdInt);
               },
               child: SingleChildScrollView(
                 controller: _scrollController,
@@ -509,7 +513,14 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            AppRoutes.navigateToWriteReview(context);
+            final authProvider = context.read<AuthProvider>();
+            final userId = authProvider.currentUser?.id ?? '';
+            AppRoutes.navigateToWriteReview(
+              context,
+              courseId: widget.courseId,
+              userId: userId,
+              courseName: widget.courseName,
+            );
           },
           borderRadius: BorderRadius.circular(30),
           child: Row(

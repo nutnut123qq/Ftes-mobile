@@ -50,11 +50,28 @@ class CourseService {
 
   /// Get course by ID
   Future<CourseResponse> getCourseById(String courseId) async {
-    final resp = await _http.get('${ApiConstants.coursesEndpoint}/$courseId');
+    // Use detail endpoint to ensure we get parts and lessons
+    final resp = await _http.get('${ApiConstants.courseDetailEndpoint}/$courseId');
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final data = jsonDecode(resp.body);
-      return CourseResponse.fromJson(data);
+      
+      // Handle different response formats (same as getCourseBySlug)
+      Map<String, dynamic> courseData;
+      if (data is Map<String, dynamic>) {
+        // Check if response is wrapped (e.g., {result: {...}}, {data: {...}})
+        if (data.containsKey('result') && data['result'] is Map) {
+          courseData = data['result'] as Map<String, dynamic>;
+        } else if (data.containsKey('data') && data['data'] is Map) {
+          courseData = data['data'] as Map<String, dynamic>;
+        } else {
+          courseData = data;
+        }
+      } else {
+        throw Exception('Unexpected response format: ${data.runtimeType}');
+      }
+      
+      return CourseResponse.fromJson(courseData);
     }
 
     throw Exception('Failed to load course: ${resp.statusCode} ${resp.body}');
@@ -227,18 +244,31 @@ class CourseService {
   }
 
   /// Get courses by user ID
-  Future<List<UserCourseResponse>> getUserCourses(String userId) async {
+  Future<List<CourseResponse>> getUserCourses(String userId) async {
     final resp = await _http.get('${ApiConstants.userCoursesEndpoint}/$userId');
-
+    
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final data = jsonDecode(resp.body);
+      
+      // Direct list
       if (data is List) {
-        return data.map((item) => UserCourseResponse.fromJson(item)).toList();
+        return data.map((item) => CourseResponse.fromJson(item)).toList();
       }
+      // ApiResponse with result as list
       if (data is Map && data['result'] is List) {
         return (data['result'] as List)
-            .map((item) => UserCourseResponse.fromJson(item))
+            .map((item) => CourseResponse.fromJson(item))
             .toList();
+      }
+      // ApiResponse with result as paging object containing data list
+      if (data is Map && data['result'] is Map) {
+        final result = data['result'] as Map;
+        final dynamic innerData = result['data'];
+        if (innerData is List) {
+          return innerData
+              .map((item) => CourseResponse.fromJson(item))
+              .toList();
+        }
       }
     }
 
@@ -275,7 +305,8 @@ class CourseService {
 
   /// Check enrollment status
   Future<bool> checkEnrollment(String courseId) async {
-    final url = '${ApiConstants.checkEnrollmentEndpoint}?courseId=$courseId';
+    // Backend expects path param: /api/user-courses/check-enrollment/{courseId}
+    final url = '${ApiConstants.checkEnrollmentEndpoint}/$courseId';
     final resp = await _http.get(url);
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {

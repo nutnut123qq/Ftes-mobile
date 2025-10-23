@@ -74,41 +74,70 @@ class OrderResponse {
 @JsonSerializable()
 class OrderViewResponse {
   final String? id;
+  final String? orderId;  // Added to match backend
   final String? userId;
   final String? userName;
   final String? userEmail;
   final double? subtotal;
   final double? discount;
   final double? total;
+  final double? totalPrice;  // Added to match backend
   final String? status;
   final String? couponCode;
+  final String? couponName;  // Added to match backend
   final String? qrCode;  // QR code URL from backend
   final String? description;  // Payment description
   final DateTime? createdAt;
+  final DateTime? createAt;  // Added to match backend (different naming)
   final DateTime? updatedAt;
   final List<OrderItemResponse>? items;
+  final List<CourseOrderResponse>? courses;  // Added to match backend
 
   OrderViewResponse({
     this.id,
+    this.orderId,
     this.userId,
     this.userName,
     this.userEmail,
     this.subtotal,
     this.discount,
     this.total,
+    this.totalPrice,
     this.status,
     this.couponCode,
+    this.couponName,
     this.qrCode,
     this.description,
     this.createdAt,
+    this.createAt,
     this.updatedAt,
     this.items,
+    this.courses,
   });
 
   factory OrderViewResponse.fromJson(Map<String, dynamic> json) =>
       _$OrderViewResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$OrderViewResponseToJson(this);
+}
+
+/// Course Order Response from backend
+@JsonSerializable()
+class CourseOrderResponse {
+  final String? courseId;
+  final String? title;
+  final double? salePrice;
+
+  CourseOrderResponse({
+    this.courseId,
+    this.title,
+    this.salePrice,
+  });
+
+  factory CourseOrderResponse.fromJson(Map<String, dynamic> json) =>
+      _$CourseOrderResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CourseOrderResponseToJson(this);
 }
 
 /// Request để tạo order mới

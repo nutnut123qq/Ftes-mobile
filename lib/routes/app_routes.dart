@@ -113,18 +113,27 @@ class AppRoutes {
     AppConstants.routeChatMessages: (context) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       return ChatMessagesScreen(
-        chat: args?['chat'] ?? ChatItem(
-          id: '1',
-          name: 'Default User',
-          lastMessage: 'Hello',
-          time: '12:00',
-          avatar: '',
-        ),
+        chat: args?['chat'],
+        lessonId: args?['lessonId'],
+        lessonTitle: args?['lessonTitle'],
       );
     },
     AppConstants.routeCurriculum: (context) => const CurriculumScreen(),
-    AppConstants.routeReviews: (context) => const ReviewsScreen(),
-    AppConstants.routeWriteReview: (context) => const WriteReviewScreen(),
+    AppConstants.routeReviews: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      return ReviewsScreen(
+        courseId: args?['courseId'] ?? '',
+        courseName: args?['courseName'],
+      );
+    },
+    AppConstants.routeWriteReview: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      return WriteReviewScreen(
+        courseId: args?['courseId'] ?? '',
+        userId: args?['userId'] ?? '',
+        courseName: args?['courseName'],
+      );
+    },
     AppConstants.routePayment: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
       return PaymentScreen(
@@ -138,6 +147,7 @@ class AppRoutes {
     AppConstants.routeMyCourseOngoingLessons: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
       return MyCourseOngoingLessonsScreen(
+        courseId: args?['courseId'] ?? '',
         courseTitle: args?['courseTitle'] ?? 'Course Title',
         courseImage: args?['courseImage'] ?? '',
       );
@@ -145,6 +155,7 @@ class AppRoutes {
     AppConstants.routeMyCourseOngoingVideo: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
       return MyCourseOngoingVideoScreen(
+        lessonId: args?['lessonId'] ?? '',
         lessonTitle: args?['lessonTitle'] ?? 'Lesson Title',
         courseTitle: args?['courseTitle'] ?? 'Course Title',
         videoUrl: args?['videoUrl'] ?? '',
@@ -310,8 +321,9 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => QuizScreen(
-            quizId: args?['quizId'] ?? '',
-            categoryId: args?['categoryId'] ?? '',
+            exerciseId: args?['exerciseId'] ?? 0,
+            userId: args?['userId'] ?? 0,
+            exerciseTitle: args?['exerciseTitle'],
           ),
           settings: settings,
         );
@@ -329,13 +341,9 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => ChatMessagesScreen(
-            chat: args?['chat'] ?? ChatItem(
-              id: '1',
-              name: 'Default User',
-              lastMessage: 'Hello',
-              time: '12:00',
-              avatar: '',
-            ),
+            chat: args?['chat'],
+            lessonId: args?['lessonId'],
+            lessonTitle: args?['lessonTitle'],
           ),
           settings: settings,
         );
@@ -345,13 +353,22 @@ class AppRoutes {
           settings: settings,
         );
       case AppConstants.routeReviews:
+        final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-          builder: (context) => const ReviewsScreen(),
+          builder: (context) => ReviewsScreen(
+            courseId: args?['courseId'] ?? '',
+            courseName: args?['courseName'],
+          ),
           settings: settings,
         );
       case AppConstants.routeWriteReview:
+        final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-          builder: (context) => const WriteReviewScreen(),
+          builder: (context) => WriteReviewScreen(
+            courseId: args?['courseId'] ?? '',
+            userId: args?['userId'] ?? '',
+            courseName: args?['courseName'],
+          ),
           settings: settings,
         );
       case AppConstants.routePayment:
@@ -378,6 +395,7 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => MyCourseOngoingLessonsScreen(
+            courseId: args?['courseId'] ?? '',
             courseTitle: args?['courseTitle'] ?? 'Course Title',
             courseImage: args?['courseImage'] ?? '',
           ),
@@ -387,6 +405,7 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => MyCourseOngoingVideoScreen(
+            lessonId: args?['lessonId'] ?? '',
             lessonTitle: args?['lessonTitle'] ?? 'Lesson Title',
             courseTitle: args?['courseTitle'] ?? 'Course Title',
             videoUrl: args?['videoUrl'] ?? '',
@@ -480,15 +499,17 @@ class AppRoutes {
 
   static void navigateToQuiz(
     BuildContext context, {
-    required String quizId,
-    required String categoryId,
+    required int exerciseId,
+    required int userId,
+    String? exerciseTitle,
   }) {
     Navigator.pushNamed(
       context,
       AppConstants.routeQuiz,
       arguments: {
-        'quizId': quizId,
-        'categoryId': categoryId,
+        'exerciseId': exerciseId,
+        'userId': userId,
+        'exerciseTitle': exerciseTitle,
       },
     );
   }
@@ -517,7 +538,7 @@ class AppRoutes {
 
   static void navigateToReviews(
     BuildContext context, {
-    required int courseId,
+    required String courseId,
     String? courseName,
   }) {
     Navigator.push(
@@ -533,8 +554,8 @@ class AppRoutes {
 
   static void navigateToWriteReview(
     BuildContext context, {
-    required int courseId,
-    required int userId,
+    required String courseId,
+    required String userId,
     String? courseName,
   }) {
     Navigator.push(
@@ -578,6 +599,7 @@ class AppRoutes {
 
 
   static void navigateToMyCourseOngoingLessons(BuildContext context, {
+    required String courseId,
     required String courseTitle,
     required String courseImage,
   }) {
@@ -585,6 +607,7 @@ class AppRoutes {
       context,
       AppConstants.routeMyCourseOngoingLessons,
       arguments: {
+        'courseId': courseId,
         'courseTitle': courseTitle,
         'courseImage': courseImage,
       },
@@ -592,6 +615,7 @@ class AppRoutes {
   }
 
   static void navigateToMyCourseOngoingVideo(BuildContext context, {
+    required String lessonId,
     required String lessonTitle,
     required String courseTitle,
     required String videoUrl,
@@ -602,6 +626,7 @@ class AppRoutes {
       context,
       AppConstants.routeMyCourseOngoingVideo,
       arguments: {
+        'lessonId': lessonId,
         'lessonTitle': lessonTitle,
         'courseTitle': courseTitle,
         'videoUrl': videoUrl,

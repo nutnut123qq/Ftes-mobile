@@ -56,11 +56,27 @@ class PointService {
     try {
       final response = await _http.get('/api/points/referral');
       final responseBody = jsonDecode(response.body);
-      
-      // Handle different response formats
-      final data = responseBody['result'] ?? responseBody['data'] ?? responseBody;
-      
-      return ReferralResponse.fromJson(data);
+
+      // Trường hợp backend trả về chuỗi thuần: "ABC123"
+      if (responseBody is String) {
+        return ReferralResponse(referralCode: responseBody);
+      }
+
+      // Trường hợp backend bọc chuỗi trong result/data
+      final data = responseBody is Map
+          ? (responseBody['result'] ?? responseBody['data'] ?? responseBody)
+          : responseBody;
+
+      if (data is String) {
+        return ReferralResponse(referralCode: data);
+      }
+
+      if (data is Map<String, dynamic>) {
+        return ReferralResponse.fromJson(data);
+      }
+
+      // Fallback an toàn
+      return ReferralResponse(referralCode: data?.toString());
     } catch (e) {
       throw Exception('Failed to get referral info: $e');
     }
@@ -71,11 +87,36 @@ class PointService {
     try {
       final response = await _http.get('/api/points/referral/count');
       final responseBody = jsonDecode(response.body);
-      
-      // Handle different response formats
-      final data = responseBody['result'] ?? responseBody['data'] ?? responseBody;
-      
-      return ReferralCountResponse.fromJson(data);
+
+      // Nếu backend trả về số nguyên đơn lẻ (ví dụ: 0, 5)
+      if (responseBody is int) {
+        return ReferralCountResponse(totalInvited: responseBody);
+      }
+
+      // Nếu result/data chứa số nguyên
+      if (responseBody is Map) {
+        final nested = responseBody['result'] ?? responseBody['data'];
+        if (nested is int) {
+          return ReferralCountResponse(totalInvited: nested);
+        }
+        if (nested is Map<String, dynamic>) {
+          return ReferralCountResponse.fromJson(nested);
+        }
+        if (responseBody is Map<String, dynamic>) {
+          return ReferralCountResponse.fromJson(responseBody as Map<String, dynamic>);
+        }
+      }
+
+      // Fallback: cố gắng parse nếu là chuỗi số
+      if (responseBody is String) {
+        final parsed = int.tryParse(responseBody);
+        if (parsed != null) {
+          return ReferralCountResponse(totalInvited: parsed);
+        }
+      }
+
+      // Trường hợp không xác định cấu trúc
+      return ReferralCountResponse(totalInvited: 0);
     } catch (e) {
       throw Exception('Failed to get referral count: $e');
     }

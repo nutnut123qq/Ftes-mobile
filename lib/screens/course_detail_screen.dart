@@ -191,7 +191,22 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               bottom: 20,
               child: GestureDetector(
                 onTap: () {
-                  // Video play functionality - placeholder for future implementation
+                  // Show message that user needs to purchase the course
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Bạn cần mua khóa học để xem video'),
+                      backgroundColor: const Color(0xFF0961F5),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      action: SnackBarAction(
+                        label: 'Đóng',
+                        textColor: Colors.white,
+                        onPressed: () {},
+                      ),
+                    ),
+                  );
                 },
                 child: Container(
                   width: 63,
@@ -1087,67 +1102,92 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   final lessonIndex = lessonEntry.key;
                   final lesson = lessonEntry.value;
                   
-                  return Container(
-                    margin: const EdgeInsets.only(left: 16, top: 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F9FF),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0961F5).withOpacity(0.1),
-                            shape: BoxShape.circle,
+                  return GestureDetector(
+                    onTap: () {
+                      // Show message that user needs to purchase the course
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Bạn cần mua khóa học để xem bài học này'),
+                          backgroundColor: const Color(0xFF0961F5),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Center(
-                            child: Text(
-                              '${lessonIndex + 1}'.padLeft(2, '0'),
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: const Color(0xFF0961F5),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
+                          action: SnackBarAction(
+                            label: 'Đóng',
+                            textColor: Colors.white,
+                            onPressed: () {},
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(left: 16, top: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5F9FF),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF0961F5).withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0961F5).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${lessonIndex + 1}'.padLeft(2, '0'),
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: const Color(0xFF0961F5),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                lesson.title ?? 'Untitled Lesson',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: const Color(0xFF202244),
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              if (lesson.description != null) ...[
-                                const SizedBox(height: 4),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
-                                  lesson.description!,
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: const Color(0xFF545454),
-                                    fontSize: 12,
+                                  lesson.title ?? 'Untitled Lesson',
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: const Color(0xFF202244),
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
                                   ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
+                                if (lesson.description != null) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    lesson.description!,
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: const Color(0xFF545454),
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
-                        ),
-                        Icon(
-                          lesson.type == 'VIDEO' ? Icons.play_circle_outline : Icons.article_outlined,
-                          color: const Color(0xFF0961F5),
-                          size: 24,
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Icon(
+                            lesson.type == 'VIDEO' ? Icons.play_circle_outline : Icons.article_outlined,
+                            color: const Color(0xFF0961F5),
+                            size: 24,
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }).toList(),

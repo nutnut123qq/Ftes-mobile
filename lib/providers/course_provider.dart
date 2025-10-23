@@ -28,7 +28,7 @@ class CourseProvider extends ChangeNotifier {
   bool _isLoadingCourseDetail = false;
 
   // User courses state
-  List<UserCourseResponse> _userCourses = [];
+  List<CourseResponse> _userCourses = [];
   bool _isLoadingUserCourses = false;
 
   // Search/Filter state
@@ -53,7 +53,7 @@ class CourseProvider extends ChangeNotifier {
   List<LessonResponse> get lessons => _lessons;
   bool get isLoadingCourseDetail => _isLoadingCourseDetail;
   
-  List<UserCourseResponse> get userCourses => _userCourses;
+  List<CourseResponse> get userCourses => _userCourses;
   bool get isLoadingUserCourses => _isLoadingUserCourses;
 
   String? get searchText => _searchText;
