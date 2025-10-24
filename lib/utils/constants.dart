@@ -1,8 +1,8 @@
 class AppConstants {
   // App Information
   static const String appName = 'FTES';
-  static const String appVersion = '1.0.0';
-  static const String appDescription = 'Flutter Learning App for educational purposes';
+  static const String appVersion = '1.0.1';
+  static const String appDescription = 'FTES - AI-Learning Platform';
   
   // Spacing
   static const double spacingXS = 4.0;

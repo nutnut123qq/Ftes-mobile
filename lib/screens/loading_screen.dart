@@ -148,7 +148,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Flutter Learning Experience',
+                        'Học tập thông minh cùng FTES',
                         style: AppTextStyles.body1.copyWith(
                           color: Colors.white.withOpacity(0.9),
                           fontSize: 14,
