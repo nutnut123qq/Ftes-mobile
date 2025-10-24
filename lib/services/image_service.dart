@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import '../utils/api_constants.dart';
+import '../core/constants/app_constants.dart';
 import 'http_client.dart';
 
 /// Service để xử lý upload images
@@ -28,7 +28,7 @@ class ImageService {
         throw Exception('No access token available');
       }
 
-      final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.uploadImageEndpoint}');
+      final uri = Uri.parse('${AppConstants.baseUrl}${AppConstants.uploadImageEndpoint}');
       final request = http.MultipartRequest('POST', uri);
       
       // Add authorization header

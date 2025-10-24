@@ -7,7 +7,7 @@ import '../models/auth_response.dart';
 import '../models/user_request.dart';
 import '../models/update_profile_request.dart';
 import '../models/profile_response.dart';
-import '../utils/api_constants.dart';
+import '../core/constants/app_constants.dart';
 import 'http_client.dart';
 import 'profile_service.dart';
 import 'image_service.dart';
@@ -71,7 +71,7 @@ class AuthService {
   Future<AuthenticationResponse> login(AuthenticationRequest request) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.loginEndpoint,
+        AppConstants.loginEndpoint,
         body: request.toJson(),
       );
       return await _handleAuthResponse(response);
@@ -105,7 +105,7 @@ class AuthService {
 
       // Send auth code/token to backend
       final response = await _httpClient.post(
-        ApiConstants.googleAuthEndpoint,
+        AppConstants.googleAuthEndpoint,
         queryParameters: {
           paramName: authParam,
           'isAdmin': isAdmin.toString(),
@@ -122,7 +122,7 @@ class AuthService {
   Future<AuthenticationResponse> refreshToken(RefreshTokenRequest request) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.refreshTokenEndpoint,
+        AppConstants.refreshTokenEndpoint,
         body: request.toJson(),
       );
       return await _handleAuthResponse(response);
@@ -143,7 +143,7 @@ class AuthService {
       
       // Step 1: Verify OTP
       final response = await _httpClient.post(
-        ApiConstants.verifyEmailCodeEndpoint,
+        AppConstants.verifyEmailCodeEndpoint,
         body: {
           'email': email,
           'otp': intCode,  // Send as Integer, not String
@@ -167,7 +167,7 @@ class AuthService {
 
       // Step 3: Activate user account
       final activateResponse = await _httpClient.post(
-        '${ApiConstants.activeUserEndpoint}/$accessToken',
+        '${AppConstants.activeUserEndpoint}/$accessToken',
       );
 
 
@@ -187,7 +187,7 @@ class AuthService {
   Future<void> verifyPin(String pin) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.verifyPinEndpoint,
+        AppConstants.verifyPinEndpoint,
         body: {'pin': pin},
       );
 
@@ -203,7 +203,7 @@ class AuthService {
   Future<void> logout() async {
     try {
       
-      final response = await _httpClient.post(ApiConstants.logoutEndpoint);
+      final response = await _httpClient.post(AppConstants.logoutEndpoint);
       
       
       if (response.statusCode == 200) {
@@ -230,7 +230,7 @@ class AuthService {
   Future<IntrospectResponse> introspect(IntrospectRequest request) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.introspectEndpoint,
+        AppConstants.introspectEndpoint,
         body: request.toJson(),
       );
       return await _handleResponse<IntrospectResponse>(
@@ -247,7 +247,7 @@ class AuthService {
   Future<TwoFAResponse> verifyOTP(GenericAuthCodeRequest request) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.verifyOtpEndpoint,
+        AppConstants.verifyOtpEndpoint,
         body: request.toJson(),
       );
       return await _handleResponse<TwoFAResponse>(
@@ -263,7 +263,7 @@ class AuthService {
   /// Send secret key for 2FA
   Future<TwoFAResponse> sendSecretKeyFor2FA() async {
     try {
-      final response = await _httpClient.post(ApiConstants.sendSecretKeyEndpoint);
+      final response = await _httpClient.post(AppConstants.sendSecretKeyEndpoint);
       return await _handleResponse<TwoFAResponse>(
         response,
         TwoFAResponse.fromJson,
@@ -278,7 +278,7 @@ class AuthService {
   Future<VerifyMailOTPResponse> verifyEmailCode(GenericAuthCodeRequest request) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.verifyEmailCodeEndpoint,
+        AppConstants.verifyEmailCodeEndpoint,
         body: request.toJson(),
       );
       return await _handleResponse<VerifyMailOTPResponse>(
@@ -295,7 +295,7 @@ class AuthService {
   Future<VerifyMailOTPResponse> verifyUpdateEmail(GenericAuthCodeRequest request) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.verifyUpdateEmailEndpoint,
+        AppConstants.verifyUpdateEmailEndpoint,
         body: request.toJson(),
       );
       return await _handleResponse<VerifyMailOTPResponse>(
@@ -312,7 +312,7 @@ class AuthService {
   Future<void> register(UserRegistrationRequest request) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.userRegistrationEndpoint,
+        AppConstants.userRegistrationEndpoint,
         body: request.toJson(),
       );
 
@@ -351,7 +351,7 @@ class AuthService {
       
       // Try registration again (sometimes the constraint violation is temporary)
       final retryResponse = await _httpClient.post(
-        ApiConstants.userRegistrationEndpoint,
+        AppConstants.userRegistrationEndpoint,
         body: request.toJson(),
       );
       
@@ -374,7 +374,7 @@ class AuthService {
   Future<void> resendVerifyCode(String email) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.resendVerifyCodeEndpoint,
+        AppConstants.resendVerifyCodeEndpoint,
         body: {'email': email},
       );
 
@@ -390,7 +390,7 @@ class AuthService {
   Future<void> activateUser(String accessToken) async {
     try {
       final response = await _httpClient.post(
-        '${ApiConstants.activeUserEndpoint}/$accessToken',
+        '${AppConstants.activeUserEndpoint}/$accessToken',
       );
 
       if (response.statusCode != 200) {
@@ -405,7 +405,7 @@ class AuthService {
   Future<void> forgotPassword(String email) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.forgotPasswordEndpoint,
+        AppConstants.forgotPasswordEndpoint,
         body: {'email': email},
       );
 
@@ -421,7 +421,7 @@ class AuthService {
   Future<void> changePassword(String userId, ChangePasswordRequest request) async {
     try {
       final response = await _httpClient.put(
-        '${ApiConstants.changePasswordEndpoint}/$userId',
+        '${AppConstants.changePasswordEndpoint}/$userId',
         body: request.toJson(),
       );
 
@@ -436,7 +436,7 @@ class AuthService {
   /// Get current user info
   Future<UserInfo> getMyInfo() async {
     try {
-      final response = await _httpClient.get(ApiConstants.myInfoEndpoint);
+      final response = await _httpClient.get(AppConstants.myInfoEndpoint);
       
 
       if (response.statusCode == 200) {
@@ -454,7 +454,7 @@ class AuthService {
   Future<void> updateGmail(UpdateGmailRequest request) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.updateGmailEndpoint,
+        AppConstants.updateGmailEndpoint,
         body: request.toJson(),
       );
 

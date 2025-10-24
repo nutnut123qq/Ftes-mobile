@@ -1,6 +1,6 @@
 import 'dart:convert';
 import '../models/course_response.dart';
-import '../utils/api_constants.dart';
+import '../core/constants/app_constants.dart';
 import 'http_client.dart';
 
 /// Course Service để xử lý các API liên quan đến khóa học
@@ -35,7 +35,7 @@ class CourseService {
       queryParams['searchText'] = searchText;
     }
 
-    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.coursesEndpoint}')
+    final uri = Uri.parse('${AppConstants.baseUrl}${AppConstants.coursesEndpoint}')
         .replace(queryParameters: queryParams);
 
     final resp = await _http.get(uri.toString());
@@ -51,7 +51,7 @@ class CourseService {
   /// Get course by ID
   Future<CourseResponse> getCourseById(String courseId) async {
     // Use detail endpoint to ensure we get parts and lessons
-    final resp = await _http.get('${ApiConstants.courseDetailEndpoint}/$courseId');
+    final resp = await _http.get('${AppConstants.courseDetailEndpoint}/$courseId');
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final data = jsonDecode(resp.body);
@@ -79,7 +79,7 @@ class CourseService {
 
   /// Get course detail by slug name
   Future<CourseResponse> getCourseBySlug(String slugName) async {
-    final resp = await _http.get('${ApiConstants.courseDetailEndpoint}/$slugName');
+    final resp = await _http.get('${AppConstants.courseDetailEndpoint}/$slugName');
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final data = jsonDecode(resp.body);
@@ -145,7 +145,7 @@ class CourseService {
       queryParams['level'] = level;
     }
 
-    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.coursesSearchEndpoint}')
+    final uri = Uri.parse('${AppConstants.baseUrl}${AppConstants.coursesSearchEndpoint}')
         .replace(queryParameters: queryParams);
 
     final resp = await _http.get(uri.toString());
@@ -169,7 +169,7 @@ class CourseService {
       'sortOrder': 'desc',
     };
 
-    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.coursesEndpoint}')
+    final uri = Uri.parse('${AppConstants.baseUrl}${AppConstants.coursesEndpoint}')
         .replace(queryParameters: queryParams);
 
     final resp = await _http.get(uri.toString());
@@ -213,7 +213,7 @@ class CourseService {
     };
 
     final resp = await _http.get(
-      ApiConstants.featuredCoursesEndpoint,
+      AppConstants.featuredCoursesEndpoint,
       queryParameters: queryParams,
     );
 
@@ -245,7 +245,7 @@ class CourseService {
 
   /// Get courses by user ID
   Future<List<CourseResponse>> getUserCourses(String userId) async {
-    final resp = await _http.get('${ApiConstants.userCoursesEndpoint}/$userId');
+    final resp = await _http.get('${AppConstants.userCoursesEndpoint}/$userId');
     
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final data = jsonDecode(resp.body);
@@ -293,7 +293,7 @@ class CourseService {
 
   /// Get lesson by ID
   Future<LessonResponse> getLessonById(String lessonId) async {
-    final resp = await _http.get('${ApiConstants.lessonDetailEndpoint}/$lessonId');
+    final resp = await _http.get('${AppConstants.lessonDetailEndpoint}/$lessonId');
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final data = jsonDecode(resp.body);
@@ -306,7 +306,7 @@ class CourseService {
   /// Check enrollment status
   Future<bool> checkEnrollment(String courseId) async {
     // Backend expects path param: /api/user-courses/check-enrollment/{courseId}
-    final url = '${ApiConstants.checkEnrollmentEndpoint}/$courseId';
+    final url = '${AppConstants.checkEnrollmentEndpoint}/$courseId';
     final resp = await _http.get(url);
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -325,7 +325,7 @@ class CourseService {
       'courseId': courseId,
     };
 
-    final resp = await _http.post(ApiConstants.enrollCourseEndpoint, body: body);
+    final resp = await _http.post(AppConstants.enrollCourseEndpoint, body: body);
 
     if (resp.statusCode < 200 || resp.statusCode >= 300) {
       throw Exception('Failed to enroll course: ${resp.statusCode} ${resp.body}');

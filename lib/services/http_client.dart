@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/api_constants.dart';
+import '../core/constants/app_constants.dart';
 
 class HttpClient {
   static final HttpClient _instance = HttpClient._internal();
@@ -42,7 +42,7 @@ class HttpClient {
   }
 
   Map<String, String> _getHeaders({Map<String, String>? additionalHeaders}) {
-    final headers = Map<String, String>.from(ApiConstants.defaultHeaders);
+    final headers = Map<String, String>.from(AppConstants.defaultHeaders);
     
     if (_accessToken != null) {
       headers['Authorization'] = 'Bearer $_accessToken';
@@ -61,7 +61,7 @@ class HttpClient {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+      final uri = Uri.parse('${AppConstants.baseUrl}$endpoint');
       final uriWithQuery = queryParameters != null 
           ? uri.replace(queryParameters: queryParameters.map((key, value) => MapEntry(key, value.toString())))
           : uri;
@@ -71,7 +71,7 @@ class HttpClient {
             uriWithQuery,
             headers: _getHeaders(additionalHeaders: headers),
           )
-          .timeout(ApiConstants.connectTimeout);
+          .timeout(AppConstants.connectTimeout);
 
       return response;
     } catch (e) {
@@ -86,7 +86,7 @@ class HttpClient {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+      final uri = Uri.parse('${AppConstants.baseUrl}$endpoint');
       final uriWithQuery = queryParameters != null 
           ? uri.replace(queryParameters: queryParameters.map((key, value) => MapEntry(key, value.toString())))
           : uri;
@@ -97,7 +97,7 @@ class HttpClient {
             headers: _getHeaders(additionalHeaders: headers),
             body: body != null ? jsonEncode(body) : null,
           )
-          .timeout(ApiConstants.connectTimeout);
+          .timeout(AppConstants.connectTimeout);
 
       return response;
     } catch (e) {
@@ -112,7 +112,7 @@ class HttpClient {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+      final uri = Uri.parse('${AppConstants.baseUrl}$endpoint');
       final uriWithQuery = queryParameters != null 
           ? uri.replace(queryParameters: queryParameters.map((key, value) => MapEntry(key, value.toString())))
           : uri;
@@ -123,7 +123,7 @@ class HttpClient {
             headers: _getHeaders(additionalHeaders: headers),
             body: body != null ? jsonEncode(body) : null,
           )
-          .timeout(ApiConstants.connectTimeout);
+          .timeout(AppConstants.connectTimeout);
 
       return response;
     } catch (e) {
@@ -137,7 +137,7 @@ class HttpClient {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+      final uri = Uri.parse('${AppConstants.baseUrl}$endpoint');
       final uriWithQuery = queryParameters != null 
           ? uri.replace(queryParameters: queryParameters.map((key, value) => MapEntry(key, value.toString())))
           : uri;
@@ -147,7 +147,7 @@ class HttpClient {
             uriWithQuery,
             headers: _getHeaders(additionalHeaders: headers),
           )
-          .timeout(ApiConstants.connectTimeout);
+          .timeout(AppConstants.connectTimeout);
 
       return response;
     } catch (e) {

@@ -7,8 +7,7 @@ import 'package:ftes/providers/enrollment_provider.dart';
 import 'package:ftes/providers/course_provider.dart';
 import 'package:ftes/providers/auth_provider.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
-import 'package:ftes/utils/api_constants.dart';
-import 'package:ftes/utils/constants.dart';
+import 'package:ftes/core/constants/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -51,7 +50,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   void _connectWebSocket(String description) {
     // For SockJS, use HTTP URL instead of WS URL
-    final baseUrl = ApiConstants.baseUrl;
+    final baseUrl = AppConstants.baseUrl;
     
     _stompClient = StompClient(
       config: StompConfig(

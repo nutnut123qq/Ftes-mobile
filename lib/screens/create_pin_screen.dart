@@ -93,7 +93,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Create New Pin',
+                    'Xác thực OTP',
                     style: AppTextStyles.heading1.copyWith(
                       color: AppColors.textPrimary,
                       fontSize: 21,
@@ -106,7 +106,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
               // Description text
               Center(
                 child: Text(
-                  'Add a Pin Number to Make Your Account more Secure',
+                  'Vui lòng nhập mã xác thực OTP được gửi đến email của bạn!',
                   style: AppTextStyles.body1.copyWith(
                     color: AppColors.textSecondary,
                     fontSize: 14,
@@ -178,7 +178,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Continue',
+                        'Xác thực',
                         style: AppTextStyles.button.copyWith(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -209,7 +209,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                     ? GestureDetector(
                         onTap: _resendPin,
                         child: Text(
-                          'Resend PIN',
+                          'Gửi lại mã OTP',
                           style: AppTextStyles.body1.copyWith(
                             color: AppColors.primary,
                             fontSize: 16,

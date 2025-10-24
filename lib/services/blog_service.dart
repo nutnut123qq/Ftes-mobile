@@ -1,6 +1,6 @@
 import 'dart:convert';
 import '../models/blog_response.dart';
-import '../utils/api_constants.dart';
+import '../core/constants/app_constants.dart';
 import 'http_client.dart';
 
 class BlogService {
@@ -43,7 +43,7 @@ class BlogService {
       }
 
       final response = await _httpClient.get(
-        ApiConstants.blogsEndpoint,
+        AppConstants.blogsEndpoint,
         queryParameters: queryParams,
       );
 
@@ -62,7 +62,7 @@ class BlogService {
   Future<BlogResponse> getBlogBySlugName(String slugName) async {
     try {
       final response = await _httpClient.get(
-        '${ApiConstants.blogsEndpoint}/$slugName',
+        '${AppConstants.blogsEndpoint}/$slugName',
       );
 
       if (response.statusCode == 200) {
@@ -94,7 +94,7 @@ class BlogService {
       };
 
       final response = await _httpClient.get(
-        ApiConstants.blogsByCategoryEndpoint,
+        AppConstants.blogsByCategoryEndpoint,
         queryParameters: queryParams,
       );
 
@@ -138,7 +138,7 @@ class BlogService {
       }
 
       final response = await _httpClient.get(
-        ApiConstants.blogsSearchEndpoint,
+        AppConstants.blogsSearchEndpoint,
         queryParameters: queryParams,
       );
 
@@ -157,7 +157,7 @@ class BlogService {
   Future<List<BlogResponse>> getInteractiveBlogs(String category) async {
     try {
       final response = await _httpClient.get(
-        '${ApiConstants.blogsInteractiveEndpoint}/$category',
+        '${AppConstants.blogsInteractiveEndpoint}/$category',
       );
 
       if (response.statusCode == 200) {

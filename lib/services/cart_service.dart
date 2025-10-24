@@ -1,6 +1,6 @@
 import 'dart:convert';
 import '../models/cart_response.dart';
-import '../utils/api_constants.dart';
+import '../core/constants/app_constants.dart';
 import 'http_client.dart';
 
 /// Cart Service để xử lý các API liên quan đến giỏ hàng
@@ -19,7 +19,7 @@ class CartService {
       final request = AddToCartRequest(courseId: courseId);
       
       final resp = await _http.post(
-        ApiConstants.cartEndpoint,
+        AppConstants.cartEndpoint,
         body: request.toJson(),
       );
 
@@ -59,7 +59,7 @@ class CartService {
       }
 
       final resp = await _http.get(
-        ApiConstants.cartEndpoint,
+        AppConstants.cartEndpoint,
         queryParameters: queryParams,
       );
 
@@ -82,7 +82,7 @@ class CartService {
   /// Returns số lượng items trong giỏ hàng
   Future<int> countCart() async {
     try {
-      final resp = await _http.get(ApiConstants.cartCountEndpoint);
+      final resp = await _http.get(AppConstants.cartCountEndpoint);
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
         final data = jsonDecode(resp.body);
@@ -105,7 +105,7 @@ class CartService {
   Future<bool> removeCartItem(String cartItemId) async {
     try {
       final resp = await _http.delete(
-        '${ApiConstants.cartEndpoint}/$cartItemId',
+        '${AppConstants.cartEndpoint}/$cartItemId',
       );
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -131,7 +131,7 @@ class CartService {
           : null;
 
       final resp = await _http.get(
-        ApiConstants.cartTotalEndpoint,
+        AppConstants.cartTotalEndpoint,
         queryParameters: queryParams,
       );
 

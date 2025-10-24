@@ -2,14 +2,15 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/ai_chat_request.dart';
 import '../models/ai_chat_response.dart';
+import '../core/constants/app_constants.dart';
 import 'http_client.dart';
 
 /// AI Chat Service - Connects to Python FastAPI AI Service
 /// 
-/// Base URL: http://localhost:8000/api/ai
+/// Base URL: ${AppConstants.baseUrl}/api/ai
 /// Endpoint: POST /chat
 class AIChatService {
-  final String baseUrl = 'http://localhost:8000/api/ai';
+  final String baseUrl = '${AppConstants.baseUrl}/api/ai';
   final HttpClient _httpClient = HttpClient();
 
   /// Chat with AI about a lesson

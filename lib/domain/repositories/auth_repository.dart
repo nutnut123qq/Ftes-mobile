@@ -15,4 +15,13 @@ abstract class AuthRepository {
 
   /// Logout
   Future<Either<Failure, void>> logout();
+
+  /// Register new user
+  Future<Either<Failure, User>> register(String username, String email, String password);
+
+  /// Verify email OTP
+  Future<Either<Failure, String>> verifyEmailOTP(String email, int otp);
+
+  /// Resend verification code
+  Future<Either<Failure, void>> resendVerificationCode(String email);
 }

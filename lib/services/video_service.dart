@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'http_client.dart';
-import '../utils/api_constants.dart';
+import '../core/constants/app_constants.dart';
 
 /// Video Service - Handle video upload, status check, and streaming
 /// Based on VIDEO_FETCH_GUIDE.md
@@ -17,7 +17,7 @@ class VideoService {
     int hlsTime = 4, // seconds per segment
   }) async {
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}/api/videos');
+      final uri = Uri.parse('${AppConstants.baseUrl}/api/videos');
       var request = http.MultipartRequest('POST', uri);
       
       // Add file
@@ -65,12 +65,12 @@ class VideoService {
 
   /// Get HLS master playlist URL
   String getPlaylistUrl(String videoId) {
-    return '${ApiConstants.baseUrl}/api/videos/stream/$videoId/master.m3u8';
+    return '${AppConstants.baseUrl}/api/videos/stream/$videoId/master.m3u8';
   }
 
   /// Get segment URL
   String getSegmentUrl(String videoId, String fileName) {
-    return '${ApiConstants.baseUrl}/api/videos/stream/$videoId/$fileName';
+    return '${AppConstants.baseUrl}/api/videos/stream/$videoId/$fileName';
   }
 
   /// Monitor video status until ready

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import '../models/order_response.dart';
-import '../utils/api_constants.dart';
+import '../core/constants/app_constants.dart';
 import 'http_client.dart';
 
 /// Order Service để xử lý các API liên quan đến đơn hàng
@@ -26,7 +26,7 @@ class OrderService {
       );
 
       final resp = await _http.post(
-        ApiConstants.orderEndpoint,
+        AppConstants.orderEndpoint,
         body: request.toJson(),
       );
 
@@ -65,7 +65,7 @@ class OrderService {
   Future<List<OrderViewResponse>> getAllOrders() async {
     try {
       final resp = await _http.get(
-        ApiConstants.orderEndpoint,
+        AppConstants.orderEndpoint,
       );
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -98,7 +98,7 @@ class OrderService {
         throw Exception('Order ID cannot be empty');
       }
       
-      final endpoint = '${ApiConstants.orderEndpoint}/$orderId';
+      final endpoint = '${AppConstants.orderEndpoint}/$orderId';
       final resp = await _http.get(endpoint);
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -122,7 +122,7 @@ class OrderService {
   Future<bool> cancelPendingOrders() async {
     try {
       final resp = await _http.delete(
-        ApiConstants.orderCancelEndpoint,
+        AppConstants.orderCancelEndpoint,
       );
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -160,7 +160,7 @@ class OrderService {
         queryParams['sortField'] = sortField;
       }
 
-      final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.orderEndpoint}/admin')
+      final uri = Uri.parse('${AppConstants.baseUrl}${AppConstants.orderEndpoint}/admin')
           .replace(queryParameters: queryParams);
 
       final resp = await _http.get(uri.toString());
@@ -186,7 +186,7 @@ class OrderService {
   Future<bool> deleteOrderByAdmin(String orderId) async {
     try {
       final resp = await _http.delete(
-        '${ApiConstants.orderEndpoint}/admin/$orderId',
+        '${AppConstants.orderEndpoint}/admin/$orderId',
       );
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {

@@ -92,4 +92,62 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(CacheFailure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, User>> register(String username, String email, String password) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final response = await remoteDataSource.register(username, email, password);
+        if (response.success && response.result != null) {
+          return Right(response.result!);
+        } else {
+          return Left(ServerFailure(response.messageDTO?.message ?? 'Registration failed'));
+        }
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } on AuthException catch (e) {
+        return Left(ServerFailure(e.message));
+      }
+    } else {
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> verifyEmailOTP(String email, int otp) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final response = await remoteDataSource.verifyEmailOTP(email, otp);
+        if (response.success && response.result != null) {
+          // Cache the access token
+          await localDataSource.cacheAccessToken(response.result!.accessToken);
+          return Right(response.result!.accessToken);
+        } else {
+          return Left(ServerFailure(response.messageDTO?.message ?? 'OTP verification failed'));
+        }
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } on AuthException catch (e) {
+        return Left(ServerFailure(e.message));
+      }
+    } else {
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> resendVerificationCode(String email) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.resendVerificationCode(email);
+        return const Right(null);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } on AuthException catch (e) {
+        return Left(ServerFailure(e.message));
+      }
+    } else {
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
 }

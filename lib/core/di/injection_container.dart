@@ -8,12 +8,16 @@ import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/login_with_google_usecase.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
+import '../../domain/usecases/register_usecase.dart';
+import '../../domain/usecases/verify_email_otp_usecase.dart';
+import '../../domain/usecases/resend_verification_code_usecase.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/datasources/auth_remote_datasource_impl.dart';
 import '../../data/datasources/auth_local_datasource.dart';
 import '../../data/datasources/auth_local_datasource_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../presentation/viewmodels/auth_viewmodel.dart';
+import '../../presentation/viewmodels/register_viewmodel.dart';
 
 /// Service Locator instance
 final sl = GetIt.instance;
@@ -51,12 +55,20 @@ Future<void> init() async {
   sl.registerLazySingleton(() => LoginWithGoogleUseCase(sl()));
   sl.registerLazySingleton(() => GetCurrentUserUseCase(sl()));
   sl.registerLazySingleton(() => LogoutUseCase(sl()));
-  
+  sl.registerLazySingleton(() => RegisterUseCase(sl()));
+  sl.registerLazySingleton(() => VerifyEmailOTPUseCase(sl()));
+  sl.registerLazySingleton(() => ResendVerificationCodeUseCase(sl()));
+
   // ViewModels
   sl.registerFactory(() => AuthViewModel(
     loginUseCase: sl(),
     loginWithGoogleUseCase: sl(),
     getCurrentUserUseCase: sl(),
     logoutUseCase: sl(),
+  ));
+  sl.registerFactory(() => RegisterViewModel(
+    registerUseCase: sl(),
+    verifyEmailOTPUseCase: sl(),
+    resendVerificationCodeUseCase: sl(),
   ));
 }

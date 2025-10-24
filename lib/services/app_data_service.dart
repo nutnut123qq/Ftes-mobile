@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../utils/api_constants.dart';
+import '../core/constants/app_constants.dart';
 import 'http_client.dart';
 
 class AppDataService {
@@ -11,7 +11,7 @@ class AppDataService {
   }
 
   Future<Map<String, dynamic>> fetchMyInfo() async {
-    final resp = await _http.get(ApiConstants.myInfoEndpoint);
+    final resp = await _http.get(AppConstants.myInfoEndpoint);
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       return jsonDecode(resp.body) as Map<String, dynamic>;
     }
@@ -20,7 +20,7 @@ class AppDataService {
 
   Future<Map<String, dynamic>> introspectToken({required String token}) async {
     final body = {'token': token};
-    final resp = await _http.post(ApiConstants.introspectEndpoint, body: body);
+    final resp = await _http.post(AppConstants.introspectEndpoint, body: body);
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       return jsonDecode(resp.body) as Map<String, dynamic>;
     }
@@ -28,7 +28,7 @@ class AppDataService {
   }
 
   Future<List<dynamic>> fetchBanners() async {
-    final resp = await _http.get(ApiConstants.bannerEndpoint);
+    final resp = await _http.get(AppConstants.bannerEndpoint);
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final data = jsonDecode(resp.body);
       if (data is List) return data;
@@ -39,7 +39,7 @@ class AppDataService {
   }
 
   Future<List<dynamic>> fetchFeaturedCourses() async {
-    final resp = await _http.get(ApiConstants.featuredCoursesEndpoint);
+    final resp = await _http.get(AppConstants.featuredCoursesEndpoint);
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       final data = jsonDecode(resp.body);
       if (data is List) return data;

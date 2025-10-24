@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/update_profile_request.dart';
 import '../models/profile_response.dart';
 import '../models/user_request.dart';
-import '../utils/api_constants.dart';
+import '../core/constants/app_constants.dart';
 import 'http_client.dart';
 
 /// Service để xử lý các thao tác liên quan đến profile
@@ -39,7 +39,7 @@ class ProfileService {
   /// Get user profile
   Future<ProfileResponse> getProfile(String userId) async {
     try {
-      final response = await _httpClient.get('${ApiConstants.viewProfileEndpoint}/$userId');
+      final response = await _httpClient.get('${AppConstants.viewProfileEndpoint}/$userId');
 
       if (response.statusCode == 200) {
         return await _handleResponse<ProfileResponse>(
@@ -51,7 +51,7 @@ class ProfileService {
         // Profile doesn't exist, create it first
         await createProfile(userId);
         // Try to get profile again
-        final retryResponse = await _httpClient.get('${ApiConstants.viewProfileEndpoint}/$userId');
+        final retryResponse = await _httpClient.get('${AppConstants.viewProfileEndpoint}/$userId');
         return await _handleResponse<ProfileResponse>(
           retryResponse,
           ProfileResponse.fromJson,
@@ -68,7 +68,7 @@ class ProfileService {
   /// Create user profile
   Future<void> createProfile(String userId) async {
     try {
-      final response = await _httpClient.post('${ApiConstants.createProfileEndpoint}/$userId');
+      final response = await _httpClient.post('${AppConstants.createProfileEndpoint}/$userId');
       
       if (response.statusCode != 200) {
         throw Exception('Create profile failed: ${response.statusCode}');
@@ -82,7 +82,7 @@ class ProfileService {
   Future<ProfileResponse> updateProfile(String userId, UpdateProfileRequest request) async {
     try {
       final response = await _httpClient.put(
-        '${ApiConstants.updateProfileEndpoint}/$userId',
+        '${AppConstants.updateProfileEndpoint}/$userId',
         body: request.toJson(),
       );
       
@@ -100,7 +100,7 @@ class ProfileService {
   Future<void> updateGmail(UpdateGmailRequest request) async {
     try {
       final response = await _httpClient.post(
-        ApiConstants.updateGmailEndpoint,
+        AppConstants.updateGmailEndpoint,
         body: request.toJson(),
       );
 

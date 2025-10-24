@@ -75,7 +75,6 @@ class AppConstants {
   static const double shadowOffsetY = 2.0;
   
   // API Settings (for future use)
-  static const String baseUrl = 'https://api.ftes.vn';
   static const Duration apiTimeout = Duration(seconds: 30);
   
   // Storage Keys

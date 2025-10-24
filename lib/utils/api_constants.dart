@@ -1,6 +1,4 @@
 class ApiConstants {
-  // Base URL
-  static const String baseUrl = 'http://localhost:8081';
   
   // Authentication endpoints
   static const String loginEndpoint = '/api/auth/token';

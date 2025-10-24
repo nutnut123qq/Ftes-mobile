@@ -78,13 +78,13 @@ class AppConstants {
   
   // API Endpoints
   static const String loginEndpoint = '/api/auth/token';
-  static const String registerEndpoint = '/auth/register';
+  static const String registerEndpoint = '/api/users/registration';
   static const String googleAuthEndpoint = '/auth/google';
+  static const String verifyEmailCodeEndpoint = '/auth/verify-email-code';
+  static const String resendVerifyCodeEndpoint = '/users/mail/resend-verify-code';
   static const String refreshTokenEndpoint = '/auth/refresh';
   static const String logoutEndpoint = '/auth/logout';
   static const String forgotPasswordEndpoint = '/auth/forgot-password';
-  static const String verifyEmailCodeEndpoint = '/auth/verify-email';
-  static const String resendVerifyCodeEndpoint = '/auth/resend-verification';
   static const String activeUserEndpoint = '/auth/activate';
   static const String myInfoEndpoint = '/user/me';
   static const String introspectEndpoint = '/auth/introspect';
@@ -93,6 +93,44 @@ class AppConstants {
   static const String verifyUpdateEmailEndpoint = '/auth/verify-update-email';
   static const String changePasswordEndpoint = '/user/change-password';
   static const String updateGmailEndpoint = '/user/update-gmail';
+  static const String bannerEndpoint = '/banners';
+  static const String featuredCoursesEndpoint = '/courses/featured';
+  
+  // Auth Endpoints
+  static const String verifyPinEndpoint = '/auth/verify-pin';
+  static const String userRegistrationEndpoint = '/api/users/registration';
+  
+  // Blog Endpoints
+  static const String blogsEndpoint = '/blogs';
+  static const String blogsByCategoryEndpoint = '/blogs/category';
+  static const String blogsSearchEndpoint = '/blogs/search';
+  static const String blogsInteractiveEndpoint = '/blogs/interactive';
+  
+  // Cart Endpoints
+  static const String cartEndpoint = '/cart';
+  static const String cartCountEndpoint = '/cart/count';
+  static const String cartTotalEndpoint = '/cart/total';
+  
+  // Course Endpoints
+  static const String coursesEndpoint = '/courses';
+  static const String courseDetailEndpoint = '/courses/detail';
+  static const String coursesSearchEndpoint = '/courses/search';
+  static const String userCoursesEndpoint = '/user/courses';
+  static const String lessonDetailEndpoint = '/lessons/detail';
+  static const String checkEnrollmentEndpoint = '/enrollments/check';
+  static const String enrollCourseEndpoint = '/enrollments/enroll';
+  
+  // Image Endpoints
+  static const String uploadImageEndpoint = '/images/upload';
+  
+  // Order Endpoints
+  static const String orderEndpoint = '/orders';
+  static const String orderCancelEndpoint = '/orders/cancel';
+  
+  // Profile Endpoints
+  static const String viewProfileEndpoint = '/profile/view';
+  static const String createProfileEndpoint = '/profile/create';
+  static const String updateProfileEndpoint = '/profile/update';
   
   // Default Headers
   static const Map<String, String> defaultHeaders = {
