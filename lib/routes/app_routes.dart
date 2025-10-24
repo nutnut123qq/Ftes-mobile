@@ -5,6 +5,7 @@ import '../screens/intro_screen.dart';
 import '../screens/lets_you_in_screen.dart';
 import '../screens/register_screen.dart';
 import '../screens/login_screen.dart';
+import '../presentation/pages/auth/login_page.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/verify_forgot_password_screen.dart';
 import '../screens/create_new_password_screen.dart';
@@ -45,7 +46,7 @@ class AppRoutes {
     AppConstants.routeIntro: (context) => const IntroScreen(),
     AppConstants.routeLetsYouIn: (context) => const LetsYouInScreen(),
     AppConstants.routeSignUp: (context) => const RegisterScreen(),
-    AppConstants.routeSignIn: (context) => const LoginScreen(),
+    AppConstants.routeSignIn: (context) => const LoginPage(),
     AppConstants.routeForgotPassword: (context) => const ForgotPasswordScreen(),
     AppConstants.routeVerifyForgotPassword: (context) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
@@ -196,7 +197,7 @@ class AppRoutes {
         );
       case AppConstants.routeSignIn:
         return MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
+          builder: (context) => const LoginPage(),
           settings: settings,
         );
       case AppConstants.routeForgotPassword:

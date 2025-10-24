@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'routes/app_routes.dart';
-import 'utils/colors.dart';
-import 'utils/constants.dart';
+import 'core/utils/colors.dart';
+import 'core/constants/app_constants.dart';
+import 'core/di/injection_container.dart' as di;
+import 'presentation/viewmodels/auth_viewmodel.dart';
 import 'providers/auth_provider.dart';
 import 'providers/app_data_provider.dart';
 import 'providers/blog_provider.dart';
@@ -15,7 +17,9 @@ import 'providers/exercise_provider.dart';
 import 'providers/video_provider.dart';
 import 'providers/ai_chat_provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await di.init();
   runApp(const MyApp());
 }
 
@@ -26,6 +30,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // New Clean Architecture AuthViewModel
+        ChangeNotifierProvider(create: (context) => di.sl<AuthViewModel>()..initialize()),
+        // Legacy providers (temporary for backward compatibility)
         ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => AppDataProvider()),
         ChangeNotifierProvider(create: (context) => BlogProvider()..initialize()),
@@ -69,14 +76,14 @@ class MyApp extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusM),
               ),
-              padding: const EdgeInsets.symmetric(
+              padding: EdgeInsets.symmetric(
                 horizontal: AppConstants.spacingL,
                 vertical: AppConstants.spacingM,
               ),
             ),
           ),
         ),
-        initialRoute: AppConstants.routeIntro,
+        initialRoute: AppConstants.routeSignIn,
         routes: AppRoutes.routes,
         onGenerateRoute: AppRoutes.onGenerateRoute,
       ),
