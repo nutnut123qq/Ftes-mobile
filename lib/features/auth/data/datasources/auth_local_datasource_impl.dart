@@ -25,6 +25,18 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   }
 
   @override
+  Future<void> cacheUserId(String userId) async {
+    try {
+      print('💾 Caching user ID: $userId');
+      await _sharedPreferences.setString(AppConstants.keyUserId, userId);
+      print('✅ User ID cached successfully');
+    } catch (e) {
+      print('❌ Failed to cache user ID: $e');
+      throw CacheException('Failed to cache user ID: $e');
+    }
+  }
+
+  @override
   Future<String?> getCachedAccessToken() async {
     try {
       return _sharedPreferences.getString(AppConstants.keyAccessToken);

@@ -9,12 +9,14 @@ class AuthenticationResponseModel {
   final String refreshToken;
   final bool? authenticated;
   final String? deviceId;
+  final String? userId;
 
   const AuthenticationResponseModel({
     required this.accessToken,
     required this.refreshToken,
     this.authenticated,
     this.deviceId,
+    this.userId,
   });
 
   factory AuthenticationResponseModel.fromJson(Map<String, dynamic> json) =>

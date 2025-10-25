@@ -9,8 +9,8 @@ import 'features/auth/presentation/viewmodels/register_viewmodel.dart';
 import 'features/auth/presentation/viewmodels/forgot_password_viewmodel.dart';
 // import 'legacy/providers/auth_provider.dart'; // Deprecated - use auth feature instead
 import 'providers/app_data_provider.dart';
-import 'providers/blog_provider.dart';
 import 'providers/course_provider.dart';
+import 'providers/blog_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/point_provider.dart';
 import 'providers/enrollment_provider.dart';
@@ -39,8 +39,8 @@ class MyApp extends StatelessWidget {
         // Legacy providers (temporary for backward compatibility) - DEPRECATED
         // ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => AppDataProvider()),
-        ChangeNotifierProvider(create: (context) => BlogProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => CourseProvider()),
+        ChangeNotifierProvider(create: (context) => BlogProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => CartProvider()..initializeCart()),
         ChangeNotifierProvider(create: (context) => PointProvider()),
         ChangeNotifierProvider(create: (context) => EnrollmentProvider()),

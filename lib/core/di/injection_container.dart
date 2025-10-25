@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import '../network/api_client.dart';
 import '../network/network_info.dart';
 import '../../features/auth/di/auth_injection.dart';
+import '../../features/home/di/home_injection.dart';
 
 /// Service Locator instance
 final sl = GetIt.instance;
@@ -21,4 +22,5 @@ Future<void> init() async {
   
   // Feature dependencies
   await initAuthDependencies();
+  await initHomeDependencies();
 }

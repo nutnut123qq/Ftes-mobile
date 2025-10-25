@@ -10,7 +10,7 @@ abstract class AuthRemoteDataSource {
   Future<AuthenticationResponseModel> login(String email, String password);
 
   /// Login with Google OAuth
-  Future<AuthenticationResponseModel> loginWithGoogle();
+  Future<AuthenticationResponseModel> loginWithGoogle(String authCode, {bool isAdmin = false});
 
   /// Get current user info
   Future<UserModel> getMyInfo();

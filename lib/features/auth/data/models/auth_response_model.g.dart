@@ -13,6 +13,7 @@ AuthenticationResponseModel _$AuthenticationResponseModelFromJson(
   refreshToken: json['refreshToken'] as String,
   authenticated: json['authenticated'] as bool?,
   deviceId: json['deviceId'] as String?,
+  userId: json['userId'] as String?,
 );
 
 Map<String, dynamic> _$AuthenticationResponseModelToJson(
@@ -22,6 +23,7 @@ Map<String, dynamic> _$AuthenticationResponseModelToJson(
   'refreshToken': instance.refreshToken,
   'authenticated': instance.authenticated,
   'deviceId': instance.deviceId,
+  'userId': instance.userId,
 };
 
 IntrospectResponseModel _$IntrospectResponseModelFromJson(

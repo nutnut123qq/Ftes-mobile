@@ -82,27 +82,22 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     _clearError();
 
-    try {
-      final result = await _loginWithGoogleUseCase();
+    final result = await _loginWithGoogleUseCase();
 
-      return result.fold(
-        (failure) {
-          _setError(_mapFailureToMessage(failure));
-          return false;
-        },
-        (user) {
-          _currentUser = user;
-          _isLoggedIn = true;
-          notifyListeners();
-          return true;
-        },
-      );
-    } catch (e) {
-      _setError('Google login failed: $e');
-      return false;
-    } finally {
-      _setLoading(false);
-    }
+    return result.fold(
+      (failure) {
+        _setError(_mapFailureToMessage(failure));
+        _setLoading(false);
+        return false;
+      },
+      (user) {
+        _currentUser = user;
+        _isLoggedIn = true;
+        notifyListeners();
+        _setLoading(false);
+        return true;
+      },
+    );
   }
 
   /// Logout

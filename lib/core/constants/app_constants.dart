@@ -34,6 +34,7 @@ class AppConstants {
   // Storage Keys
   static const String keyAccessToken = 'access_token';
   static const String keyRefreshToken = 'refresh_token';
+  static const String keyUserId = 'user_id';
   static const String keyUserData = 'user_data';
   static const String keyThemeMode = 'theme_mode';
   static const String keyLanguage = 'language';
@@ -80,7 +81,7 @@ class AppConstants {
   // API Endpoints
   static const String loginEndpoint = '/api/auth/token';
   static const String registerEndpoint = '/api/users/registration';
-  static const String googleAuthEndpoint = '/auth/google';
+  static const String googleAuthEndpoint = '/api/auth/outbound/authentication';
   static const String verifyEmailCodeEndpoint = '/api/auth/verify-email-code';
   static const String resendVerifyCodeEndpoint = '/users/mail/resend-verify-code';
   static const String refreshTokenEndpoint = '/auth/refresh';
@@ -94,8 +95,12 @@ class AppConstants {
   static const String verifyUpdateEmailEndpoint = '/auth/verify-update-email';
   static const String changePasswordEndpoint = '/user/change-password';
   static const String updateGmailEndpoint = '/user/update-gmail';
-  static const String bannerEndpoint = '/banners';
-  static const String featuredCoursesEndpoint = '/courses/featured';
+  static const String bannerEndpoint = '/api/banner';
+  static const String featuredCoursesEndpoint = '/api/courses/featured';
+  static const String latestCoursesEndpoint = '/api/courses';
+  static const String coursesSearchEndpoint = '/api/courses/search';
+  static const String courseDetailEndpoint = '/api/courses/detail';
+  static const String profileEndpoint = '/api/profiles';
   
   // Auth Endpoints
   static const String verifyPinEndpoint = '/auth/verify-pin';
@@ -113,13 +118,12 @@ class AppConstants {
   static const String cartTotalEndpoint = '/cart/total';
   
   // Course Endpoints
-  static const String coursesEndpoint = '/courses';
-  static const String courseDetailEndpoint = '/courses/detail';
-  static const String coursesSearchEndpoint = '/courses/search';
+  static const String coursesEndpoint = '/api/courses';
   static const String userCoursesEndpoint = '/user/courses';
   static const String lessonDetailEndpoint = '/lessons/detail';
   static const String checkEnrollmentEndpoint = '/enrollments/check';
   static const String enrollCourseEndpoint = '/enrollments/enroll';
+  static const String courseCategoriesEndpoint = '/api/course-categories';
   
   // Image Endpoints
   static const String uploadImageEndpoint = '/images/upload';

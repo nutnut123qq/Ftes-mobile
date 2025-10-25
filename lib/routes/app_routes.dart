@@ -13,7 +13,8 @@ import '../features/auth/presentation/pages/verify_forgot_password_otp_page.dart
 import '../features/auth/presentation/pages/create_new_password_page.dart';
 import '../screens/congratulations_screen.dart';
 import '../screens/create_pin_screen.dart';
-import '../screens/home_screen.dart';
+import '../features/home/presentation/pages/home_page.dart';
+import '../features/home/presentation/viewmodels/home_viewmodel.dart';
 import '../screens/popular_courses_screen.dart';
 import '../screens/top_mentors_screen.dart';
 import '../screens/courses_list_screen.dart';
@@ -38,6 +39,8 @@ import '../screens/cart_screen.dart';
 import '../screens/blog_detail_screen.dart';
 import '../models/course_item.dart';
 import '../models/chat_item.dart';
+import 'package:provider/provider.dart';
+import '../core/di/injection_container.dart' as di;
 import '../models/mentor_item.dart';
 
 class AppRoutes {
@@ -65,7 +68,10 @@ class AppRoutes {
     ...AuthRoutes.getRoutes(),
     core_constants.AppConstants.routeCongratulations: (context) => const CongratulationsScreen(),
     core_constants.AppConstants.routeCreatePin: (context) => const CreatePinScreen(),
-    core_constants.AppConstants.routeHome: (context) => const HomeScreen(),
+    core_constants.AppConstants.routeHome: (context) => ChangeNotifierProvider(
+      create: (context) => di.sl<HomeViewModel>(),
+      child: const HomePage(),
+    ),
     core_constants.AppConstants.routePopularCourses: (context) => const PopularCoursesScreen(),
     core_constants.AppConstants.routeTopMentors: (context) => const TopMentorsScreen(),
     core_constants.AppConstants.routeCoursesList: (context) {
@@ -216,7 +222,10 @@ class AppRoutes {
         );
       case core_constants.AppConstants.routeHome:
         return MaterialPageRoute(
-          builder: (context) => const HomeScreen(),
+          builder: (context) => ChangeNotifierProvider(
+            create: (context) => di.sl<HomeViewModel>(),
+            child: const HomePage(),
+          ),
           settings: settings,
         );
       case core_constants.AppConstants.routePopularCourses:

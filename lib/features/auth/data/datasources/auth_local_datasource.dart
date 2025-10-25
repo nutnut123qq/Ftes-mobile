@@ -5,6 +5,9 @@ abstract class AuthLocalDataSource {
   /// Cache access token
   Future<void> cacheAccessToken(String token);
 
+  /// Cache user ID
+  Future<void> cacheUserId(String userId);
+
   /// Get cached access token
   Future<String?> getCachedAccessToken();
 

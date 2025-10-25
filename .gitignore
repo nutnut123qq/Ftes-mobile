@@ -52,3 +52,6 @@ app.*.map.json
 
 # Documentation
 ../README.md
+
+# Environment variables
+.env

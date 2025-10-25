@@ -52,19 +52,34 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<AuthenticationResponseModel> loginWithGoogle() async {
+  Future<AuthenticationResponseModel> loginWithGoogle(String authCode, {bool isAdmin = false}) async {
     try {
+      print('🔐 Attempting Google OAuth to: ${AppConstants.baseUrl}${AppConstants.googleAuthEndpoint}');
+      print('🔑 Auth code: ${authCode.substring(0, 20)}...');
+      
       final response = await _apiClient.post(
         AppConstants.googleAuthEndpoint,
-        queryParameters: {'id_token': 'dummy_token', 'isAdmin': 'false'},
+        queryParameters: {
+          'code': authCode,
+          'isAdmin': isAdmin.toString(),
+        },
       );
-
+      
+      print('📥 Response status: ${response.statusCode}');
+      print('📥 Response data: ${response.data}');
+      
       if (response.statusCode == 200) {
-        return AuthenticationResponseModel.fromJson(response.data['result']);
+        final result = response.data['result'];
+        if (result != null) {
+          return AuthenticationResponseModel.fromJson(result);
+        } else {
+          throw ServerException('Invalid response format');
+        }
       } else {
-        throw ServerException(response.data['message'] ?? 'Google login failed');
+        throw ServerException(response.data['messageDTO']?['message'] ?? 'Google login failed');
       }
     } catch (e) {
+      print('❌ Google login error: $e');
       throw ServerException(e.toString());
     }
   }

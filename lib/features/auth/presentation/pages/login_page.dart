@@ -354,24 +354,22 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _signInWithGoogle(BuildContext context) async {
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
     
-    try {
-      final success = await authViewModel.loginWithGoogle();
-      if (success && mounted) {
-        Navigator.pushReplacementNamed(context, AppConstants.routeHome);
-      } else if (mounted && authViewModel.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authViewModel.errorMessage!),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Đăng nhập Google thất bại: $e')),
-        );
-      }
+    final success = await authViewModel.loginWithGoogle();
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đăng nhập Google thành công!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pushReplacementNamed(context, AppConstants.routeHome);
+    } else if (mounted && authViewModel.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authViewModel.errorMessage!),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }
