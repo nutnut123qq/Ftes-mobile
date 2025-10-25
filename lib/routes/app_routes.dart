@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import '../core/constants/app_constants.dart' as core_constants;
 import '../screens/loading_screen.dart';
 import '../screens/launching_screen.dart';
 import '../screens/intro_screen.dart';
 import '../screens/lets_you_in_screen.dart';
-import '../screens/register_screen.dart';
-import '../screens/login_screen.dart';
-import '../presentation/pages/auth/login_page.dart';
-import '../screens/forgot_password_screen.dart';
-import '../screens/verify_forgot_password_screen.dart';
-import '../screens/create_new_password_screen.dart';
+import '../features/auth/routes/auth_routes.dart';
+import '../features/auth/presentation/pages/login_page.dart';
+import '../features/auth/presentation/pages/register_page.dart';
+import '../features/auth/presentation/pages/verify_email_page.dart';
+import '../features/auth/presentation/pages/forgot_password_page.dart';
+import '../features/auth/presentation/pages/verify_forgot_password_otp_page.dart';
+import '../features/auth/presentation/pages/create_new_password_page.dart';
 import '../screens/congratulations_screen.dart';
 import '../screens/create_pin_screen.dart';
 import '../screens/home_screen.dart';
@@ -37,38 +39,43 @@ import '../screens/blog_detail_screen.dart';
 import '../models/course_item.dart';
 import '../models/chat_item.dart';
 import '../models/mentor_item.dart';
-import '../utils/constants.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
-    AppConstants.routeSplash: (context) => const LoadingScreen(),
-    AppConstants.routeLaunching: (context) => const LaunchingScreen(),
-    AppConstants.routeIntro: (context) => const IntroScreen(),
-    AppConstants.routeLetsYouIn: (context) => const LetsYouInScreen(),
-    AppConstants.routeSignUp: (context) => const RegisterScreen(),
-    AppConstants.routeSignIn: (context) => const LoginPage(),
-    AppConstants.routeForgotPassword: (context) => const ForgotPasswordScreen(),
-    AppConstants.routeVerifyForgotPassword: (context) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      return VerifyForgotPasswordScreen(
-        contactInfo: args?['contactInfo'] ?? '',
-        method: args?['method'] ?? 'email',
-      );
-    },
-    AppConstants.routeCreateNewPassword: (context) => const CreateNewPasswordScreen(),
-    AppConstants.routeCongratulations: (context) => const CongratulationsScreen(),
-    AppConstants.routeCreatePin: (context) => const CreatePinScreen(),
-    AppConstants.routeHome: (context) => const HomeScreen(),
-    AppConstants.routePopularCourses: (context) => const PopularCoursesScreen(),
-    AppConstants.routeTopMentors: (context) => const TopMentorsScreen(),
-    AppConstants.routeCoursesList: (context) {
+    core_constants.AppConstants.routeSplash: (context) => const LoadingScreen(),
+    core_constants.AppConstants.routeLaunching: (context) => const LaunchingScreen(),
+    core_constants.AppConstants.routeIntro: (context) => const IntroScreen(),
+    core_constants.AppConstants.routeLetsYouIn: (context) => const LetsYouInScreen(),
+    core_constants.AppConstants.routeSignIn: (context) => const LoginPage(), // Add signin route
+    core_constants.AppConstants.routeSignUp: (context) => const RegisterPage(), // Use new RegisterPage
+    core_constants.AppConstants.routeVerifyEmail: (context) {
+      final email = ModalRoute.of(context)?.settings.arguments as String?;
+      return VerifyEmailPage(email: email ?? '');
+    }, // Add verify email route
+    core_constants.AppConstants.routeForgotPassword: (context) => const ForgotPasswordPage(), // Add forgot password route
+    core_constants.AppConstants.routeVerifyForgotPassword: (context) {
+      final email = ModalRoute.of(context)?.settings.arguments as String?;
+      return VerifyForgotPasswordOTPPage(email: email ?? '');
+    }, // Add verify forgot password route
+    core_constants.AppConstants.routeCreateNewPassword: (context) {
+      final email = ModalRoute.of(context)?.settings.arguments as String?;
+      return CreateNewPasswordPage(email: email ?? '');
+    }, // Add create new password route
+    // Auth routes
+    ...AuthRoutes.getRoutes(),
+    core_constants.AppConstants.routeCongratulations: (context) => const CongratulationsScreen(),
+    core_constants.AppConstants.routeCreatePin: (context) => const CreatePinScreen(),
+    core_constants.AppConstants.routeHome: (context) => const HomeScreen(),
+    core_constants.AppConstants.routePopularCourses: (context) => const PopularCoursesScreen(),
+    core_constants.AppConstants.routeTopMentors: (context) => const TopMentorsScreen(),
+    core_constants.AppConstants.routeCoursesList: (context) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       return CoursesListScreen(
         initialSearchQuery: args?['searchQuery'],
       );
     },
-    AppConstants.routeMentorsList: (context) => const MentorsListScreen(),
-    AppConstants.routeSingleMentorDetails: (context) {
+    core_constants.AppConstants.routeMentorsList: (context) => const MentorsListScreen(),
+    core_constants.AppConstants.routeSingleMentorDetails: (context) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       return SingleMentorDetailsScreen(
         mentor: args?['mentor'] ?? MentorItem(
@@ -78,7 +85,7 @@ class AppRoutes {
         ),
       );
     },
-    AppConstants.routeCourseDetail: (context) {
+    core_constants.AppConstants.routeCourseDetail: (context) {
       final arguments = ModalRoute.of(context)?.settings.arguments;
       CourseItem? course;
       
@@ -100,7 +107,7 @@ class AppRoutes {
       // If no valid course, navigate to home
       if (course == null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).pushReplacementNamed(AppConstants.routeHome);
+          Navigator.of(context).pushReplacementNamed(core_constants.AppConstants.routeHome);
         });
         return const Scaffold(
           body: Center(child: CircularProgressIndicator()),
@@ -109,9 +116,9 @@ class AppRoutes {
       
       return CourseDetailScreen(course: course);
     },
-    AppConstants.routeProfile: (context) => const ProfileScreen(),
-    AppConstants.routeNotifications: (context) => const NotificationsScreen(),
-    AppConstants.routeChatMessages: (context) {
+    core_constants.AppConstants.routeProfile: (context) => const ProfileScreen(),
+    core_constants.AppConstants.routeNotifications: (context) => const NotificationsScreen(),
+    core_constants.AppConstants.routeChatMessages: (context) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       return ChatMessagesScreen(
         chat: args?['chat'],
@@ -119,15 +126,15 @@ class AppRoutes {
         lessonTitle: args?['lessonTitle'],
       );
     },
-    AppConstants.routeCurriculum: (context) => const CurriculumScreen(),
-    AppConstants.routeReviews: (context) {
+    core_constants.AppConstants.routeCurriculum: (context) => const CurriculumScreen(),
+    core_constants.AppConstants.routeReviews: (context) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       return ReviewsScreen(
         courseId: args?['courseId'] ?? '',
         courseName: args?['courseName'],
       );
     },
-    AppConstants.routeWriteReview: (context) {
+    core_constants.AppConstants.routeWriteReview: (context) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       return WriteReviewScreen(
         courseId: args?['courseId'] ?? '',
@@ -135,7 +142,7 @@ class AppRoutes {
         courseName: args?['courseName'],
       );
     },
-    AppConstants.routePayment: (context) {
+    core_constants.AppConstants.routePayment: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
       return PaymentScreen(
         orderId: args?['orderId'] ?? '',
@@ -143,9 +150,9 @@ class AppRoutes {
         description: args?['description'],
       );
     },
-    AppConstants.routeEnrollSuccess: (context) => const EnrollSuccessScreen(),
-    AppConstants.routeMyCourses: (context) => const MyCoursesScreen(),
-    AppConstants.routeMyCourseOngoingLessons: (context) {
+    core_constants.AppConstants.routeEnrollSuccess: (context) => const EnrollSuccessScreen(),
+    core_constants.AppConstants.routeMyCourses: (context) => const MyCoursesScreen(),
+    core_constants.AppConstants.routeMyCourseOngoingLessons: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
       return MyCourseOngoingLessonsScreen(
         courseId: args?['courseId'] ?? '',
@@ -153,7 +160,7 @@ class AppRoutes {
         courseImage: args?['courseImage'] ?? '',
       );
     },
-    AppConstants.routeMyCourseOngoingVideo: (context) {
+    core_constants.AppConstants.routeMyCourseOngoingVideo: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
       return MyCourseOngoingVideoScreen(
         lessonId: args?['lessonId'] ?? '',
@@ -164,87 +171,65 @@ class AppRoutes {
         totalTime: args?['totalTime'] ?? 0,
       );
     },
-    AppConstants.routeInviteFriends: (context) => const InviteFriendsScreen(),
-    AppConstants.routeCart: (context) => const CartScreen(),
+    core_constants.AppConstants.routeInviteFriends: (context) => const InviteFriendsScreen(),
+    core_constants.AppConstants.routeCart: (context) => const CartScreen(),
   };
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case AppConstants.routeSplash:
+      case core_constants.AppConstants.routeSplash:
         return MaterialPageRoute(
           builder: (context) => const LoadingScreen(),
           settings: settings,
         );
-      case AppConstants.routeLaunching:
+      case core_constants.AppConstants.routeLaunching:
         return MaterialPageRoute(
           builder: (context) => const LaunchingScreen(),
           settings: settings,
         );
-      case AppConstants.routeIntro:
+      case core_constants.AppConstants.routeIntro:
         return MaterialPageRoute(
           builder: (context) => const IntroScreen(),
           settings: settings,
         );
-      case AppConstants.routeLetsYouIn:
+      case core_constants.AppConstants.routeLetsYouIn:
         return MaterialPageRoute(
           builder: (context) => const LetsYouInScreen(),
           settings: settings,
         );
-      case AppConstants.routeSignUp:
+      case core_constants.AppConstants.routeSignUp:
         return MaterialPageRoute(
-          builder: (context) => const RegisterScreen(),
+          builder: (context) => const RegisterPage(),
           settings: settings,
         );
-      case AppConstants.routeSignIn:
-        return MaterialPageRoute(
-          builder: (context) => const LoginPage(),
-          settings: settings,
-        );
-      case AppConstants.routeForgotPassword:
-        return MaterialPageRoute(
-          builder: (context) => const ForgotPasswordScreen(),
-          settings: settings,
-        );
-      case AppConstants.routeVerifyForgotPassword:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (context) => VerifyForgotPasswordScreen(
-            contactInfo: args?['contactInfo'] ?? '',
-            method: args?['method'] ?? 'email',
-          ),
-          settings: settings,
-        );
-      case AppConstants.routeCreateNewPassword:
-        return MaterialPageRoute(
-          builder: (context) => const CreateNewPasswordScreen(),
-          settings: settings,
-        );
-      case AppConstants.routeCongratulations:
+      // Auth routes are handled by AuthRoutes.getRoutes()
+      // These cases are now managed by the auth feature
+      case core_constants.AppConstants.routeCongratulations:
         return MaterialPageRoute(
           builder: (context) => const CongratulationsScreen(),
           settings: settings,
         );
-      case AppConstants.routeCreatePin:
+      case core_constants.AppConstants.routeCreatePin:
         return MaterialPageRoute(
           builder: (context) => const CreatePinScreen(),
           settings: settings,
         );
-      case AppConstants.routeHome:
+      case core_constants.AppConstants.routeHome:
         return MaterialPageRoute(
           builder: (context) => const HomeScreen(),
           settings: settings,
         );
-      case AppConstants.routePopularCourses:
+      case core_constants.AppConstants.routePopularCourses:
         return MaterialPageRoute(
           builder: (context) => const PopularCoursesScreen(),
           settings: settings,
         );
-      case AppConstants.routeTopMentors:
+      case core_constants.AppConstants.routeTopMentors:
         return MaterialPageRoute(
           builder: (context) => const TopMentorsScreen(),
           settings: settings,
         );
-      case AppConstants.routeCoursesList:
+      case core_constants.AppConstants.routeCoursesList:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => CoursesListScreen(
@@ -252,12 +237,12 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case AppConstants.routeMentorsList:
+      case core_constants.AppConstants.routeMentorsList:
         return MaterialPageRoute(
           builder: (context) => const MentorsListScreen(),
           settings: settings,
         );
-      case AppConstants.routeSingleMentorDetails:
+      case core_constants.AppConstants.routeSingleMentorDetails:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => SingleMentorDetailsScreen(
@@ -269,7 +254,7 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case AppConstants.routeCourseDetail:
+      case core_constants.AppConstants.routeCourseDetail:
         // Handle both Map (from navigation) and String (from deep linking/web)
         CourseItem? course;
         if (settings.arguments is Map<String, dynamic>) {
@@ -295,7 +280,7 @@ class AppRoutes {
           return MaterialPageRoute(
             builder: (context) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                Navigator.of(context).pushReplacementNamed(AppConstants.routeHome);
+                Navigator.of(context).pushReplacementNamed(core_constants.AppConstants.routeHome);
               });
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
@@ -309,7 +294,7 @@ class AppRoutes {
           builder: (context) => CourseDetailScreen(course: course!),
           settings: settings,
         );
-      case AppConstants.routeLearning:
+      case core_constants.AppConstants.routeLearning:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => LearningScreen(
@@ -318,7 +303,7 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case AppConstants.routeQuiz:
+      case core_constants.AppConstants.routeQuiz:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => QuizScreen(
@@ -328,17 +313,17 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case AppConstants.routeProfile:
+      case core_constants.AppConstants.routeProfile:
         return MaterialPageRoute(
           builder: (context) => const ProfileScreen(),
           settings: settings,
         );
-      case AppConstants.routeNotifications:
+      case core_constants.AppConstants.routeNotifications:
         return MaterialPageRoute(
           builder: (context) => const NotificationsScreen(),
           settings: settings,
         );
-      case AppConstants.routeChatMessages:
+      case core_constants.AppConstants.routeChatMessages:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => ChatMessagesScreen(
@@ -348,12 +333,12 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case AppConstants.routeCurriculum:
+      case core_constants.AppConstants.routeCurriculum:
         return MaterialPageRoute(
           builder: (context) => const CurriculumScreen(),
           settings: settings,
         );
-      case AppConstants.routeReviews:
+      case core_constants.AppConstants.routeReviews:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => ReviewsScreen(
@@ -362,7 +347,7 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case AppConstants.routeWriteReview:
+      case core_constants.AppConstants.routeWriteReview:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => WriteReviewScreen(
@@ -372,7 +357,7 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case AppConstants.routePayment:
+      case core_constants.AppConstants.routePayment:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => PaymentScreen(
@@ -382,17 +367,17 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case AppConstants.routeEnrollSuccess:
+      case core_constants.AppConstants.routeEnrollSuccess:
         return MaterialPageRoute(
           builder: (context) => const EnrollSuccessScreen(),
           settings: settings,
         );
-      case AppConstants.routeMyCourses:
+      case core_constants.AppConstants.routeMyCourses:
         return MaterialPageRoute(
           builder: (context) => const MyCoursesScreen(),
           settings: settings,
         );
-      case AppConstants.routeMyCourseOngoingLessons:
+      case core_constants.AppConstants.routeMyCourseOngoingLessons:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => MyCourseOngoingLessonsScreen(
@@ -402,7 +387,7 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case AppConstants.routeMyCourseOngoingVideo:
+      case core_constants.AppConstants.routeMyCourseOngoingVideo:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => MyCourseOngoingVideoScreen(
@@ -415,17 +400,17 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case AppConstants.routeInviteFriends:
+      case core_constants.AppConstants.routeInviteFriends:
         return MaterialPageRoute(
           builder: (context) => const InviteFriendsScreen(),
           settings: settings,
         );
-      case AppConstants.routeCart:
+      case core_constants.AppConstants.routeCart:
         return MaterialPageRoute(
           builder: (context) => const CartScreen(),
           settings: settings,
         );
-      case AppConstants.routeBlogDetail:
+      case core_constants.AppConstants.routeBlogDetail:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => BlogDetailScreen(
@@ -443,33 +428,33 @@ class AppRoutes {
 
   // Navigation helpers
   static void navigateToHome(BuildContext context) {
-    Navigator.pushReplacementNamed(context, AppConstants.routeHome);
+    Navigator.pushReplacementNamed(context, core_constants.AppConstants.routeHome);
   }
 
   static void navigateToPopularCourses(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routePopularCourses);
+    Navigator.pushNamed(context, core_constants.AppConstants.routePopularCourses);
   }
 
   static void navigateToTopMentors(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeTopMentors);
+    Navigator.pushNamed(context, core_constants.AppConstants.routeTopMentors);
   }
 
   static void navigateToCoursesList(BuildContext context, {String? searchQuery}) {
     Navigator.pushNamed(
       context, 
-      AppConstants.routeCoursesList,
+      core_constants.AppConstants.routeCoursesList,
       arguments: searchQuery != null ? {'searchQuery': searchQuery} : null,
     );
   }
 
   static void navigateToMentorsList(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeMentorsList);
+    Navigator.pushNamed(context, core_constants.AppConstants.routeMentorsList);
   }
 
   static void navigateToSingleMentorDetails(BuildContext context, {required MentorItem mentor}) {
     Navigator.pushNamed(
       context,
-      AppConstants.routeSingleMentorDetails,
+      core_constants.AppConstants.routeSingleMentorDetails,
       arguments: {'mentor': mentor},
     );
   }
@@ -477,7 +462,7 @@ class AppRoutes {
   static void navigateToCourseDetail(BuildContext context, {required CourseItem course}) {
     Navigator.pushNamed(
       context,
-      AppConstants.routeCourseDetail,
+      core_constants.AppConstants.routeCourseDetail,
       arguments: {'course': course},
     );
   }
@@ -490,7 +475,7 @@ class AppRoutes {
   }) {
     Navigator.pushNamed(
       context,
-      AppConstants.routeLearning,
+      core_constants.AppConstants.routeLearning,
       arguments: {
         'lessonId': lessonId,
         'categoryId': categoryId,
@@ -506,7 +491,7 @@ class AppRoutes {
   }) {
     Navigator.pushNamed(
       context,
-      AppConstants.routeQuiz,
+      core_constants.AppConstants.routeQuiz,
       arguments: {
         'exerciseId': exerciseId,
         'userId': userId,
@@ -516,25 +501,25 @@ class AppRoutes {
   }
 
   static void navigateToProfile(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeProfile);
+    Navigator.pushNamed(context, core_constants.AppConstants.routeProfile);
   }
 
 
   static void navigateToNotifications(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeNotifications);
+    Navigator.pushNamed(context, core_constants.AppConstants.routeNotifications);
   }
 
   static void navigateToChatMessages(BuildContext context, {required ChatItem chat}) {
     Navigator.pushNamed(
       context,
-      AppConstants.routeChatMessages,
+      core_constants.AppConstants.routeChatMessages,
       arguments: {'chat': chat},
     );
   }
 
 
   static void navigateToCurriculum(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeCurriculum);
+    Navigator.pushNamed(context, core_constants.AppConstants.routeCurriculum);
   }
 
   static void navigateToReviews(
@@ -579,7 +564,7 @@ class AppRoutes {
   }) {
     Navigator.pushNamed(
       context,
-      AppConstants.routePayment,
+      core_constants.AppConstants.routePayment,
       arguments: {
         'orderId': orderId,
         'qrCodeUrl': qrCodeUrl,
@@ -589,11 +574,11 @@ class AppRoutes {
   }
 
   static void navigateToEnrollSuccess(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeEnrollSuccess);
+    Navigator.pushNamed(context, core_constants.AppConstants.routeEnrollSuccess);
   }
 
   static void navigateToMyCourses(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeMyCourses);
+    Navigator.pushNamed(context, core_constants.AppConstants.routeMyCourses);
   }
 
 
@@ -606,7 +591,7 @@ class AppRoutes {
   }) {
     Navigator.pushNamed(
       context,
-      AppConstants.routeMyCourseOngoingLessons,
+      core_constants.AppConstants.routeMyCourseOngoingLessons,
       arguments: {
         'courseId': courseId,
         'courseTitle': courseTitle,
@@ -625,7 +610,7 @@ class AppRoutes {
   }) {
     Navigator.pushNamed(
       context,
-      AppConstants.routeMyCourseOngoingVideo,
+      core_constants.AppConstants.routeMyCourseOngoingVideo,
       arguments: {
         'lessonId': lessonId,
         'lessonTitle': lessonTitle,
@@ -641,17 +626,17 @@ class AppRoutes {
 
 
   static void navigateToInviteFriends(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeInviteFriends);
+    Navigator.pushNamed(context, core_constants.AppConstants.routeInviteFriends);
   }
 
   static void navigateToCart(BuildContext context) {
-    Navigator.pushNamed(context, AppConstants.routeCart);
+    Navigator.pushNamed(context, core_constants.AppConstants.routeCart);
   }
 
   static void navigateToBlogDetail(BuildContext context, {required String slugName}) {
     Navigator.pushNamed(
       context,
-      AppConstants.routeBlogDetail,
+      core_constants.AppConstants.routeBlogDetail,
       arguments: {'slugName': slugName},
     );
   }

@@ -61,7 +61,14 @@ class ApiClient {
           if (error.response != null) {
             // Handle HTTP errors
             final statusCode = error.response!.statusCode;
-            final message = error.response!.data?['message'] ?? 'Unknown error';
+            String message = 'Unknown error';
+            if (error.response!.data != null) {
+              if (error.response!.data['messageDTO'] != null) {
+                message = error.response!.data['messageDTO']['message'] ?? 'Unknown error';
+              } else if (error.response!.data['message'] != null) {
+                message = error.response!.data['message'];
+              }
+            }
             
             switch (statusCode) {
               case 400:

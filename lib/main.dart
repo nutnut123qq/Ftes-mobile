@@ -4,8 +4,10 @@ import 'routes/app_routes.dart';
 import 'core/utils/colors.dart';
 import 'core/constants/app_constants.dart';
 import 'core/di/injection_container.dart' as di;
-import 'presentation/viewmodels/auth_viewmodel.dart';
-import 'providers/auth_provider.dart';
+import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
+import 'features/auth/presentation/viewmodels/register_viewmodel.dart';
+import 'features/auth/presentation/viewmodels/forgot_password_viewmodel.dart';
+// import 'legacy/providers/auth_provider.dart'; // Deprecated - use auth feature instead
 import 'providers/app_data_provider.dart';
 import 'providers/blog_provider.dart';
 import 'providers/course_provider.dart';
@@ -15,7 +17,7 @@ import 'providers/enrollment_provider.dart';
 import 'providers/feedback_provider.dart';
 import 'providers/exercise_provider.dart';
 import 'providers/video_provider.dart';
-import 'providers/ai_chat_provider.dart';
+// import 'providers/ai_chat_provider.dart'; // Unused import
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,10 +32,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // New Clean Architecture AuthViewModel
+        // New Clean Architecture ViewModels
         ChangeNotifierProvider(create: (context) => di.sl<AuthViewModel>()..initialize()),
-        // Legacy providers (temporary for backward compatibility)
-        ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
+        ChangeNotifierProvider(create: (context) => di.sl<RegisterViewModel>()),
+        ChangeNotifierProvider(create: (context) => di.sl<ForgotPasswordViewModel>()),
+        // Legacy providers (temporary for backward compatibility) - DEPRECATED
+        // ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => AppDataProvider()),
         ChangeNotifierProvider(create: (context) => BlogProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => CourseProvider()),
@@ -43,10 +47,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => FeedbackProvider()),
         ChangeNotifierProvider(create: (context) => ExerciseProvider()),
         ChangeNotifierProvider(create: (context) => VideoProvider()),
-        ChangeNotifierProxyProvider<AuthProvider, AIChatProvider>(
-          create: (context) => AIChatProvider(Provider.of<AuthProvider>(context, listen: false)),
-          update: (context, auth, previous) => previous ?? AIChatProvider(auth),
-        ),
+        // ChangeNotifierProxyProvider<AuthProvider, AIChatProvider>(
+        //   create: (context) => AIChatProvider(Provider.of<AuthProvider>(context, listen: false)),
+        //   update: (context, auth, previous) => previous ?? AIChatProvider(auth),
+        // ),
       ],
       child: MaterialApp(
         title: AppConstants.appName,

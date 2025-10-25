@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../utils/constants.dart';
-import 'login_screen.dart';
+import '../legacy/screens/login_screen.dart';
 import '../providers/auth_provider.dart';
 
 class LetsYouInScreen extends StatelessWidget {

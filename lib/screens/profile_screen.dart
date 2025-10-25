@@ -8,8 +8,8 @@ import 'package:ftes/screens/notifications_screen.dart';
 import 'package:ftes/screens/security_screen.dart';
 import 'package:ftes/screens/terms_conditions_screen.dart';
 import 'package:ftes/screens/invite_friends_screen.dart';
-import 'package:ftes/providers/auth_provider.dart';
-import 'package:ftes/models/auth_response.dart';
+import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';
+import 'package:ftes/features/auth/domain/entities/user.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -30,18 +30,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _loadUserInfo() async {
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
       
-      if (authProvider.isLoggedIn && authProvider.currentUser == null) {
-        await authProvider.refreshUserInfo();
-      } else if (authProvider.isLoggedIn && authProvider.currentUser != null) {
+      if (authViewModel.isLoggedIn && authViewModel.currentUser == null) {
+        await authViewModel.refreshUserInfo();
+      } else if (authViewModel.isLoggedIn && authViewModel.currentUser != null) {
       } else {
       }
     } catch (e) {
     }
   }
 
-  String _getDisplayName(UserInfo? user) {
+  String _getDisplayName(User? user) {
     if (user == null) return 'Chưa có tên';
     
     if (user.fullName != null && user.fullName!.isNotEmpty) {
@@ -124,9 +124,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileContent() {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, child) {
-        if (authProvider.isLoading) {
+    return Consumer<AuthViewModel>(
+      builder: (context, authViewModel, child) {
+        if (authViewModel.isLoading) {
           return const Center(
             child: CircularProgressIndicator(),
           );
@@ -136,7 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             children: [
               // Profile Image and Info
-              _buildProfileHeader(authProvider),
+              _buildProfileHeader(authViewModel),
               
               const SizedBox(height: 20),
               
@@ -149,8 +149,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader(AuthProvider authProvider) {
-    final user = authProvider.currentUser;
+  Widget _buildProfileHeader(AuthViewModel authViewModel) {
+    final user = authViewModel.currentUser;
     
     return Column(
       children: [
@@ -458,7 +458,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _handleLogout() async {
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
       
       // Show loading indicator
       showDialog(
@@ -472,7 +472,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
       
       // Call logout API
-      await authProvider.logout();
+      await authViewModel.logout();
       
       // Close loading dialog
       if (mounted) {

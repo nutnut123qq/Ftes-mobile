@@ -48,6 +48,7 @@ class AppConstants {
   static const String routeSignUp = '/signup';
   static const String routeForgotPassword = '/forgot-password';
   static const String routeVerifyForgotPassword = '/verify-forgot-password';
+  static const String routeVerifyEmail = '/verify-email';
   static const String routeCreateNewPassword = '/create-new-password';
   static const String routeCongratulations = '/congratulations';
   static const String routeCreatePin = '/create-pin';
@@ -80,7 +81,7 @@ class AppConstants {
   static const String loginEndpoint = '/api/auth/token';
   static const String registerEndpoint = '/api/users/registration';
   static const String googleAuthEndpoint = '/auth/google';
-  static const String verifyEmailCodeEndpoint = '/auth/verify-email-code';
+  static const String verifyEmailCodeEndpoint = '/api/auth/verify-email-code';
   static const String resendVerifyCodeEndpoint = '/users/mail/resend-verify-code';
   static const String refreshTokenEndpoint = '/auth/refresh';
   static const String logoutEndpoint = '/auth/logout';
@@ -137,6 +138,10 @@ class AppConstants {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
+  
+  // Forgot Password Endpoints
+  static const String sendForgotPasswordEmailEndpoint = '/api/users/mail/forgot-password';
+  static const String resetPasswordEndpoint = '/api/users/reset-password';
   
   // Error Messages
   static const String errorGeneral = 'Something went wrong. Please try again.';
