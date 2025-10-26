@@ -15,6 +15,9 @@ import '../screens/congratulations_screen.dart';
 import '../screens/create_pin_screen.dart';
 import '../features/home/presentation/pages/home_page.dart';
 import '../features/home/presentation/viewmodels/home_viewmodel.dart';
+import '../features/my_courses/presentation/pages/my_courses_page.dart';
+import '../features/my_courses/presentation/viewmodels/my_courses_viewmodel.dart';
+import '../features/my_courses/di/my_courses_injection.dart';
 import '../screens/popular_courses_screen.dart';
 import '../screens/top_mentors_screen.dart';
 import '../screens/courses_list_screen.dart';
@@ -31,7 +34,6 @@ import '../screens/reviews_screen.dart';
 import '../screens/write_review_screen.dart';
 import '../screens/payment_screen.dart';
 import '../screens/enroll_success_screen.dart';
-import '../screens/my_courses_screen.dart';
 import '../screens/my_course_ongoing_lessons_screen.dart';
 import '../screens/my_course_ongoing_video_screen.dart';
 import '../screens/invite_friends_screen.dart';
@@ -157,7 +159,10 @@ class AppRoutes {
       );
     },
     core_constants.AppConstants.routeEnrollSuccess: (context) => const EnrollSuccessScreen(),
-    core_constants.AppConstants.routeMyCourses: (context) => const MyCoursesScreen(),
+    core_constants.AppConstants.routeMyCourses: (context) => ChangeNotifierProvider(
+      create: (context) => sl<MyCoursesViewModel>(),
+      child: const MyCoursesPage(),
+    ),
     core_constants.AppConstants.routeMyCourseOngoingLessons: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
       return MyCourseOngoingLessonsScreen(
@@ -383,7 +388,10 @@ class AppRoutes {
         );
       case core_constants.AppConstants.routeMyCourses:
         return MaterialPageRoute(
-          builder: (context) => const MyCoursesScreen(),
+          builder: (context) => ChangeNotifierProvider(
+            create: (context) => sl<MyCoursesViewModel>(),
+            child: const MyCoursesPage(),
+          ),
           settings: settings,
         );
       case core_constants.AppConstants.routeMyCourseOngoingLessons:

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/screens/my_courses_screen.dart';
+import 'package:ftes/core/constants/app_constants.dart';
 import 'package:ftes/screens/cart_screen.dart';
 import 'package:ftes/screens/blog_screen.dart';
 
@@ -90,12 +90,7 @@ class AppBottomNavigationBar extends StatelessWidget {
         );
         break;
       case 1: // My Courses
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const MyCoursesScreen(),
-          ),
-        );
+        Navigator.pushNamed(context, AppConstants.routeMyCourses);
         break;
       case 2: // Cart
         Navigator.push(

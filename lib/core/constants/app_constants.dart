@@ -120,6 +120,7 @@ class AppConstants {
   // Course Endpoints
   static const String coursesEndpoint = '/api/courses';
   static const String userCoursesEndpoint = '/user/courses';
+  static const String myCoursesEndpoint = '/api/courses/join';
   static const String lessonDetailEndpoint = '/lessons/detail';
   static const String checkEnrollmentEndpoint = '/enrollments/check';
   static const String enrollCourseEndpoint = '/enrollments/enroll';

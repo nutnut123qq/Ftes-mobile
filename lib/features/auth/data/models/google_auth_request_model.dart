@@ -16,3 +16,4 @@ class GoogleAuthRequestModel {
       _$GoogleAuthRequestModelFromJson(json);
   Map<String, dynamic> toJson() => _$GoogleAuthRequestModelToJson(this);
 }
+

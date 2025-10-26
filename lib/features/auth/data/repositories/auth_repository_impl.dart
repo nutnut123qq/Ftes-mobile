@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
+// import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:ftes/core/error/exceptions.dart';
 import 'package:ftes/core/error/failures.dart';
 import 'package:ftes/core/network/network_info.dart';
@@ -92,13 +92,17 @@ class AuthRepositoryImpl implements AuthRepository {
         'scope': 'openid email profile',
       });
       
-      final result = await FlutterWebAuth.authenticate(
-        url: googleAuthUrl.toString(),
-        callbackUrlScheme: 'http',
-      );
+      // TODO: Fix flutter_web_auth namespace issue for mobile
+      // final result = await FlutterWebAuth.authenticate(
+      //   url: googleAuthUrl.toString(),
+      //   callbackUrlScheme: 'http',
+      // );
+      // 
+      // final code = Uri.parse(result).queryParameters['code'];
+      // return code;
       
-      final code = Uri.parse(result).queryParameters['code'];
-      return code;
+      // Temporary fallback - return null for now
+      return null;
     } catch (e) {
       print('❌ Google OAuth error: $e');
       return null;
