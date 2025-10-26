@@ -5,11 +5,12 @@ import 'package:ftes/utils/constants.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/screens/edit_profile_screen.dart';
 import 'package:ftes/screens/notifications_screen.dart';
-import 'package:ftes/screens/security_screen.dart';
-import 'package:ftes/screens/terms_conditions_screen.dart';
 import 'package:ftes/screens/invite_friends_screen.dart';
 import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:ftes/features/auth/domain/entities/user.dart';
+import 'package:ftes/features/profile/presentation/viewmodels/profile_viewmodel.dart';
+import 'package:ftes/features/profile/domain/entities/profile.dart';
+import 'package:ftes/features/profile/presentation/pages/terms_conditions_page.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -31,26 +32,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _loadUserInfo() async {
     try {
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+      final profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
       
       if (authViewModel.isLoggedIn && authViewModel.currentUser == null) {
         await authViewModel.refreshUserInfo();
-      } else if (authViewModel.isLoggedIn && authViewModel.currentUser != null) {
-      } else {
+      }
+      
+      // Load profile data if user is logged in
+      if (authViewModel.isLoggedIn && authViewModel.currentUser != null) {
+        await profileViewModel.getProfileById(authViewModel.currentUser!.id);
       }
     } catch (e) {
+      debugPrint('Error loading user info: $e');
     }
   }
 
-  String _getDisplayName(User? user) {
-    if (user == null) return 'Chưa có tên';
-    
-    if (user.fullName != null && user.fullName!.isNotEmpty) {
-      return user.fullName!;
-    } else if (user.username != null && user.username!.isNotEmpty) {
-      return user.username!;
-    } else {
-      return 'Chưa có tên';
+  String _getDisplayName(Profile? profile, User? user) {
+    // Priority: Profile name > User fullName > User username
+    if (profile != null && profile.name.isNotEmpty) {
+      return profile.name;
     }
+    
+    if (user != null) {
+      if (user.fullName != null && user.fullName!.isNotEmpty) {
+        return user.fullName!;
+      } else if (user.username != null && user.username!.isNotEmpty) {
+        return user.username!;
+      }
+    }
+    
+    return 'Chưa có tên';
+  }
+
+  String _getDisplayEmail(Profile? profile, User? user) {
+    // Priority: Profile email > User email
+    if (profile != null && profile.email.isNotEmpty) {
+      return profile.email;
+    }
+    
+    return user?.email ?? 'Chưa có email';
+  }
+
+  String? _getDisplayAvatar(Profile? profile, User? user) {
+    // Priority: Profile avatar > User avatar
+    if (profile != null && profile.avatar.isNotEmpty) {
+      return profile.avatar;
+    }
+    
+    return user?.avatar;
   }
 
   @override
@@ -124,9 +153,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileContent() {
-    return Consumer<AuthViewModel>(
-      builder: (context, authViewModel, child) {
-        if (authViewModel.isLoading) {
+    return Consumer2<AuthViewModel, ProfileViewModel>(
+      builder: (context, authViewModel, profileViewModel, child) {
+        if (authViewModel.isLoading || profileViewModel.isLoading) {
           return const Center(
             child: CircularProgressIndicator(),
           );
@@ -136,7 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             children: [
               // Profile Image and Info
-              _buildProfileHeader(authViewModel),
+              _buildProfileHeader(authViewModel, profileViewModel),
               
               const SizedBox(height: 20),
               
@@ -149,8 +178,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader(AuthViewModel authViewModel) {
+  Widget _buildProfileHeader(AuthViewModel authViewModel, ProfileViewModel profileViewModel) {
     final user = authViewModel.currentUser;
+    final profile = profileViewModel.currentProfile;
+    
+    final displayName = _getDisplayName(profile, user);
+    final displayEmail = _getDisplayEmail(profile, user);
+    final displayAvatar = _getDisplayAvatar(profile, user);
     
     return Column(
       children: [
@@ -166,11 +200,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: 3,
             ),
           ),
-          child: user?.avatar != null && user!.avatar!.isNotEmpty
+          child: displayAvatar != null && displayAvatar.isNotEmpty
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(55),
                   child: Image.network(
-                    user.avatar!,
+                    displayAvatar,
                     width: 110,
                     height: 110,
                     fit: BoxFit.cover,
@@ -194,7 +228,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         
         // Name
         Text(
-          _getDisplayName(user),
+          displayName,
           style: AppTextStyles.heading1.copyWith(
             color: const Color(0xFF202244),
             fontSize: 24,
@@ -206,7 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         
         // Email
         Text(
-          user?.email ?? 'Chưa có email',
+          displayEmail,
           style: AppTextStyles.body1.copyWith(
             color: const Color(0xFF545454),
             fontSize: 13,
@@ -261,34 +295,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           _buildDivider(),
           _buildProfileItem(
-            icon: Icons.security,
-            title: 'Bảo mật',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SecurityScreen(),
-                ),
-              );
-            },
-          ),
-          _buildDivider(),
-          _buildProfileItem(
-            icon: Icons.dark_mode,
-            title: 'Chế độ tối',
-            onTap: () {
-              // Toggle Dark Mode
-            },
-          ),
-          _buildDivider(),
-          _buildProfileItem(
             icon: Icons.description,
             title: 'Điều khoản & Điều kiện',
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const TermsConditionsScreen(),
+                  builder: (context) => const TermsConditionsPage(),
                 ),
               );
             },

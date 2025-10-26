@@ -18,6 +18,7 @@ class BlogListPage extends StatefulWidget {
 class _BlogListPageState extends State<BlogListPage> {
   final ScrollController _scrollController = ScrollController();
   String? _selectedCategory;
+  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -26,8 +27,11 @@ class _BlogListPageState extends State<BlogListPage> {
     
     // Fetch blogs when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final blogViewModel = Provider.of<BlogViewModel>(context, listen: false);
-      blogViewModel.initialize();
+      if (!_isInitialized) {
+        final blogViewModel = Provider.of<BlogViewModel>(context, listen: false);
+        blogViewModel.initialize();
+        _isInitialized = true;
+      }
     });
   }
 
@@ -40,7 +44,10 @@ class _BlogListPageState extends State<BlogListPage> {
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       final blogViewModel = Provider.of<BlogViewModel>(context, listen: false);
-      blogViewModel.loadMoreBlogs();
+      // Only load more if there are more pages and not currently loading
+      if (blogViewModel.hasMore && !blogViewModel.isLoadingMore && !blogViewModel.isLoading) {
+        blogViewModel.loadMoreBlogs();
+      }
     }
   }
 
@@ -79,11 +86,9 @@ class _BlogListPageState extends State<BlogListPage> {
       ),
       body: Consumer<BlogViewModel>(
         builder: (context, blogViewModel, child) {
-          return RefreshIndicator(
-            onRefresh: () => blogViewModel.refreshBlogs(),
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(20),
+          return SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -133,7 +138,6 @@ class _BlogListPageState extends State<BlogListPage> {
                   const SizedBox(height: 100), // Space for bottom navigation
                 ],
               ),
-            ),
           );
         },
       ),

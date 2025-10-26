@@ -9,6 +9,7 @@ import 'features/auth/presentation/viewmodels/register_viewmodel.dart';
 import 'features/course/presentation/viewmodels/course_detail_viewmodel.dart';
 import 'features/course/di/course_injection.dart';
 import 'features/blog/presentation/viewmodels/blog_viewmodel.dart';
+import 'features/profile/presentation/viewmodels/profile_viewmodel.dart';
 // import 'legacy/providers/auth_provider.dart'; // Deprecated - use auth feature instead
 import 'providers/app_data_provider.dart';
 import 'providers/course_provider.dart';
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => di.sl<RegisterViewModel>()),
         ChangeNotifierProvider(create: (context) => di.sl<CourseDetailViewModel>()),
         ChangeNotifierProvider(create: (context) => di.sl<BlogViewModel>()),
+        ChangeNotifierProvider(create: (context) => di.sl<ProfileViewModel>()),
         // Legacy providers (temporary for backward compatibility) - DEPRECATED
         // ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => AppDataProvider()),

@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/services/auth_service.dart';
-import 'package:ftes/models/update_profile_request.dart' as update;
-import 'package:ftes/models/profile_response.dart' as profile;
-import 'package:ftes/providers/auth_provider.dart';
+import 'package:ftes/features/profile/presentation/viewmodels/profile_viewmodel.dart';
+import 'package:ftes/features/profile/domain/entities/profile.dart';
+import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -28,9 +27,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _youtubeController = TextEditingController();
   final TextEditingController _twitterController = TextEditingController();
 
-  final AuthService _authService = AuthService();
   final ImagePicker _imagePicker = ImagePicker();
-  profile.ProfileResponse? _currentProfile;
+  Profile? _currentProfile;
   bool _isLoading = true;
   bool _isUpdating = false;
   bool _isUploadingImage = false;
@@ -66,16 +64,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _isLoading = true;
       });
 
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final userInfo = authProvider.currentUser;
+      final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+      final profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
       
-      if (userInfo?.id != null) {
-        final profile = await _authService.getProfile(userInfo!.id);
-        setState(() {
-          _currentProfile = profile;
-          _populateFields(profile);
-          _isLoading = false;
-        });
+      if (authViewModel.currentUser?.id != null) {
+        await profileViewModel.getProfileById(authViewModel.currentUser!.id);
+        
+        if (profileViewModel.currentProfile != null) {
+          setState(() {
+            _currentProfile = profileViewModel.currentProfile;
+            _populateFields(profileViewModel.currentProfile!);
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          _showErrorDialog('Không thể lấy thông tin hồ sơ');
+        }
       } else {
         setState(() {
           _isLoading = false;
@@ -90,51 +96,48 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  void _populateFields(profile.ProfileResponse profile) {
-    _fullNameController.text = profile.name ?? '';
-    _addressController.text = profile.address ?? '';
-    _phoneController.text = profile.phoneNumber ?? '';
-    _descriptionController.text = profile.description ?? '';
-    _jobNameController.text = profile.jobName ?? '';
-    _facebookController.text = profile.facebook ?? '';
-    _youtubeController.text = profile.youtube ?? '';
-    _twitterController.text = profile.twitter ?? '';
+  void _populateFields(Profile profile) {
+    _fullNameController.text = profile.name;
+    _phoneController.text = profile.phoneNumber;
+    _descriptionController.text = profile.description;
+    _jobNameController.text = profile.jobName;
+    _facebookController.text = profile.facebook;
+    _youtubeController.text = profile.youtube;
+    _twitterController.text = profile.twitter;
     _currentAvatarUrl = profile.avatar;
     
-    if (profile.dateOfBirth != null) {
-      _selectedDate = profile.dateOfBirth;
-      _dateOfBirthController.text = '${profile.dateOfBirth!.day.toString().padLeft(2, '0')}/'
-          '${profile.dateOfBirth!.month.toString().padLeft(2, '0')}/'
-          '${profile.dateOfBirth!.year}';
+    // Set date of birth
+    if (profile.dataOfBirth.isNotEmpty) {
+      try {
+        _selectedDate = DateTime.parse(profile.dataOfBirth);
+        _dateOfBirthController.text = '${_selectedDate!.day.toString().padLeft(2, '0')}/'
+            '${_selectedDate!.month.toString().padLeft(2, '0')}/'
+            '${_selectedDate!.year}';
+      } catch (e) {
+        debugPrint('Error parsing date: $e');
+      }
     }
     
-    if (profile.gender != null) {
-      _selectedGender = profile.gender!.name;
-      _genderController.text = _getGenderDisplayName(profile.gender!);
+    // Set gender
+    if (profile.gender.isNotEmpty) {
+      _selectedGender = profile.gender;
+      _genderController.text = _getGenderDisplayName(profile.gender);
     }
   }
 
-  String _getGenderDisplayName(profile.Gender gender) {
-    switch (gender) {
-      case profile.Gender.male:
-        return 'Nam';
-      case profile.Gender.female:
-        return 'Nữ';
-      case profile.Gender.other:
-        return 'Khác';
-    }
-  }
-
-  update.Gender? _getGenderFromString(String? genderString) {
-    switch (genderString) {
+  String _getGenderDisplayName(String gender) {
+    switch (gender.toLowerCase()) {
       case 'male':
-        return update.Gender.male;
+      case 'nam':
+        return 'Nam';
       case 'female':
-        return update.Gender.female;
+      case 'nữ':
+        return 'Nữ';
       case 'other':
-        return update.Gender.other;
+      case 'khác':
+        return 'Khác';
       default:
-        return null;
+        return 'Khác';
     }
   }
 
@@ -614,10 +617,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _isUpdating = true;
       });
 
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final userInfo = authProvider.currentUser;
+      final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+      final profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
       
-      if (userInfo?.id == null) {
+      if (authViewModel.currentUser?.id == null) {
         _showErrorDialog('Không thể lấy thông tin người dùng');
         return;
       }
@@ -629,38 +632,44 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       // Create update request
-      final request = update.UpdateProfileRequest(
-        name: _fullNameController.text.trim(),
-        address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
-        phoneNumber: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-        dateOfBirth: _selectedDate,
-        gender: _getGenderFromString(_selectedGender),
-        description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-        jobName: _jobNameController.text.trim().isEmpty ? null : _jobNameController.text.trim(),
-        facebook: _facebookController.text.trim().isEmpty ? null : _facebookController.text.trim(),
-        youtube: _youtubeController.text.trim().isEmpty ? null : _youtubeController.text.trim(),
-        twitter: _twitterController.text.trim().isEmpty ? null : _twitterController.text.trim(),
-        avatar: _currentAvatarUrl,
-      );
+      final requestData = <String, dynamic>{
+        'name': _fullNameController.text.trim(),
+        'phoneNumber': _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+        'dataOfBirth': _selectedDate?.toIso8601String(),
+        'gender': _selectedGender,
+        'description': _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+        'jobName': _jobNameController.text.trim().isEmpty ? null : _jobNameController.text.trim(),
+        'facebook': _facebookController.text.trim().isEmpty ? null : _facebookController.text.trim(),
+        'youtube': _youtubeController.text.trim().isEmpty ? null : _youtubeController.text.trim(),
+        'twitter': _twitterController.text.trim().isEmpty ? null : _twitterController.text.trim(),
+        'avatar': _currentAvatarUrl,
+      };
 
       // Call API
-      final updatedProfile = await _authService.updateProfile(userInfo!.id, request);
+      final success = await profileViewModel.updateProfile(authViewModel.currentUser!.id, requestData);
       
-      setState(() {
-        _currentProfile = updatedProfile;
-        _isUpdating = false;
-      });
+      if (success) {
+        setState(() {
+          _currentProfile = profileViewModel.currentProfile;
+          _isUpdating = false;
+        });
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cập nhật hồ sơ thành công!'),
-          backgroundColor: Color(0xFF0961F5),
-        ),
-      );
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cập nhật hồ sơ thành công!'),
+            backgroundColor: Color(0xFF0961F5),
+          ),
+        );
 
-      // Navigate back
-      Navigator.pop(context);
+        // Navigate back
+        Navigator.pop(context);
+      } else {
+        setState(() {
+          _isUpdating = false;
+        });
+        _showErrorDialog(profileViewModel.errorMessage ?? 'Cập nhật hồ sơ thất bại');
+      }
       
     } catch (e) {
       setState(() {
@@ -724,7 +733,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _isUploadingImage = true;
       });
       
-      String imageUrl;
+      String? imageUrl;
       if (kIsWeb) {
         // For web, we can't upload files directly, so we'll skip upload
         // and just show a message
@@ -734,20 +743,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _showErrorDialog('Chức năng upload ảnh chưa hỗ trợ trên web. Vui lòng sử dụng ứng dụng mobile.');
         return;
       } else {
-        imageUrl = await _authService.uploadImage(_selectedImage!);
+        final profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
+        imageUrl = await profileViewModel.uploadImage(filePath: _selectedImage!.path);
       }
       
-      setState(() {
-        _currentAvatarUrl = imageUrl;
-        _isUploadingImage = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Upload ảnh thành công!'),
-          backgroundColor: Color(0xFF0961F5),
-        ),
-      );
+      if (imageUrl != null) {
+        setState(() {
+          _currentAvatarUrl = imageUrl;
+          _isUploadingImage = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Upload ảnh thành công!'),
+            backgroundColor: Color(0xFF0961F5),
+          ),
+        );
+      } else {
+        setState(() {
+          _isUploadingImage = false;
+        });
+        _showErrorDialog('Upload ảnh thất bại');
+      }
     } catch (e) {
       setState(() {
         _isUploadingImage = false;

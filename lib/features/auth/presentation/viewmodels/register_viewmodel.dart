@@ -4,16 +4,19 @@ import '../../domain/entities/user.dart';
 import '../../domain/usecases/register_usecase.dart';
 import '../../domain/usecases/verify_email_otp_usecase.dart';
 import '../../domain/usecases/resend_verification_code_usecase.dart';
+import '../../../profile/domain/usecases/profile_usecases.dart';
 
 class RegisterViewModel extends ChangeNotifier {
   final RegisterUseCase registerUseCase;
   final VerifyEmailOTPUseCase verifyEmailOTPUseCase;
   final ResendVerificationCodeUseCase resendVerificationCodeUseCase;
+  final CreateProfileAutoUseCase createProfileAutoUseCase;
 
   RegisterViewModel({
     required this.registerUseCase,
     required this.verifyEmailOTPUseCase,
     required this.resendVerificationCodeUseCase,
+    required this.createProfileAutoUseCase,
   });
 
   // State variables
@@ -51,6 +54,10 @@ class RegisterViewModel extends ChangeNotifier {
           _registeredUser = user;
           _isRegistered = true;
           _registeredEmail = email;
+          
+          // Auto-create profile after successful registration
+          _createProfileAuto(user.id);
+          
           notifyListeners();
           return true;
         },
@@ -146,6 +153,21 @@ class RegisterViewModel extends ChangeNotifier {
 
   void _clearError() {
     _errorMessage = null;
+  }
+
+  /// Auto-create profile after successful registration
+  Future<void> _createProfileAuto(String userId) async {
+    try {
+      final result = await createProfileAutoUseCase(userId);
+      result.fold(
+        (failure) => debugPrint('❌ Failed to create profile automatically: ${failure.message}'),
+        (profile) => debugPrint('✅ Profile created automatically for user: $userId'),
+      );
+    } catch (e) {
+      debugPrint('❌ Failed to create profile automatically: $e');
+      // Don't throw error here as registration was successful
+      // Profile can be created later manually
+    }
   }
 
   /// Map failure to user-friendly message

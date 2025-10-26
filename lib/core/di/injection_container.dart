@@ -8,6 +8,7 @@ import '../../features/home/di/home_injection.dart';
 import '../../features/my_courses/di/my_courses_injection.dart';
 import '../../features/cart/di/cart_injection.dart';
 import '../../features/blog/di/blog_injection.dart';
+import '../../features/profile/di/profile_injection.dart';
 
 /// Service Locator instance
 final sl = GetIt.instance;
@@ -29,4 +30,5 @@ Future<void> init() async {
   await initMyCourses();
   CartInjection.init(sl);
   BlogInjection.init(sl);
+  ProfileInjection.init(sl);
 }

@@ -6,10 +6,8 @@ import '../models/auth_request.dart';
 import '../models/auth_response.dart';
 import '../models/user_request.dart';
 import '../models/update_profile_request.dart';
-import '../models/profile_response.dart';
 import '../core/constants/app_constants.dart';
 import 'http_client.dart';
-import 'profile_service.dart';
 import 'image_service.dart';
 
 class AuthService {
@@ -22,13 +20,11 @@ class AuthService {
 
   final HttpClient _httpClient = HttpClient();
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
-  final ProfileService _profileService = ProfileService();
   final ImageService _imageService = ImageService();
 
   // Initialize the service
   Future<void> initialize() async {
     _httpClient.initialize();
-    _profileService.initialize();
     _imageService.initialize();
     
     // Initialize GoogleSignIn (required in 7.x)
@@ -38,7 +34,6 @@ class AuthService {
   // Dispose the service
   void dispose() {
     _httpClient.dispose();
-    _profileService.dispose();
     _imageService.dispose();
   }
 
@@ -475,21 +470,6 @@ class AuthService {
   /// Get current access token
   Future<String?> getCurrentToken() async {
     return await _httpClient.getAccessToken();
-  }
-
-  /// Get user profile
-  Future<ProfileResponse> getProfile(String userId) async {
-    return await _profileService.getProfile(userId);
-  }
-
-  /// Create user profile
-  Future<void> createProfile(String userId) async {
-    return await _profileService.createProfile(userId);
-  }
-
-  /// Update user profile
-  Future<ProfileResponse> updateProfile(String userId, UpdateProfileRequest request) async {
-    return await _profileService.updateProfile(userId, request);
   }
 
   /// Upload image
