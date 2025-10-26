@@ -28,12 +28,17 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
         final success = response.data['success'];
         if (success == true) {
           final result = response.data['result'];
-          if (result != null && result is List) {
-            return result
-                .map((categoryJson) => BlogCategoryModel.fromJson(categoryJson))
-                .toList();
+          if (result != null && result is Map<String, dynamic>) {
+            final data = result['data'];
+            if (data != null && data is List) {
+              return data
+                  .map((categoryJson) => BlogCategoryModel.fromJson(categoryJson))
+                  .toList();
+            } else {
+              throw ServerException('Invalid data format for blog categories');
+            }
           } else {
-            throw ServerException('Invalid response format for blog categories');
+            throw ServerException('Invalid result format for blog categories');
           }
         } else {
           throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch blog categories');
@@ -78,10 +83,10 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
         final success = response.data['success'];
         if (success == true) {
           final result = response.data['result'];
-          if (result != null) {
+          if (result != null && result is Map<String, dynamic>) {
             return PaginatedBlogResponseModel.fromJson(result);
           } else {
-            throw ServerException('Invalid response format for blogs');
+            throw ServerException('Invalid result format for blogs');
           }
         } else {
           throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch blogs');
@@ -137,10 +142,10 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
         final success = response.data['success'];
         if (success == true) {
           final result = response.data['result'];
-          if (result != null) {
+          if (result != null && result is Map<String, dynamic>) {
             return PaginatedBlogResponseModel.fromJson(result);
           } else {
-            throw ServerException('Invalid response format for search blogs');
+            throw ServerException('Invalid result format for search blogs');
           }
         } else {
           throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to search blogs');
