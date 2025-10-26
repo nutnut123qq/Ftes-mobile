@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/core/constants/app_constants.dart';
-import 'package:ftes/screens/cart_screen.dart';
+import 'package:ftes/features/cart/presentation/pages/new_cart_screen.dart';
 import 'package:ftes/screens/blog_screen.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
@@ -96,7 +96,7 @@ class AppBottomNavigationBar extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const CartScreen(),
+            builder: (context) => const NewCartScreen(),
           ),
         );
         break;

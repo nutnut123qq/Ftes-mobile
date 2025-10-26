@@ -115,9 +115,9 @@ class AppConstants {
   static const String blogsInteractiveEndpoint = '/blogs/interactive';
   
   // Cart Endpoints
-  static const String cartEndpoint = '/cart';
-  static const String cartCountEndpoint = '/cart/count';
-  static const String cartTotalEndpoint = '/cart/total';
+  static const String cartEndpoint = '/api/cart';
+  static const String cartCountEndpoint = '/api/cart/count';
+  static const String cartTotalEndpoint = '/api/cart/total';
   
   // Course Endpoints
   static const String coursesEndpoint = '/api/courses';

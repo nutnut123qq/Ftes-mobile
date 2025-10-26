@@ -38,6 +38,8 @@ import '../screens/my_course_ongoing_lessons_screen.dart';
 import '../screens/my_course_ongoing_video_screen.dart';
 import '../screens/invite_friends_screen.dart';
 import '../screens/cart_screen.dart';
+import '../features/cart/presentation/pages/cart_page.dart';
+import '../features/cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../screens/blog_detail_screen.dart';
 import '../models/course_item.dart';
 import '../models/chat_item.dart';
@@ -183,7 +185,10 @@ class AppRoutes {
       );
     },
     core_constants.AppConstants.routeInviteFriends: (context) => const InviteFriendsScreen(),
-    core_constants.AppConstants.routeCart: (context) => const CartScreen(),
+    core_constants.AppConstants.routeCart: (context) => ChangeNotifierProvider(
+      create: (context) => di.sl<CartViewModel>(),
+      child: const CartPage(),
+    ),
   };
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {

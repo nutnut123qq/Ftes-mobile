@@ -9,6 +9,8 @@ import '../viewmodels/course_detail_viewmodel.dart';
 import '../../domain/entities/course_detail.dart';
 import '../../domain/entities/part.dart';
 import '../../domain/entities/lesson.dart';
+import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
+import '../../../../core/di/injection_container.dart' as di;
 
 class CourseDetailPage extends StatefulWidget {
   final CourseItem course;
@@ -70,8 +72,12 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CourseDetailViewModel>(
-      builder: (context, viewModel, child) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => di.sl<CartViewModel>()),
+      ],
+      child: Consumer<CourseDetailViewModel>(
+        builder: (context, viewModel, child) {
         // Use API data if available, otherwise fall back to widget.course
         final apiCourse = viewModel.courseDetail;
         final isLoading = viewModel.isLoading;
@@ -134,7 +140,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             ],
           ),
         );
-      },
+        },
+      ),
     );
   }
 
@@ -836,11 +843,12 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   }
 
   Widget _buildEnrollButton() {
-    return Consumer<CourseDetailViewModel>(
-      builder: (context, viewModel, child) {
+    return Consumer2<CourseDetailViewModel, CartViewModel>(
+      builder: (context, viewModel, cartViewModel, child) {
         final apiCourse = viewModel.courseDetail;
         final isEnrolled = viewModel.isEnrolled;
         final isCheckingEnrollment = viewModel.isCheckingEnrollment;
+        final isAddingToCart = cartViewModel.isAddingToCart;
         final apiPrice = apiCourse?.totalPrice ?? 0.0;
         final coursePrice = double.tryParse(widget.course.price.replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
         final price = apiPrice > 0 ? apiPrice : coursePrice;
@@ -851,7 +859,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         }
         
         return GestureDetector(
-          onTap: isCheckingEnrollment ? null : () => _handleEnrollButtonTap(false),
+          onTap: (isCheckingEnrollment || isAddingToCart) ? null : () => _handleEnrollButtonTap(false, cartViewModel),
           child: Container(
             margin: const EdgeInsets.all(34),
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -867,7 +875,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               ],
             ),
             child: Center(
-              child: isCheckingEnrollment
+              child: (isCheckingEnrollment || isAddingToCart)
                   ? const SizedBox(
                       width: 20,
                       height: 20,
@@ -890,7 +898,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     );
   }
 
-  void _handleEnrollButtonTap(bool isEnrolled) {
+  void _handleEnrollButtonTap(bool isEnrolled, CartViewModel cartViewModel) async {
     if (isEnrolled) {
       // Navigate to learning screen
       Navigator.pushNamed(
@@ -902,14 +910,60 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         },
       );
     } else {
-      // Navigate to payment screen
-      Navigator.pushNamed(
-        context,
-        AppConstants.routePayment,
-        arguments: {
-          'course': widget.course,
-        },
-      );
+      final apiCourse = Provider.of<CourseDetailViewModel>(context, listen: false).courseDetail;
+      final apiPrice = apiCourse?.totalPrice ?? 0.0;
+      final coursePrice = double.tryParse(widget.course.price.replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
+      final price = apiPrice > 0 ? apiPrice : coursePrice;
+      
+      if (price > 0) {
+        // Add to cart for paid courses
+        final courseId = apiCourse?.id ?? widget.course.id ?? '';
+        if (courseId.isNotEmpty) {
+          final success = await cartViewModel.addToCart(courseId);
+          
+          if (success) {
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Đã thêm khóa học vào giỏ hàng'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                action: SnackBarAction(
+                  label: 'Xem giỏ hàng',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppConstants.routeCart);
+                  },
+                ),
+              ),
+            );
+          } else {
+            // Show error message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(cartViewModel.errorMessage ?? 'Không thể thêm vào giỏ hàng'),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            );
+          }
+        }
+      } else {
+        // Navigate to payment screen for free courses (enrollment)
+        Navigator.pushNamed(
+          context,
+          AppConstants.routePayment,
+          arguments: {
+            'course': widget.course,
+          },
+        );
+      }
     }
   }
 }

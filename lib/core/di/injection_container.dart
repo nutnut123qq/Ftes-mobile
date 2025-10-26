@@ -6,6 +6,7 @@ import '../network/network_info.dart';
 import '../../features/auth/di/auth_injection.dart';
 import '../../features/home/di/home_injection.dart';
 import '../../features/my_courses/di/my_courses_injection.dart';
+import '../../features/cart/di/cart_injection.dart';
 
 /// Service Locator instance
 final sl = GetIt.instance;
@@ -25,4 +26,5 @@ Future<void> init() async {
   await initAuthDependencies();
   await initHomeDependencies();
   await initMyCourses();
+  CartInjection.init(sl);
 }

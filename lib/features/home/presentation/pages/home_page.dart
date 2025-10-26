@@ -352,29 +352,12 @@ class _HomePageState extends State<HomePage> {
             // Section Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Khóa học phổ biến',
-                    style: AppTextStyles.h3.copyWith(
-                      color: const Color(0xFF202244),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      // Handle see all courses
-                    },
-                    child: Text(
-                      'Xem tất cả',
-                      style: AppTextStyles.body1.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Khóa học phổ biến',
+                style: AppTextStyles.h3.copyWith(
+                  color: const Color(0xFF202244),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             
@@ -463,29 +446,12 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Giảng viên hàng đầu',
-                style: AppTextStyles.h3.copyWith(
-                  color: const Color(0xFF202244),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  // Handle see all mentors
-                },
-                child: Text(
-                  'Xem tất cả',
-                  style: AppTextStyles.body1.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            'Giảng viên hàng đầu',
+            style: AppTextStyles.h3.copyWith(
+              color: const Color(0xFF202244),
+              fontWeight: FontWeight.bold,
+            ),
           ),
           
           const SizedBox(height: 20),
