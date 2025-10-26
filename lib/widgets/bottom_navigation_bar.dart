@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/core/constants/app_constants.dart';
 import 'package:ftes/features/cart/presentation/pages/new_cart_screen.dart';
-import 'package:ftes/screens/blog_screen.dart';
+import 'package:ftes/features/blog/presentation/pages/blog_list_page.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
@@ -104,7 +104,7 @@ class AppBottomNavigationBar extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const BlogScreen(),
+            builder: (context) => const BlogListPage(),
           ),
         );
         break;

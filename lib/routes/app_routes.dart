@@ -40,7 +40,9 @@ import '../screens/invite_friends_screen.dart';
 import '../screens/cart_screen.dart';
 import '../features/cart/presentation/pages/cart_page.dart';
 import '../features/cart/presentation/viewmodels/cart_viewmodel.dart';
-import '../screens/blog_detail_screen.dart';
+import '../features/blog/presentation/pages/blog_detail_page.dart';
+import '../features/blog/presentation/pages/blog_list_page.dart';
+import '../features/blog/presentation/viewmodels/blog_viewmodel.dart';
 import '../models/course_item.dart';
 import '../models/chat_item.dart';
 import 'package:provider/provider.dart';
@@ -188,6 +190,10 @@ class AppRoutes {
     core_constants.AppConstants.routeCart: (context) => ChangeNotifierProvider(
       create: (context) => di.sl<CartViewModel>(),
       child: const CartPage(),
+    ),
+    core_constants.AppConstants.routeBlogList: (context) => ChangeNotifierProvider(
+      create: (context) => di.sl<BlogViewModel>(),
+      child: const BlogListPage(),
     ),
   };
 
@@ -432,11 +438,29 @@ class AppRoutes {
           builder: (context) => const CartScreen(),
           settings: settings,
         );
+      case core_constants.AppConstants.routeBlogList:
+        return MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider(
+            create: (context) => di.sl<BlogViewModel>(),
+            child: const BlogListPage(),
+          ),
+          settings: settings,
+        );
       case core_constants.AppConstants.routeBlogDetail:
         final args = settings.arguments as Map<String, dynamic>?;
+        final slugName = args?['slugName'] as String?;
+        if (slugName != null) {
+          return MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider(
+              create: (context) => di.sl<BlogViewModel>(),
+              child: BlogDetailPage(slugName: slugName),
+            ),
+            settings: settings,
+          );
+        }
         return MaterialPageRoute(
-          builder: (context) => BlogDetailScreen(
-            slugName: args?['slugName'] ?? '',
+          builder: (context) => const Scaffold(
+            body: Center(child: Text('Invalid blog slug')),
           ),
           settings: settings,
         );
@@ -653,6 +677,10 @@ class AppRoutes {
 
   static void navigateToCart(BuildContext context) {
     Navigator.pushNamed(context, core_constants.AppConstants.routeCart);
+  }
+
+  static void navigateToBlogList(BuildContext context) {
+    Navigator.pushNamed(context, core_constants.AppConstants.routeBlogList);
   }
 
   static void navigateToBlogDetail(BuildContext context, {required String slugName}) {

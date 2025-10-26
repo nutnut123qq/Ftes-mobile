@@ -76,6 +76,7 @@ class AppConstants {
   static const String routeMyCourseOngoingVideo = '/my-course-ongoing-video';
   static const String routeInviteFriends = '/invite-friends';
   static const String routeCart = '/cart';
+  static const String routeBlogList = '/blog-list';
   static const String routeBlogDetail = '/blog-detail';
   
   // API Endpoints
@@ -109,10 +110,11 @@ class AppConstants {
   static const String userRegistrationEndpoint = '/api/users/registration';
   
   // Blog Endpoints
-  static const String blogsEndpoint = '/blogs';
-  static const String blogsByCategoryEndpoint = '/blogs/category';
-  static const String blogsSearchEndpoint = '/blogs/search';
-  static const String blogsInteractiveEndpoint = '/blogs/interactive';
+  static const String blogCategoriesEndpoint = '/api/blog-categories/search';
+  static const String blogsEndpoint = '/api/blogs';
+  static const String blogsSearchEndpoint = '/api/blogs/search';
+  static const String blogsByCategoryEndpoint = '/api/blogs/category';
+  static const String blogsInteractiveEndpoint = '/api/blogs/interactive';
   
   // Cart Endpoints
   static const String cartEndpoint = '/api/cart';

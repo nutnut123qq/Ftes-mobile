@@ -8,10 +8,10 @@ import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/auth/presentation/viewmodels/register_viewmodel.dart';
 import 'features/course/presentation/viewmodels/course_detail_viewmodel.dart';
 import 'features/course/di/course_injection.dart';
+import 'features/blog/presentation/viewmodels/blog_viewmodel.dart';
 // import 'legacy/providers/auth_provider.dart'; // Deprecated - use auth feature instead
 import 'providers/app_data_provider.dart';
 import 'providers/course_provider.dart';
-import 'providers/blog_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/point_provider.dart';
 import 'providers/enrollment_provider.dart';
@@ -38,11 +38,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => di.sl<AuthViewModel>()..initialize()),
         ChangeNotifierProvider(create: (context) => di.sl<RegisterViewModel>()),
         ChangeNotifierProvider(create: (context) => di.sl<CourseDetailViewModel>()),
+        ChangeNotifierProvider(create: (context) => di.sl<BlogViewModel>()),
         // Legacy providers (temporary for backward compatibility) - DEPRECATED
         // ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => AppDataProvider()),
         ChangeNotifierProvider(create: (context) => CourseProvider()),
-        ChangeNotifierProvider(create: (context) => BlogProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => CartProvider()..initializeCart()),
         ChangeNotifierProvider(create: (context) => PointProvider()),
         ChangeNotifierProvider(create: (context) => EnrollmentProvider()),

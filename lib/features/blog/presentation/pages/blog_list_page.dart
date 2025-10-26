@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../utils/colors.dart';
-import '../utils/text_styles.dart';
-import '../utils/constants.dart';
-import '../widgets/bottom_navigation_bar.dart';
-import '../providers/blog_provider.dart';
-import '../models/blog_response.dart';
+import '../../../../core/utils/colors.dart';
+import '../../../../core/utils/text_styles.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../widgets/bottom_navigation_bar.dart';
+import '../../domain/entities/blog.dart';
+import '../viewmodels/blog_viewmodel.dart';
 
-class BlogScreen extends StatefulWidget {
-  const BlogScreen({super.key});
+class BlogListPage extends StatefulWidget {
+  const BlogListPage({super.key});
 
   @override
-  State<BlogScreen> createState() => _BlogScreenState();
+  State<BlogListPage> createState() => _BlogListPageState();
 }
 
-class _BlogScreenState extends State<BlogScreen> {
+class _BlogListPageState extends State<BlogListPage> {
   final ScrollController _scrollController = ScrollController();
   String? _selectedCategory;
 
@@ -26,8 +26,8 @@ class _BlogScreenState extends State<BlogScreen> {
     
     // Fetch blogs when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final blogProvider = Provider.of<BlogProvider>(context, listen: false);
-      blogProvider.fetchBlogs();
+      final blogViewModel = Provider.of<BlogViewModel>(context, listen: false);
+      blogViewModel.initialize();
     });
   }
 
@@ -39,8 +39,8 @@ class _BlogScreenState extends State<BlogScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-      final blogProvider = Provider.of<BlogProvider>(context, listen: false);
-      blogProvider.loadMoreBlogs();
+      final blogViewModel = Provider.of<BlogViewModel>(context, listen: false);
+      blogViewModel.loadMoreBlogs();
     }
   }
 
@@ -49,12 +49,8 @@ class _BlogScreenState extends State<BlogScreen> {
       _selectedCategory = category;
     });
     
-    final blogProvider = Provider.of<BlogProvider>(context, listen: false);
-    if (category == null || category.isEmpty) {
-      blogProvider.refreshBlogs();
-    } else {
-      blogProvider.fetchBlogsByCategory(category: category);
-    }
+    final blogViewModel = Provider.of<BlogViewModel>(context, listen: false);
+    blogViewModel.setCategory(category);
   }
 
   @override
@@ -81,10 +77,10 @@ class _BlogScreenState extends State<BlogScreen> {
         ),
         centerTitle: true,
       ),
-      body: Consumer<BlogProvider>(
-        builder: (context, blogProvider, child) {
+      body: Consumer<BlogViewModel>(
+        builder: (context, blogViewModel, child) {
           return RefreshIndicator(
-            onRefresh: () => blogProvider.refreshBlogs(),
+            onRefresh: () => blogViewModel.refreshBlogs(),
             child: SingleChildScrollView(
               controller: _scrollController,
               padding: const EdgeInsets.all(20),
@@ -92,41 +88,41 @@ class _BlogScreenState extends State<BlogScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Featured Blog Post (first blog)
-                  if (blogProvider.blogs.isNotEmpty)
-                    _buildFeaturedPost(blogProvider.blogs.first),
+                  if (blogViewModel.blogs.isNotEmpty)
+                    _buildFeaturedPost(blogViewModel.blogs.first),
                   const SizedBox(height: 24),
                   
                   // Categories Section
-                  _buildCategoriesSection(),
+                  _buildCategoriesSection(blogViewModel),
                   const SizedBox(height: 24),
                   
                   // Show loading or error
-                  if (blogProvider.isLoading && blogProvider.blogs.isEmpty)
+                  if (blogViewModel.isLoading && blogViewModel.blogs.isEmpty)
                     const Center(child: CircularProgressIndicator())
-                  else if (blogProvider.errorMessage != null)
+                  else if (blogViewModel.errorMessage != null)
                     Center(
                       child: Column(
                         children: [
                           Text(
-                            blogProvider.errorMessage!,
+                            blogViewModel.errorMessage!,
                             style: AppTextStyles.bodyText.copyWith(color: Colors.red),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
-                            onPressed: () => blogProvider.refreshBlogs(),
+                            onPressed: () => blogViewModel.refreshBlogs(),
                             child: const Text('Thử lại'),
                           ),
                         ],
                       ),
                     )
-                  else if (blogProvider.blogs.isEmpty)
+                  else if (blogViewModel.blogs.isEmpty)
                     const Center(child: Text('Không có bài viết nào'))
                   else
-                    _buildBlogsList(blogProvider),
+                    _buildBlogsList(blogViewModel),
                   
                   // Loading more indicator
-                  if (blogProvider.isLoading && blogProvider.blogs.isNotEmpty)
+                  if (blogViewModel.isLoadingMore && blogViewModel.blogs.isNotEmpty)
                     const Center(
                       child: Padding(
                         padding: EdgeInsets.all(16.0),
@@ -145,10 +141,10 @@ class _BlogScreenState extends State<BlogScreen> {
     );
   }
 
-  Widget _buildFeaturedPost(BlogResponse blog) {
+  Widget _buildFeaturedPost(Blog blog) {
     return GestureDetector(
       onTap: () {
-        if (blog.slugName != null && blog.slugName!.isNotEmpty) {
+        if (blog.slugName.isNotEmpty) {
           Navigator.pushNamed(
             context,
             AppConstants.routeBlogDetail,
@@ -163,7 +159,7 @@ class _BlogScreenState extends State<BlogScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -176,20 +172,20 @@ class _BlogScreenState extends State<BlogScreen> {
             height: 200,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
               ),
             ),
-            child: blog.image != null && blog.image!.isNotEmpty
+            child: blog.image.isNotEmpty
                 ? ClipRRect(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
                     ),
                     child: Image.network(
-                      blog.image!,
+                      blog.image,
                       fit: BoxFit.cover,
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
@@ -210,7 +206,7 @@ class _BlogScreenState extends State<BlogScreen> {
                               Icon(
                                 Icons.broken_image,
                                 size: 50,
-                                color: AppColors.textLight.withOpacity(0.5),
+                                color: AppColors.textLight.withValues(alpha: 0.5),
                               ),
                               const SizedBox(height: 8),
                               Text(
@@ -257,7 +253,7 @@ class _BlogScreenState extends State<BlogScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    blog.categoryName ?? 'Nổi bật',
+                    blog.categoryName,
                     style: AppTextStyles.caption.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -267,7 +263,7 @@ class _BlogScreenState extends State<BlogScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  blog.title ?? 'Không có tiêu đề',
+                  blog.title,
                   style: AppTextStyles.heading3.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -277,7 +273,7 @@ class _BlogScreenState extends State<BlogScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _stripHtmlTags(blog.content ?? ''),
+                  _stripHtmlTags(blog.content),
                   style: AppTextStyles.bodyText.copyWith(
                     color: AppColors.textLight,
                     height: 1.5,
@@ -309,7 +305,7 @@ class _BlogScreenState extends State<BlogScreen> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      _calculateReadTime(blog.content ?? ''),
+                      _calculateReadTime(blog.content),
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.textLight,
                         fontSize: 12,
@@ -360,10 +356,7 @@ class _BlogScreenState extends State<BlogScreen> {
     return htmlText.replaceAll(exp, '');
   }
 
-
-  Widget _buildCategoriesSection() {
-    final categories = ['Tất cả', 'Lập trình', 'UI/UX Design', 'Marketing', 'Kinh doanh', 'Nghề nghiệp'];
-    
+  Widget _buildCategoriesSection(BlogViewModel blogViewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -378,19 +371,29 @@ class _BlogScreenState extends State<BlogScreen> {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: categories.map((category) {
-              final isSelected = _selectedCategory == null 
-                  ? category == 'Tất cả' 
-                  : _selectedCategory == category;
-              return Padding(
+            children: [
+              // "Tất cả" option
+              Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: _buildCategoryChip(
-                  category,
-                  isSelected,
-                  () => _onCategorySelected(category == 'Tất cả' ? null : category),
+                  'Tất cả',
+                  _selectedCategory == null,
+                  () => _onCategorySelected(null),
                 ),
-              );
-            }).toList(),
+              ),
+              // Dynamic categories from API
+              ...blogViewModel.categories.map((category) {
+                final isSelected = _selectedCategory == category.name;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: _buildCategoryChip(
+                    category.name,
+                    isSelected,
+                    () => _onCategorySelected(category.name),
+                  ),
+                );
+              }),
+            ],
           ),
         ),
       ],
@@ -422,7 +425,7 @@ class _BlogScreenState extends State<BlogScreen> {
     );
   }
 
-  Widget _buildBlogsList(BlogProvider blogProvider) {
+  Widget _buildBlogsList(BlogViewModel blogViewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -437,7 +440,7 @@ class _BlogScreenState extends State<BlogScreen> {
               ),
             ),
             Text(
-              'Tổng: ${blogProvider.totalCount}',
+              'Tổng: ${blogViewModel.totalElements}',
               style: AppTextStyles.bodyText.copyWith(
                 color: AppColors.textLight,
                 fontSize: 12,
@@ -447,15 +450,15 @@ class _BlogScreenState extends State<BlogScreen> {
         ),
         const SizedBox(height: 12),
         // Skip first blog if it's shown as featured
-        ...blogProvider.blogs.skip(1).map((blog) => _buildBlogPostItem(blog)),
+        ...blogViewModel.blogs.skip(1).map((blog) => _buildBlogPostItem(blog)),
       ],
     );
   }
 
-  Widget _buildBlogPostItem(BlogResponse blog) {
+  Widget _buildBlogPostItem(Blog blog) {
     return GestureDetector(
       onTap: () {
-        if (blog.slugName != null && blog.slugName!.isNotEmpty) {
+        if (blog.slugName.isNotEmpty) {
           Navigator.pushNamed(
             context,
             AppConstants.routeBlogDetail,
@@ -471,7 +474,7 @@ class _BlogScreenState extends State<BlogScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -486,11 +489,11 @@ class _BlogScreenState extends State<BlogScreen> {
               color: AppColors.lightBlue,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: blog.image != null && blog.image!.isNotEmpty
+            child: blog.image.isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Image.network(
-                      blog.image!,
+                      blog.image,
                       fit: BoxFit.cover,
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
@@ -524,15 +527,15 @@ class _BlogScreenState extends State<BlogScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (blog.categoryName != null)
+                if (blog.categoryName.isNotEmpty)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      blog.categoryName!,
+                      blog.categoryName,
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
@@ -542,7 +545,7 @@ class _BlogScreenState extends State<BlogScreen> {
                   ),
                 const SizedBox(height: 6),
                 Text(
-                  blog.title ?? 'Không có tiêu đề',
+                  blog.title,
                   style: AppTextStyles.bodyText.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -578,4 +581,3 @@ class _BlogScreenState extends State<BlogScreen> {
     );
   }
 }
-

@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_html/flutter_html.dart';
-import '../providers/blog_provider.dart';
-import '../utils/colors.dart';
+import '../viewmodels/blog_viewmodel.dart';
+import '../../../../core/utils/colors.dart';
 
-class BlogDetailScreen extends StatefulWidget {
+class BlogDetailPage extends StatefulWidget {
   final String slugName;
 
-  const BlogDetailScreen({super.key, required this.slugName});
+  const BlogDetailPage({super.key, required this.slugName});
 
   @override
-  State<BlogDetailScreen> createState() => _BlogDetailScreenState();
+  State<BlogDetailPage> createState() => _BlogDetailPageState();
 }
 
-class _BlogDetailScreenState extends State<BlogDetailScreen> {
+class _BlogDetailPageState extends State<BlogDetailPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<BlogProvider>(context, listen: false)
+      Provider.of<BlogViewModel>(context, listen: false)
           .fetchBlogBySlug(widget.slugName);
     });
   }
@@ -53,15 +53,15 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: Consumer<BlogProvider>(
-        builder: (context, blogProvider, child) {
-          if (blogProvider.isLoading && blogProvider.selectedBlog == null) {
+      body: Consumer<BlogViewModel>(
+        builder: (context, blogViewModel, child) {
+          if (blogViewModel.isLoading && blogViewModel.selectedBlog == null) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
-          if (blogProvider.errorMessage != null) {
+          if (blogViewModel.errorMessage != null) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -78,13 +78,13 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    blogProvider.errorMessage!,
+                    blogViewModel.errorMessage!,
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: () {
-                      blogProvider.fetchBlogBySlug(widget.slugName);
+                      blogViewModel.fetchBlogBySlug(widget.slugName);
                     },
                     icon: const Icon(Icons.refresh),
                     label: const Text('Thử lại'),
@@ -101,7 +101,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
             );
           }
 
-          final blog = blogProvider.selectedBlog;
+          final blog = blogViewModel.selectedBlog;
           if (blog == null) {
             return const Center(
               child: Text('Không tìm thấy bài viết'),
@@ -123,9 +123,9 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      if (blog.image != null && blog.image!.isNotEmpty)
+                      if (blog.image.isNotEmpty)
                         Image.network(
-                          blog.image!,
+                          blog.image,
                           fit: BoxFit.cover,
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
@@ -179,7 +179,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.7),
+                              Colors.black.withValues(alpha: 0.7),
                             ],
                           ),
                         ),
@@ -203,18 +203,18 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Category chip
-                            if (blog.categoryName != null)
+                            if (blog.categoryName.isNotEmpty)
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.1),
+                                  color: AppColors.primary.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  blog.categoryName!,
+                                  blog.categoryName,
                                   style: TextStyle(
                                     color: AppColors.primary,
                                     fontSize: 12,
@@ -226,7 +226,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
 
                             // Title
                             Text(
-                              blog.title ?? 'Không có tiêu đề',
+                              blog.title,
                               style: const TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
@@ -264,14 +264,14 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
                             const SizedBox(height: 8),
 
                             // Author
-                            if (blog.fullname != null)
+                            if (blog.fullname.isNotEmpty)
                               Row(
                                 children: [
                                   Icon(Icons.person,
                                       size: 16, color: Colors.grey[600]),
                                   const SizedBox(width: 8),
                                   Text(
-                                    blog.fullname!,
+                                    blog.fullname,
                                     style: TextStyle(
                                       color: Colors.grey[600],
                                       fontSize: 14,
@@ -288,7 +288,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
                       // Content
                       Padding(
                         padding: const EdgeInsets.all(20),
-                        child: _buildHtmlContent(blog.content ?? ''),
+                        child: _buildHtmlContent(blog.content),
                       ),
                     ],
                   ),
