@@ -877,7 +877,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                       ),
                     )
                   : Text(
-                      price > 0 ? 'Mua ngay' : 'Tham gia miễn phí',
+                      price > 0 ? 'Thêm vào giỏ hàng' : 'Tham gia miễn phí',
                       style: AppTextStyles.bodyLarge.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,

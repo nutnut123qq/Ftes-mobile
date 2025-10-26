@@ -24,9 +24,9 @@ class CourseCardWidget extends StatelessWidget {
             ? '${course.price!.toStringAsFixed(0)}\$'
             : 'Miễn phí';
     final rating = course.rating?.toStringAsFixed(1) ?? '0.0';
-    final students = course.totalStudents != null
+    final students = course.totalStudents != null && course.totalStudents! > 0
         ? '${course.totalStudents} HV'
-        : '0 HV';
+        : '';
     final imageUrl = course.imageHeader ?? course.image;
 
     return GestureDetector(
@@ -129,14 +129,16 @@ class CourseCardWidget extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        students,
-                        style: AppTextStyles.caption.copyWith(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                      if (students.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          students,
+                          style: AppTextStyles.caption.copyWith(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                   

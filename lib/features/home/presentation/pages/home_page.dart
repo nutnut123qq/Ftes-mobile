@@ -4,6 +4,7 @@ import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/colors.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/core/di/injection_container.dart' as di;
+import 'package:ftes/core/constants/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'dart:convert';
@@ -436,7 +437,14 @@ class _HomePageState extends State<HomePage> {
                       child: CourseCardWidget(
                         course: course,
                         onTap: () {
-                          // Handle course tap
+                          // Navigate to course detail
+                          if (course.slugName != null && course.slugName!.isNotEmpty) {
+                            Navigator.pushNamed(
+                              context,
+                              AppConstants.routeCourseDetail,
+                              arguments: course.slugName,
+                            );
+                          }
                         },
                       ),
                     );

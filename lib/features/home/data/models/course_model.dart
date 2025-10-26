@@ -4,8 +4,10 @@ import '../../domain/entities/course.dart';
 part 'course_model.g.dart';
 
 /// Course model for data layer
-@JsonSerializable(explicitToJson: true)
+  @JsonSerializable(explicitToJson: true)
 class CourseModel extends Course {
+  @JsonKey(name: 'avgStar')
+  final double? avgStar;
   const CourseModel({
     super.id,
     super.title,
@@ -24,7 +26,7 @@ class CourseModel extends Course {
     super.instructorName,
     super.instructorAvatar,
     super.totalStudents,
-    super.rating,
+    this.avgStar,
     super.totalReviews,
     super.isFeatured,
     super.isPublished,
@@ -57,7 +59,7 @@ class CourseModel extends Course {
       instructorName: instructorName,
       instructorAvatar: instructorAvatar,
       totalStudents: totalStudents,
-      rating: rating,
+      rating: avgStar ?? 5.0, // Default 5 stars if no rating
       totalReviews: totalReviews,
       isFeatured: isFeatured,
       isPublished: isPublished,
@@ -86,7 +88,7 @@ class CourseModel extends Course {
       instructorName: course.instructorName,
       instructorAvatar: course.instructorAvatar,
       totalStudents: course.totalStudents,
-      rating: course.rating,
+      avgStar: course.rating,
       totalReviews: course.totalReviews,
       isFeatured: course.isFeatured,
       isPublished: course.isPublished,
