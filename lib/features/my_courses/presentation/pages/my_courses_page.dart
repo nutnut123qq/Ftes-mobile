@@ -223,8 +223,17 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
               child: MyCourseCardWidget(
                 course: course,
                 onTap: () {
-                  // TODO: Navigate to course detail
-                  print('Navigate to course: ${course.id}');
+                  // Navigate to course detail using slugName
+                  if (course.slugName != null && course.slugName!.isNotEmpty) {
+                    print('Navigate to course: ${course.slugName}');
+                    Navigator.pushNamed(
+                      context,
+                      AppConstants.routeCourseDetail,
+                      arguments: course.slugName,
+                    );
+                  } else {
+                    print('⚠️ Course slugName is null or empty: ${course.id}');
+                  }
                 },
               ),
             );

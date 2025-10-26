@@ -100,6 +100,8 @@ class AppConstants {
   static const String latestCoursesEndpoint = '/api/courses';
   static const String coursesSearchEndpoint = '/api/courses/search';
   static const String courseDetailEndpoint = '/api/courses/detail';
+  static const String profileViewEndpoint = '/api/profiles/view';
+  static const String checkEnrollmentByUserEndpoint = '/api/profiles';
   static const String profileEndpoint = '/api/profiles';
   
   // Auth Endpoints

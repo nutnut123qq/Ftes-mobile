@@ -23,7 +23,7 @@ import '../screens/top_mentors_screen.dart';
 import '../screens/courses_list_screen.dart';
 import '../screens/mentors_list_screen.dart';
 import '../screens/single_mentor_details_screen.dart';
-import '../screens/course_detail_screen.dart';
+import '../features/course/presentation/pages/course_detail_page.dart';
 import '../screens/learning_screen.dart';
 import '../screens/quiz_screen.dart';
 import '../screens/profile_screen.dart';
@@ -122,7 +122,7 @@ class AppRoutes {
         );
       }
       
-      return CourseDetailScreen(course: course);
+      return CourseDetailPage(course: course);
     },
     core_constants.AppConstants.routeProfile: (context) => const ProfileScreen(),
     core_constants.AppConstants.routeNotifications: (context) => const NotificationsScreen(),
@@ -305,7 +305,7 @@ class AppRoutes {
         }
         
         return MaterialPageRoute(
-          builder: (context) => CourseDetailScreen(course: course!),
+          builder: (context) => CourseDetailPage(course: course!),
           settings: settings,
         );
       case core_constants.AppConstants.routeLearning:

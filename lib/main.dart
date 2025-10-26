@@ -6,7 +6,8 @@ import 'core/constants/app_constants.dart';
 import 'core/di/injection_container.dart' as di;
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/auth/presentation/viewmodels/register_viewmodel.dart';
-import 'features/auth/presentation/viewmodels/forgot_password_viewmodel.dart';
+import 'features/course/presentation/viewmodels/course_detail_viewmodel.dart';
+import 'features/course/di/course_injection.dart';
 // import 'legacy/providers/auth_provider.dart'; // Deprecated - use auth feature instead
 import 'providers/app_data_provider.dart';
 import 'providers/course_provider.dart';
@@ -22,6 +23,7 @@ import 'providers/video_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await di.init();
+  CourseInjection.init(di.sl);
   runApp(const MyApp());
 }
 
@@ -35,7 +37,7 @@ class MyApp extends StatelessWidget {
         // New Clean Architecture ViewModels
         ChangeNotifierProvider(create: (context) => di.sl<AuthViewModel>()..initialize()),
         ChangeNotifierProvider(create: (context) => di.sl<RegisterViewModel>()),
-        ChangeNotifierProvider(create: (context) => di.sl<ForgotPasswordViewModel>()),
+        ChangeNotifierProvider(create: (context) => di.sl<CourseDetailViewModel>()),
         // Legacy providers (temporary for backward compatibility) - DEPRECATED
         // ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => AppDataProvider()),
