@@ -187,6 +187,7 @@ class AppConstants {
   static const String vimeoEmbedUrl = 'https://player.vimeo.com/video/';
   
   // AI Chat Endpoints
+  static const String aiChatBaseUrl = 'https://ai.ftes.vn';
   static const String aiChatEndpoint = '/api/ai/chat';
   static const String aiCheckVideoKnowledgeEndpoint = 'https://ai.ftes.vn/api/ai/check-video-knowledge';
 }

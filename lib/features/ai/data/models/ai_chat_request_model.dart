@@ -4,12 +4,14 @@ class AiChatRequestModel {
   final String videoId;
   final String lessonTitle;
   final String sessionId;
+  final String prompt; // Add prompt field for API
 
   const AiChatRequestModel({
     required this.message,
     required this.videoId,
     required this.lessonTitle,
     required this.sessionId,
+    required this.prompt,
   });
 
   /// Convert to JSON for API request
@@ -17,8 +19,9 @@ class AiChatRequestModel {
     return {
       'message': message,
       'video_id': videoId,
-      'lesson_title': lessonTitle,
       'session_id': sessionId,
+      'lesson_title': lessonTitle,
+      'prompt': prompt,
     };
   }
 
@@ -29,6 +32,7 @@ class AiChatRequestModel {
       videoId: json['video_id'] as String,
       lessonTitle: json['lesson_title'] as String,
       sessionId: json['session_id'] as String,
+      prompt: json['prompt'] as String,
     );
   }
 

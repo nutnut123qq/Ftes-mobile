@@ -21,9 +21,9 @@ class AiChatSession extends Equatable {
     this.lastActiveAt,
   });
 
-  /// Create session ID format: user_{userId}_lesson_{lessonId}
+  /// Create session ID format: default (backend will handle session)
   static String createSessionId(String userId, String lessonId) {
-    return 'user_${userId}_lesson_$lessonId';
+    return 'default';
   }
 
   /// Create new session

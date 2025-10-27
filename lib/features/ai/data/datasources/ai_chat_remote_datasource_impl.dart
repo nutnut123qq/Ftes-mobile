@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -23,20 +24,50 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
     try {
       print('📚 Checking video knowledge: $videoId');
       
-      // For now, always return true to allow chat
-      // TODO: Implement actual API call when backend supports CORS
-      return const VideoKnowledge(
-        hasKnowledge: true,
-        status: 'available',
-        message: 'Knowledge available',
-      );
+      final token = await _getAccessToken();
+      final url = '${AppConstants.aiCheckVideoKnowledgeEndpoint}/$videoId';
+      print('🔗 Full URL: $url');
+      
+      // Use http package for external API
+      try {
+        final response = await http.get(
+          Uri.parse(url),
+          headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+        );
+
+        print('📥 Check knowledge response status: ${response.statusCode}');
+        print('📥 Check knowledge response data: ${response.body}');
+
+        if (response.statusCode == 200) {
+          final jsonData = json.decode(response.body) as Map<String, dynamic>;
+          final model = VideoKnowledgeModel.fromJson(jsonData);
+          return model.toEntity();
+        } else {
+          // If API fails, return true to allow chat
+          print('⚠️ API returned ${response.statusCode}, allowing chat by default');
+          return const VideoKnowledge(
+            hasKnowledge: true,
+            status: 'error',
+            message: 'API error, allowing chat',
+          );
+        }
+      } on Exception catch (e) {
+        // If network/CORS error, allow chat by default
+        print('⚠️ Network error checking knowledge: $e');
+        print('✅ Allowing chat by default due to network error');
+        return const VideoKnowledge(
+          hasKnowledge: true,
+          status: 'network_error',
+          message: 'Network error, allowing chat',
+        );
+      }
     } catch (e) {
       print('❌ Check video knowledge error: $e');
-      // Return true as default to allow chat
+      // Return true as default to allow chat on error
       return const VideoKnowledge(
         hasKnowledge: true,
         status: 'unknown',
-        message: 'Unknown status',
+        message: 'Error checking, allowing chat',
       );
     }
   }
@@ -71,12 +102,24 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
         videoId: lessonId,
         lessonTitle: lessonTitle,
         sessionId: sessionId,
+        prompt: message, // Use message as prompt
       );
 
-      // Send POST request
-      final response = await _apiClient.post(
-        AppConstants.aiChatEndpoint,
+      // Use full URL for AI API (external service)
+      final url = '${AppConstants.aiChatBaseUrl}${AppConstants.aiChatEndpoint}';
+      print('🔗 Full AI URL: $url');
+      print('📤 Request body: ${request.toJson()}');
+
+      // Send POST request using Dio directly
+      final dio = _apiClient.dio;
+      final token = await _getAccessToken();
+      
+      final response = await dio.post(
+        url,
         data: request.toJson(),
+        options: Options(
+          headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+        ),
       );
 
       print('📥 AI response status: ${response.statusCode}');

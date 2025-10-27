@@ -876,10 +876,12 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               onTap: () {
                 // Use lesson.video (video_id format) instead of lesson.id
                 final videoId = lesson.video.isNotEmpty ? lesson.video : lesson.id;
+                // Use full lesson info: title - description
+                final fullLessonTitle = '${lesson.title} - ${lesson.description}';
                 AppRoutes.navigateToAiChat(
                   context,
                   lessonId: videoId,
-                  lessonTitle: lesson.title,
+                  lessonTitle: fullLessonTitle,
                 );
               },
               child: Container(

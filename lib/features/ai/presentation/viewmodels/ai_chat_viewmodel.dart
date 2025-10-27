@@ -74,17 +74,15 @@ class AiChatViewModel extends ChangeNotifier {
         ),
       );
 
-      // Handle response off main thread
-      await Future.microtask(() async {
-        result.fold(
-          (failure) => _handleFailure(failure),
-          (aiMessage) {
-            _clearError();
-            _addMessage(aiMessage);
-            _currentSession = _currentSession!.addMessage(aiMessage);
-          },
-        );
-      });
+      // Handle response
+      result.fold(
+        (failure) => _handleFailure(failure),
+        (aiMessage) {
+          _clearError();
+          _addMessage(aiMessage);
+          _currentSession = _currentSession!.addMessage(aiMessage);
+        },
+      );
     } catch (e) {
       print('❌ Send message error: $e');
       _setError('Không thể gửi tin nhắn: ${e.toString()}');
