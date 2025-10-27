@@ -12,7 +12,10 @@
 ///   },
 ///   "error": null
 /// }
-
+/// 
+/// DEPRECATED: This model has been moved to lib/features/ai
+/// Please use AiChatResponseModel instead
+@Deprecated('Use lib/features/ai/data/models/ai_chat_response_model.dart instead')
 class AIChatResponse {
   final bool success;
   final String message;
@@ -98,3 +101,4 @@ class AIChatData {
     };
   }
 }
+

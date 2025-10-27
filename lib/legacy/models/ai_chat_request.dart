@@ -7,6 +7,10 @@
 /// - video_id: Lesson ID for context
 /// - lesson_title: Title of the lesson
 /// - session_id: Chat session identifier
+/// 
+/// DEPRECATED: This model has been moved to lib/features/ai
+/// Please use AiChatRequestModel instead
+@Deprecated('Use lib/features/ai/data/models/ai_chat_request_model.dart instead')
 class AIChatRequest {
   final String message;
   final String videoId;
@@ -50,3 +54,4 @@ class AIChatRequest {
     return 'AIChatRequest(message: $message, videoId: $videoId, lessonTitle: $lessonTitle, sessionId: $sessionId)';
   }
 }
+

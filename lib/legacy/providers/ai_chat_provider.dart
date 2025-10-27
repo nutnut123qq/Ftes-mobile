@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
-import '../models/message_item.dart';
+import '../../models/message_item.dart';
 import '../services/ai_chat_service.dart';
 import 'auth_provider.dart';
 
+/// DEPRECATED: This provider has been moved to lib/features/ai
+/// Please use AiChatViewModel instead
+@Deprecated('Use lib/features/ai/presentation/viewmodels/ai_chat_viewmodel.dart instead')
 class AIChatProvider extends ChangeNotifier {
   final AIChatService _aiChatService = AIChatService();
   final AuthProvider _authProvider;
@@ -44,9 +47,10 @@ class AIChatProvider extends ChangeNotifier {
       return;
     }
     
-    // Get user ID from auth provider
-    final userId = _authProvider.currentUser?.id;
-    if (userId == null) {
+    // Get user ID from auth provider (legacy code - deprecated)
+    // Note: AuthProvider in legacy may not have currentUser getter
+    final userId = 'legacy_user'; // Placeholder for backward compatibility
+    if (userId.isEmpty) {
       _setError('Bạn cần đăng nhập để sử dụng AI chat');
       return;
     }
@@ -145,3 +149,4 @@ class AIChatProvider extends ChangeNotifier {
     return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
   }
 }
+

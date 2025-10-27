@@ -2,13 +2,17 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/ai_chat_request.dart';
 import '../models/ai_chat_response.dart';
-import '../core/constants/app_constants.dart';
-import 'http_client.dart';
+import '../../core/constants/app_constants.dart';
+import '../../services/http_client.dart';
 
 /// AI Chat Service - Connects to Python FastAPI AI Service
 /// 
 /// Base URL: ${AppConstants.baseUrl}/api/ai
 /// Endpoint: POST /chat
+/// 
+/// DEPRECATED: This service has been moved to lib/features/ai
+/// Please use AiChatRemoteDataSourceImpl instead
+@Deprecated('Use lib/features/ai/data/datasources/ai_chat_remote_datasource_impl.dart instead')
 class AIChatService {
   final String baseUrl = '${AppConstants.baseUrl}/api/ai';
   final HttpClient _httpClient = HttpClient();
@@ -77,3 +81,4 @@ class AIChatService {
     }
   }
 }
+
