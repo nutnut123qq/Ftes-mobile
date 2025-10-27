@@ -53,6 +53,21 @@ class CartSummaryModel {
       data: cartSummary.items.map((item) => CartItemModel.fromEntity(item)).toList(),
     );
   }
+
+  /// Create from items list (for manual construction after parsing)
+  factory CartSummaryModel.fromItems({
+    required List<CartItemModel> items,
+    int? currentPage,
+    int? totalPages,
+    int? totalElements,
+  }) {
+    return CartSummaryModel(
+      totalElements: totalElements ?? items.length,
+      totalPages: totalPages ?? 1,
+      currentPage: currentPage,
+      data: items,
+    );
+  }
 }
 
 /// Paging model for data layer

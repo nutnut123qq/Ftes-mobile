@@ -194,10 +194,7 @@ class AppRoutes {
       create: (context) => di.sl<CartViewModel>(),
       child: const CartPage(),
     ),
-    core_constants.AppConstants.routeBlogList: (context) => ChangeNotifierProvider(
-      create: (context) => di.sl<BlogViewModel>(),
-      child: const BlogListPage(),
-    ),
+    core_constants.AppConstants.routeBlogList: (context) => const BlogListPage(),
   };
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {

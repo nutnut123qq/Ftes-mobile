@@ -111,9 +111,32 @@ class BlogViewModel extends ChangeNotifier {
     result.fold(
       (failure) {
         _errorMessage = _mapFailureToMessage(failure);
+        print('❌ Failed to fetch blog categories: ${failure.message}');
       },
       (categories) {
         _categories = categories;
+        print('✅ Loaded ${categories.length} blog categories');
+      },
+    );
+  }
+  
+  /// Expose method to manually refresh categories if needed
+  Future<void> refreshCategories() async {
+    _isLoadingCategories = true;
+    notifyListeners();
+    
+    final result = await _getBlogCategoriesUseCase(const NoParams());
+
+    result.fold(
+      (failure) {
+        _errorMessage = _mapFailureToMessage(failure);
+        _isLoadingCategories = false;
+        notifyListeners();
+      },
+      (categories) {
+        _categories = categories;
+        _isLoadingCategories = false;
+        notifyListeners();
       },
     );
   }

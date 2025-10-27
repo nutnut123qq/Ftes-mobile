@@ -38,6 +38,34 @@ class CartItem extends Equatable {
     return ((price - salePrice) / price) * 100;
   }
 
+  /// Convert to JSON for caching
+  Map<String, dynamic> toJson() {
+    return {
+      'cartItemId': cartItemId,
+      'courseId': courseId,
+      'courseName': courseName,
+      'courseImage': courseImage,
+      'price': price,
+      'salePrice': salePrice,
+      'createdAt': createdAt,
+      'course': course.toJson(),
+    };
+  }
+
+  /// Create from JSON for caching
+  factory CartItem.fromJson(Map<String, dynamic> json) {
+    return CartItem(
+      cartItemId: json['cartItemId'] as String,
+      courseId: json['courseId'] as String,
+      courseName: json['courseName'] as String,
+      courseImage: json['courseImage'] as String,
+      price: (json['price'] as num).toDouble(),
+      salePrice: (json['salePrice'] as num).toDouble(),
+      createdAt: json['createdAt'] as String,
+      course: CourseInfo.fromJson(json['course'] as Map<String, dynamic>),
+    );
+  }
+
   @override
   List<Object?> get props => [
         cartItemId,
@@ -76,6 +104,38 @@ class CourseInfo extends Equatable {
     required this.description,
     required this.level,
   });
+
+  /// Convert to JSON for caching
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'totalPrice': totalPrice,
+      'salePrice': salePrice,
+      'imageHeader': imageHeader,
+      'createdBy': createdBy,
+      'slugName': slugName,
+      'avgStar': avgStar,
+      'description': description,
+      'level': level,
+    };
+  }
+
+  /// Create from JSON for caching
+  factory CourseInfo.fromJson(Map<String, dynamic> json) {
+    return CourseInfo(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      totalPrice: (json['totalPrice'] as num).toDouble(),
+      salePrice: (json['salePrice'] as num).toDouble(),
+      imageHeader: json['imageHeader'] as String,
+      createdBy: json['createdBy'] as String,
+      slugName: json['slugName'] as String,
+      avgStar: (json['avgStar'] as num).toDouble(),
+      description: json['description'] as String,
+      level: json['level'] as String,
+    );
+  }
 
   @override
   List<Object?> get props => [

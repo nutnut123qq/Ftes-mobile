@@ -19,22 +19,13 @@ class BlogListPage extends StatefulWidget {
 class _BlogListPageState extends State<BlogListPage> {
   final ScrollController _scrollController = ScrollController();
   String? _selectedCategory;
-  bool _isInitialized = false;
   bool _isLoadingMore = false; // Prevent duplicate API calls
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    
-    // Fetch blogs when screen loads
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_isInitialized) {
-        final blogViewModel = Provider.of<BlogViewModel>(context, listen: false);
-        blogViewModel.initialize();
-        _isInitialized = true;
-      }
-    });
+    // BlogViewModel.initialize() is called when Provider is created in main.dart
   }
 
   @override

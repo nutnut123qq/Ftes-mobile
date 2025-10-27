@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => di.sl<AuthViewModel>()..initialize()),
         ChangeNotifierProvider(create: (context) => di.sl<RegisterViewModel>()),
         ChangeNotifierProvider(create: (context) => di.sl<CourseDetailViewModel>()),
-        ChangeNotifierProvider(create: (context) => di.sl<BlogViewModel>()),
+        ChangeNotifierProvider(create: (context) => di.sl<BlogViewModel>()..initialize()),
         ChangeNotifierProvider(create: (context) => di.sl<ProfileViewModel>()),
         // Legacy providers (temporary for backward compatibility) - DEPRECATED
         // ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),

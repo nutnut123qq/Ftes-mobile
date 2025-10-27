@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/network_info.dart';
 import '../data/datasources/cart_remote_datasource.dart';
@@ -51,6 +52,7 @@ class CartInjection {
         getCartItemsUseCase: sl<GetCartItemsUseCase>(),
         getCartCountUseCase: sl<GetCartCountUseCase>(),
         removeFromCartUseCase: sl<RemoveFromCartUseCase>(),
+        sharedPreferences: sl<SharedPreferences>(),
       ),
     );
   }

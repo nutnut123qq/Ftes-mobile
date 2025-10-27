@@ -22,7 +22,17 @@ class CartConstants {
   static const int defaultPageSize = 10;
   static const int defaultPageNumber = 1;
   static const String defaultSortOrder = 'ASC';
-  static const String defaultSortField = 'createdAt';
+  static const String? defaultSortField = null; // Remove sortField to avoid API error
+  
+  // Cache keys
+  static const String cacheKeyCartItems = 'cart_items_cache';
+  static const String cacheKeyCartCount = 'cart_count_cache';
+  static const String cacheKeyCartTime = 'cart_cache_time';
+  static const String cacheKeyCartCourseIds = 'cart_course_ids_cache';
+  
+  // Cache settings
+  static const Duration cacheDuration = Duration(minutes: 30);
+  static const int computeIsolateThreshold = 50; // Use compute() for lists >50 items
   
   // UI messages
   static const String emptyCartTitle = 'Giỏ hàng trống';

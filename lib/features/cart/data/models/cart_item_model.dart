@@ -35,9 +35,9 @@ class CartItemModel {
     return CartItem(
       cartItemId: cartItemId,
       courseId: course.id,
-      courseName: title,
+      courseName: title, // Use title from API response
       courseImage: course.imageHeader ?? '',
-      price: course.totalPrice ?? 0.0,
+      price: price ?? course.totalPrice ?? 0.0, // Use price from API response
       salePrice: course.salePrice ?? 0.0,
       createdAt: course.createdAt ?? '',
       course: course.toEntity(),

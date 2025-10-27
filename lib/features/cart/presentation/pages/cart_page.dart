@@ -19,9 +19,11 @@ class _CartPageState extends State<CartPage> {
   @override
   void initState() {
     super.initState();
-    // Load cart data when screen opens
+    // Load cart data when screen opens (with caching)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<CartViewModel>(context, listen: false).refreshCart();
+      final viewModel = Provider.of<CartViewModel>(context, listen: false);
+      // Use initialize() for cache-first loading
+      viewModel.initialize();
     });
   }
 
@@ -200,6 +202,8 @@ class _CartPageState extends State<CartPage> {
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: viewModel.cartItems.length + (viewModel.hasMore ? 1 : 0),
+        // Add cacheExtent for smoother scrolling
+        cacheExtent: 500,
         itemBuilder: (context, index) {
           if (index == viewModel.cartItems.length) {
             // Load more button

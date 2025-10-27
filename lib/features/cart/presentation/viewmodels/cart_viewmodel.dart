@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/cart_item.dart';
-import '../../domain/entities/cart_summary.dart';
 import '../../domain/usecases/add_to_cart_usecase.dart';
 import '../../domain/usecases/get_cart_items_usecase.dart';
 import '../../domain/usecases/get_cart_count_usecase.dart';
@@ -14,16 +15,19 @@ class CartViewModel extends ChangeNotifier {
   final GetCartItemsUseCase _getCartItemsUseCase;
   final GetCartCountUseCase _getCartCountUseCase;
   final RemoveFromCartUseCase _removeFromCartUseCase;
+  final SharedPreferences _sharedPreferences;
 
   CartViewModel({
     required AddToCartUseCase addToCartUseCase,
     required GetCartItemsUseCase getCartItemsUseCase,
     required GetCartCountUseCase getCartCountUseCase,
     required RemoveFromCartUseCase removeFromCartUseCase,
+    required SharedPreferences sharedPreferences,
   }) : _addToCartUseCase = addToCartUseCase,
        _getCartItemsUseCase = getCartItemsUseCase,
        _getCartCountUseCase = getCartCountUseCase,
-       _removeFromCartUseCase = removeFromCartUseCase;
+       _removeFromCartUseCase = removeFromCartUseCase,
+       _sharedPreferences = sharedPreferences;
 
   // State
   List<CartItem> _cartItems = [];
@@ -225,20 +229,36 @@ class CartViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Refresh all cart data
+  /// Initialize cart with caching (load cache first, then fetch API)
+  Future<void> initialize() async {
+    // 1. Load from cache first for instant UI update
+    _loadFromCache();
+    notifyListeners();
+    
+    // 2. Fetch API in background
+    await Future.wait([
+      _fetchCartItemsInternal(),
+      _fetchCartCountInternal(),
+    ]);
+    
+    // 3. Save to cache and notify once
+    _saveToCache();
+    notifyListeners();
+  }
+
+  /// Refresh all cart data (with cache update)
   Future<void> refreshCart() async {
     await Future.wait([
       loadCartItems(),
       loadCartCount(),
     ]);
+    _saveToCache();
   }
 
-  /// Initialize cart (call when app starts)
+  /// Initialize cart (deprecated - use initialize() instead)
+  @Deprecated('Use initialize() instead')
   Future<void> initializeCart() async {
-    await Future.wait([
-      loadCartItems(),
-      loadCartCount(),
-    ]);
+    await initialize();
   }
 
   /// Clear entire cart
@@ -266,6 +286,123 @@ class CartViewModel extends ChangeNotifier {
     } finally {
       _setLoading(false);
       notifyListeners();
+    }
+  }
+
+  // Private internal methods (don't notify listeners)
+
+  /// Internal: Fetch cart items without notifying listeners
+  Future<void> _fetchCartItemsInternal() async {
+    try {
+      final params = GetCartItemsParams(
+        pageNumber: 1,
+        pageSize: CartConstants.defaultPageSize,
+        sortField: CartConstants.defaultSortField,
+        sortOrder: CartConstants.defaultSortOrder,
+      );
+      
+      final result = await _getCartItemsUseCase(params);
+      
+      result.fold(
+        (failure) => _setError(failure.message),
+        (cartSummary) {
+          _cartItems = cartSummary.items;
+          for (var item in _cartItems) {
+            _courseIdsInCart.add(item.courseId);
+          }
+          _currentPage = cartSummary.currentPage;
+          _totalPages = cartSummary.totalPages;
+          _hasMore = _currentPage < _totalPages;
+        },
+      );
+    } catch (e) {
+      _setError('Failed to load cart items: $e');
+    }
+  }
+
+  /// Internal: Fetch cart count without notifying listeners
+  Future<void> _fetchCartCountInternal() async {
+    try {
+      final result = await _getCartCountUseCase(NoParams());
+      
+      result.fold(
+        (failure) => _setError(failure.message),
+        (count) => _cartCount = count,
+      );
+    } catch (e) {
+      _setError('Failed to load cart count: $e');
+    }
+  }
+
+  /// Load from cache (no notifyListeners)
+  void _loadFromCache() {
+    try {
+      // Load cart count from cache
+      final cachedCount = _sharedPreferences.getInt(CartConstants.cacheKeyCartCount);
+      if (cachedCount != null) {
+        _cartCount = cachedCount;
+      }
+
+      // Load cart time from cache
+      final cachedTime = _sharedPreferences.getInt(CartConstants.cacheKeyCartTime);
+      if (cachedTime != null) {
+        final cacheAge = DateTime.now().millisecondsSinceEpoch - cachedTime;
+        if (cacheAge > CartConstants.cacheDuration.inMilliseconds) {
+          // Cache expired, don't load items
+          return;
+        }
+      }
+
+      // Load cart items from cache
+      final cachedItemsJson = _sharedPreferences.getString(CartConstants.cacheKeyCartItems);
+      if (cachedItemsJson != null && cachedItemsJson.isNotEmpty) {
+        final List<dynamic> itemsList = jsonDecode(cachedItemsJson) as List<dynamic>;
+        _cartItems = itemsList
+            .map((json) => CartItem.fromJson(json as Map<String, dynamic>))
+            .toList();
+        
+        // Rebuild course IDs set
+        _courseIdsInCart.clear();
+        for (var item in _cartItems) {
+          _courseIdsInCart.add(item.courseId);
+        }
+      }
+
+      // Load course IDs set from cache
+      final cachedCourseIdsJson = _sharedPreferences.getString(CartConstants.cacheKeyCartCourseIds);
+      if (cachedCourseIdsJson != null && cachedCourseIdsJson.isNotEmpty) {
+        final List<dynamic> courseIdsList = jsonDecode(cachedCourseIdsJson) as List<dynamic>;
+        _courseIdsInCart.clear();
+        _courseIdsInCart.addAll(courseIdsList.map((id) => id.toString()));
+      }
+    } catch (e) {
+      print('❌ Error loading from cache: $e');
+    }
+  }
+
+  /// Save to cache (no notifyListeners)
+  void _saveToCache() {
+    try {
+      // Save cart count
+      _sharedPreferences.setInt(CartConstants.cacheKeyCartCount, _cartCount);
+      
+      // Save cart time
+      _sharedPreferences.setInt(
+        CartConstants.cacheKeyCartTime,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+
+      // Save cart items
+      final itemsJson = jsonEncode(
+        _cartItems.map((item) => item.toJson()).toList(),
+      );
+      _sharedPreferences.setString(CartConstants.cacheKeyCartItems, itemsJson);
+
+      // Save course IDs set
+      final courseIdsJson = jsonEncode(_courseIdsInCart.toList());
+      _sharedPreferences.setString(CartConstants.cacheKeyCartCourseIds, courseIdsJson);
+    } catch (e) {
+      print('❌ Error saving to cache: $e');
     }
   }
 

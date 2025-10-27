@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../models/cart_item_model.dart';
 import '../models/cart_summary_model.dart';
 import '../models/add_to_cart_request_model.dart';
+import '../helpers/json_parser_helper.dart';
+import '../../domain/constants/cart_constants.dart';
 import 'cart_remote_datasource.dart';
 
 /// Remote data source implementation for Cart feature
@@ -82,7 +85,43 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
         if (data != null && data['success'] == true) {
           final result = data['result'];
           if (result != null) {
-            return CartSummaryModel.fromJson(result);
+            // Extract items list from 'data' field
+            List<dynamic> itemsList;
+            if (result['data'] is List) {
+              itemsList = result['data'] as List;
+            } else {
+              itemsList = [];
+            }
+            
+            // Extract pagination info
+            final paging = result['paging'] as Map<String, dynamic>?;
+            final currentPage = paging?['currentPage'] ?? result['currentPage'] ?? 1;
+            final totalPages = result['totalPages'] ?? 1;
+            final totalElements = result['totalElements'] ?? itemsList.length;
+            
+            // Use compute() isolate for parsing if list is large
+            if (itemsList.length > CartConstants.computeIsolateThreshold) {
+              print('🔄 Using compute() isolate for parsing ${itemsList.length} cart items');
+              final items = await compute(parseCartItemListJson, itemsList);
+              
+              // Return CartSummaryModel with parsed items
+              return CartSummaryModel.fromItems(
+                items: items,
+                currentPage: currentPage,
+                totalPages: totalPages,
+                totalElements: totalElements,
+              );
+            } else {
+              // For smaller lists, parse directly on main isolate
+              final items = parseCartItemListJson(itemsList);
+              
+              return CartSummaryModel.fromItems(
+                items: items,
+                currentPage: currentPage,
+                totalPages: totalPages,
+                totalElements: totalElements,
+              );
+            }
           }
         }
         throw ServerException('Invalid response format - missing result');
