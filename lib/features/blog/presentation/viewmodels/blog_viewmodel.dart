@@ -5,6 +5,7 @@ import '../../domain/usecases/get_all_blogs_usecase.dart';
 import '../../domain/usecases/get_blog_by_slug_usecase.dart';
 import '../../domain/usecases/search_blogs_usecase.dart';
 import '../../domain/usecases/get_blog_categories_usecase.dart';
+import '../../domain/constants/blog_constants.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 
@@ -37,7 +38,7 @@ class BlogViewModel extends ChangeNotifier {
   // Pagination
   int _currentPage = 1;
   int _totalPages = 1;
-  final int _pageSize = 10;
+  final int _pageSize = BlogConstants.defaultPageSize;
   int _totalElements = 0;
   
   // Filter
@@ -60,11 +61,60 @@ class BlogViewModel extends ChangeNotifier {
   bool get hasMore => _currentPage < _totalPages;
 
   /// Initialize the ViewModel - fetch initial data
+  /// Optimized to minimize notifyListeners() calls
   Future<void> initialize() async {
+    // Fetch all data in parallel without notifying listeners for each
     await Future.wait([
-      fetchBlogs(),
-      fetchBlogCategories(),
+      _fetchBlogsInternal(),
+      _fetchBlogCategoriesInternal(),
     ]);
+    
+    // Notify listeners only once after all data is loaded
+    notifyListeners();
+  }
+  
+  /// Internal method to fetch blogs without notifying listeners
+  Future<void> _fetchBlogsInternal() async {
+    _isLoading = true;
+
+    final result = await _getAllBlogsUseCase(GetAllBlogsParams(
+      pageNumber: BlogConstants.defaultPageNumber,
+      pageSize: _pageSize,
+      sortField: BlogConstants.defaultSortField,
+      sortOrder: BlogConstants.defaultSortOrder,
+    ));
+
+    result.fold(
+      (failure) {
+        _errorMessage = _mapFailureToMessage(failure);
+        _isLoading = false;
+      },
+      (paginatedResponse) {
+        _currentPage = paginatedResponse.currentPage;
+        _totalPages = paginatedResponse.totalPages;
+        _totalElements = paginatedResponse.totalElements;
+        _blogs = paginatedResponse.data;
+        _isLoading = false;
+      },
+    );
+  }
+  
+  /// Internal method to fetch blog categories without notifying listeners
+  Future<void> _fetchBlogCategoriesInternal() async {
+    _isLoadingCategories = true;
+
+    final result = await _getBlogCategoriesUseCase(const NoParams());
+
+    result.fold(
+      (failure) {
+        _errorMessage = _mapFailureToMessage(failure);
+        _isLoadingCategories = false;
+      },
+      (categories) {
+        _categories = categories;
+        _isLoadingCategories = false;
+      },
+    );
   }
 
   /// Fetch all blogs with pagination
@@ -77,8 +127,14 @@ class BlogViewModel extends ChangeNotifier {
   }) async {
     if (_isLoading && !loadMore) return;
 
-    _setLoading(true, loadMore);
-    _clearError();
+    // Set loading state
+    if (loadMore) {
+      _isLoadingMore = true;
+    } else {
+      _isLoading = true;
+    }
+    _errorMessage = null;
+    notifyListeners();
 
     final result = await _getAllBlogsUseCase(GetAllBlogsParams(
       pageNumber: pageNumber,
@@ -89,8 +145,13 @@ class BlogViewModel extends ChangeNotifier {
 
     result.fold(
       (failure) {
-        _setError(_mapFailureToMessage(failure));
-        _setLoading(false, loadMore);
+        _errorMessage = _mapFailureToMessage(failure);
+        if (loadMore) {
+          _isLoadingMore = false;
+        } else {
+          _isLoading = false;
+        }
+        notifyListeners();
       },
       (paginatedResponse) {
         _currentPage = paginatedResponse.currentPage;
@@ -99,11 +160,12 @@ class BlogViewModel extends ChangeNotifier {
         
         if (loadMore) {
           _blogs.addAll(paginatedResponse.data);
+          _isLoadingMore = false;
         } else {
           _blogs = paginatedResponse.data;
+          _isLoading = false;
         }
         
-        _setLoading(false, loadMore);
         notifyListeners();
       },
     );
@@ -122,19 +184,21 @@ class BlogViewModel extends ChangeNotifier {
 
   /// Fetch blog detail by slug
   Future<void> fetchBlogBySlug(String slugName) async {
-    _setLoading(true, false);
-    _clearError();
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
     final result = await _getBlogBySlugUseCase(slugName);
 
     result.fold(
       (failure) {
-        _setError(_mapFailureToMessage(failure));
-        _setLoading(false, false);
+        _errorMessage = _mapFailureToMessage(failure);
+        _isLoading = false;
+        notifyListeners();
       },
       (blog) {
         _selectedBlog = blog;
-        _setLoading(false, false);
+        _isLoading = false;
         notifyListeners();
       },
     );
@@ -150,8 +214,14 @@ class BlogViewModel extends ChangeNotifier {
   }) async {
     if (_isLoading && !loadMore) return;
 
-    _setLoading(true, loadMore);
-    _clearError();
+    // Set loading state
+    if (loadMore) {
+      _isLoadingMore = true;
+    } else {
+      _isLoading = true;
+    }
+    _errorMessage = null;
+    notifyListeners();
 
     final result = await _searchBlogsUseCase(SearchBlogsParams(
       pageNumber: pageNumber,
@@ -162,8 +232,13 @@ class BlogViewModel extends ChangeNotifier {
 
     result.fold(
       (failure) {
-        _setError(_mapFailureToMessage(failure));
-        _setLoading(false, loadMore);
+        _errorMessage = _mapFailureToMessage(failure);
+        if (loadMore) {
+          _isLoadingMore = false;
+        } else {
+          _isLoading = false;
+        }
+        notifyListeners();
       },
       (paginatedResponse) {
         _currentPage = paginatedResponse.currentPage;
@@ -174,11 +249,12 @@ class BlogViewModel extends ChangeNotifier {
         
         if (loadMore) {
           _blogs.addAll(paginatedResponse.data);
+          _isLoadingMore = false;
         } else {
           _blogs = paginatedResponse.data;
+          _isLoading = false;
         }
         
-        _setLoading(false, loadMore);
         notifyListeners();
       },
     );
@@ -186,19 +262,21 @@ class BlogViewModel extends ChangeNotifier {
 
   /// Fetch blog categories
   Future<void> fetchBlogCategories() async {
-    _setLoadingCategories(true);
-    _clearError();
+    _isLoadingCategories = true;
+    _errorMessage = null;
+    notifyListeners();
 
     final result = await _getBlogCategoriesUseCase(const NoParams());
 
     result.fold(
       (failure) {
-        _setError(_mapFailureToMessage(failure));
-        _setLoadingCategories(false);
+        _errorMessage = _mapFailureToMessage(failure);
+        _isLoadingCategories = false;
+        notifyListeners();
       },
       (categories) {
         _categories = categories;
-        _setLoadingCategories(false);
+        _isLoadingCategories = false;
         notifyListeners();
       },
     );
@@ -230,32 +308,10 @@ class BlogViewModel extends ChangeNotifier {
 
   /// Clear error message
   void clearError() {
-    _clearError();
-  }
-
-  // Private helper methods
-  void _setLoading(bool loading, bool loadMore) {
-    if (loadMore) {
-      _isLoadingMore = loading;
-    } else {
-      _isLoading = loading;
+    if (_errorMessage != null) {
+      _errorMessage = null;
+      notifyListeners();
     }
-    notifyListeners();
-  }
-
-  void _setLoadingCategories(bool loading) {
-    _isLoadingCategories = loading;
-    notifyListeners();
-  }
-
-  void _setError(String error) {
-    _errorMessage = error;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    _errorMessage = null;
-    notifyListeners();
   }
 
   /// Map failure to user-friendly message

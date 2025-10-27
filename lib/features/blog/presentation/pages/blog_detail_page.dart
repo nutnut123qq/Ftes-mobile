@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../viewmodels/blog_viewmodel.dart';
+import '../../domain/constants/blog_constants.dart';
 import '../../../../core/utils/colors.dart';
 
 class BlogDetailPage extends StatefulWidget {
@@ -25,19 +26,19 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
   }
 
   String _formatDate(DateTime? date) {
-    if (date == null) return 'Không rõ';
+    if (date == null) return BlogConstants.unknownDate;
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
-        return '${difference.inMinutes} phút trước';
+        return '${difference.inMinutes} ${BlogConstants.minutesAgo}';
       }
-      return '${difference.inHours} giờ trước';
+      return '${difference.inHours} ${BlogConstants.hoursAgo}';
     } else if (difference.inDays == 1) {
-      return 'Hôm qua';
+      return BlogConstants.yesterday;
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} ngày trước';
+      return '${difference.inDays} ${BlogConstants.daysAgo}';
     } else {
       return DateFormat('dd/MM/yyyy').format(date);
     }
@@ -46,7 +47,7 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
   int _calculateReadTime(String? content) {
     if (content == null || content.isEmpty) return 1;
     final wordCount = content.split(' ').length;
-    return (wordCount / 200).ceil(); // Giả sử đọc 200 từ/phút
+    return (wordCount / BlogConstants.averageReadingSpeed).ceil();
   }
 
   @override
@@ -87,7 +88,7 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
                       blogViewModel.fetchBlogBySlug(widget.slugName);
                     },
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Thử lại'),
+                    label: const Text(BlogConstants.retryLabel),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(

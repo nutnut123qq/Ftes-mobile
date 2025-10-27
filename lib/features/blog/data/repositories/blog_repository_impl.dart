@@ -6,6 +6,7 @@ import '../../domain/entities/blog.dart';
 import '../../domain/entities/blog_category.dart';
 import '../../domain/entities/paginated_blog_response.dart';
 import '../../domain/repositories/blog_repository.dart';
+import '../../domain/constants/blog_constants.dart';
 import '../datasources/blog_remote_datasource.dart';
 
 /// Repository implementation for Blog feature
@@ -20,21 +21,21 @@ class BlogRepositoryImpl implements BlogRepository {
 
   @override
   Future<Either<Failure, List<BlogCategory>>> getBlogCategories() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final models = await remoteDataSource.getBlogCategories();
-        return Right(models.map((model) => model.toEntity()).toList());
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message));
-      } on NetworkException catch (e) {
-        return Left(NetworkFailure(e.message));
-      } on ValidationException catch (e) {
-        return Left(ValidationFailure(e.message));
-      } catch (e) {
-        return Left(ServerFailure('Unexpected error: $e'));
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(BlogConstants.errorNoInternet));
       }
-    } else {
-      return const Left(NetworkFailure('No internet connection'));
+
+      final models = await remoteDataSource.getBlogCategories();
+      return Right(models.map((model) => model.toEntity()).toList());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('${BlogConstants.errorLoadingCategories}: $e'));
     }
   }
 
@@ -45,26 +46,26 @@ class BlogRepositoryImpl implements BlogRepository {
     String sortField = 'createdAt',
     String sortOrder = 'desc',
   }) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final model = await remoteDataSource.getAllBlogs(
-          pageNumber: pageNumber,
-          pageSize: pageSize,
-          sortField: sortField,
-          sortOrder: sortOrder,
-        );
-        return Right(model.toEntity());
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message));
-      } on NetworkException catch (e) {
-        return Left(NetworkFailure(e.message));
-      } on ValidationException catch (e) {
-        return Left(ValidationFailure(e.message));
-      } catch (e) {
-        return Left(ServerFailure('Unexpected error: $e'));
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(BlogConstants.errorNoInternet));
       }
-    } else {
-      return const Left(NetworkFailure('No internet connection'));
+
+      final model = await remoteDataSource.getAllBlogs(
+        pageNumber: pageNumber,
+        pageSize: pageSize,
+        sortField: sortField,
+        sortOrder: sortOrder,
+      );
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('${BlogConstants.errorLoadingBlogs}: $e'));
     }
   }
 
@@ -77,68 +78,68 @@ class BlogRepositoryImpl implements BlogRepository {
     String? title,
     String? category,
   }) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final model = await remoteDataSource.searchBlogs(
-          pageNumber: pageNumber,
-          pageSize: pageSize,
-          sortField: sortField,
-          sortOrder: sortOrder,
-          title: title,
-          category: category,
-        );
-        return Right(model.toEntity());
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message));
-      } on NetworkException catch (e) {
-        return Left(NetworkFailure(e.message));
-      } on ValidationException catch (e) {
-        return Left(ValidationFailure(e.message));
-      } catch (e) {
-        return Left(ServerFailure('Unexpected error: $e'));
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(BlogConstants.errorNoInternet));
       }
-    } else {
-      return const Left(NetworkFailure('No internet connection'));
+
+      final model = await remoteDataSource.searchBlogs(
+        pageNumber: pageNumber,
+        pageSize: pageSize,
+        sortField: sortField,
+        sortOrder: sortOrder,
+        title: title,
+        category: category,
+      );
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('${BlogConstants.errorSearchingBlogs}: $e'));
     }
   }
 
   @override
   Future<Either<Failure, Blog>> getBlogById(String blogId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final model = await remoteDataSource.getBlogById(blogId);
-        return Right(model.toEntity());
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message));
-      } on NetworkException catch (e) {
-        return Left(NetworkFailure(e.message));
-      } on ValidationException catch (e) {
-        return Left(ValidationFailure(e.message));
-      } catch (e) {
-        return Left(ServerFailure('Unexpected error: $e'));
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(BlogConstants.errorNoInternet));
       }
-    } else {
-      return const Left(NetworkFailure('No internet connection'));
+
+      final model = await remoteDataSource.getBlogById(blogId);
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('${BlogConstants.errorLoadingBlogDetail}: $e'));
     }
   }
 
   @override
   Future<Either<Failure, Blog>> getBlogBySlug(String slugName) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final model = await remoteDataSource.getBlogBySlug(slugName);
-        return Right(model.toEntity());
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message));
-      } on NetworkException catch (e) {
-        return Left(NetworkFailure(e.message));
-      } on ValidationException catch (e) {
-        return Left(ValidationFailure(e.message));
-      } catch (e) {
-        return Left(ServerFailure('Unexpected error: $e'));
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(BlogConstants.errorNoInternet));
       }
-    } else {
-      return const Left(NetworkFailure('No internet connection'));
+
+      final model = await remoteDataSource.getBlogBySlug(slugName);
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('${BlogConstants.errorLoadingBlogDetail}: $e'));
     }
   }
 }

@@ -6,6 +6,7 @@ import '../../../../core/utils/text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../widgets/bottom_navigation_bar.dart';
 import '../../domain/entities/blog.dart';
+import '../../domain/constants/blog_constants.dart';
 import '../viewmodels/blog_viewmodel.dart';
 
 class BlogListPage extends StatefulWidget {
@@ -84,7 +85,7 @@ class _BlogListPageState extends State<BlogListPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Blog',
+          BlogConstants.blogListTitle,
           style: AppTextStyles.heading2.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
@@ -124,13 +125,13 @@ class _BlogListPageState extends State<BlogListPage> {
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () => blogViewModel.refreshBlogs(),
-                            child: const Text('Thử lại'),
+                            child: const Text(BlogConstants.retryLabel),
                           ),
                         ],
                       ),
                     )
                   else if (blogViewModel.blogs.isEmpty)
-                    const Center(child: Text('Không có bài viết nào'))
+                    const Center(child: Text(BlogConstants.noBlogsAvailable))
                   else
                     _buildBlogsList(blogViewModel),
                   
@@ -222,7 +223,7 @@ class _BlogListPageState extends State<BlogListPage> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Không thể tải ảnh',
+                                BlogConstants.imageLoadError,
                                 style: AppTextStyles.caption.copyWith(
                                   color: AppColors.textLight,
                                 ),
@@ -244,7 +245,7 @@ class _BlogListPageState extends State<BlogListPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Không có ảnh',
+                          BlogConstants.noImageLabel,
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.textLight,
                           ),
@@ -335,7 +336,7 @@ class _BlogListPageState extends State<BlogListPage> {
   }
 
   String _formatDate(DateTime? date) {
-    if (date == null) return 'Không rõ';
+    if (date == null) return BlogConstants.unknownDate;
     
     final now = DateTime.now();
     final difference = now.difference(date);
@@ -343,15 +344,15 @@ class _BlogListPageState extends State<BlogListPage> {
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
         if (difference.inMinutes == 0) {
-          return 'Vừa xong';
+          return BlogConstants.justNow;
         }
-        return '${difference.inMinutes} phút trước';
+        return '${difference.inMinutes} ${BlogConstants.minutesAgo}';
       }
-      return '${difference.inHours} giờ trước';
+      return '${difference.inHours} ${BlogConstants.hoursAgo}';
     } else if (difference.inDays == 1) {
-      return 'Hôm qua';
+      return BlogConstants.yesterday;
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} ngày trước';
+      return '${difference.inDays} ${BlogConstants.daysAgo}';
     } else {
       return DateFormat('dd/MM/yyyy').format(date);
     }
@@ -359,8 +360,8 @@ class _BlogListPageState extends State<BlogListPage> {
 
   String _calculateReadTime(String content) {
     final words = content.split(' ').length;
-    final minutes = (words / 200).ceil(); // Average reading speed: 200 words/minute
-    return '$minutes phút đọc';
+    final minutes = (words / BlogConstants.averageReadingSpeed).ceil();
+    return '$minutes ${BlogConstants.readTimeLabel}';
   }
 
   String _stripHtmlTags(String htmlText) {
@@ -373,7 +374,7 @@ class _BlogListPageState extends State<BlogListPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Danh mục',
+          BlogConstants.allCategoriesLabel,
           style: AppTextStyles.heading3.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
@@ -388,7 +389,7 @@ class _BlogListPageState extends State<BlogListPage> {
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: _buildCategoryChip(
-                  'Tất cả',
+                  BlogConstants.allCategoriesLabel,
                   _selectedCategory == null,
                   () => _onCategorySelected(null),
                 ),
@@ -445,14 +446,14 @@ class _BlogListPageState extends State<BlogListPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Bài viết',
+              BlogConstants.blogPostsLabel,
               style: AppTextStyles.heading3.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
             Text(
-              'Tổng: ${blogViewModel.totalElements}',
+              '${BlogConstants.totalLabel}: ${blogViewModel.totalElements}',
               style: AppTextStyles.bodyText.copyWith(
                 color: AppColors.textLight,
                 fontSize: 12,

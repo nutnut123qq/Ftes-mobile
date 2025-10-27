@@ -31,6 +31,6 @@ Future<void> init() async {
   await initMyCourses();
   CartInjection.init(sl);
   CourseInjection.init(sl);
-  BlogInjection.init(sl);
+  await initBlogDependencies();
   ProfileInjection.init(sl);
 }

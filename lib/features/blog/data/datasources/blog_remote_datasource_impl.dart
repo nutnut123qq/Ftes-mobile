@@ -5,6 +5,8 @@ import '../../../../core/constants/app_constants.dart';
 import '../models/blog_model.dart';
 import '../models/blog_category_model.dart';
 import '../models/paginated_blog_response_model.dart';
+import '../helpers/json_parser_helper.dart';
+import '../../domain/constants/blog_constants.dart';
 import 'blog_remote_datasource.dart';
 
 /// Remote data source implementation for Blog feature
@@ -17,12 +19,11 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
   @override
   Future<List<BlogCategoryModel>> getBlogCategories() async {
     try {
-      debugPrint('📂 Fetching blog categories: ${AppConstants.baseUrl}${AppConstants.blogCategoriesEndpoint}');
+      print('📂 Fetching blog categories: ${AppConstants.baseUrl}${AppConstants.blogCategoriesEndpoint}');
       
       final response = await _apiClient.get(AppConstants.blogCategoriesEndpoint);
       
-      debugPrint('📥 Response status: ${response.statusCode}');
-      // debugPrint('📥 Response data: ${response.data}'); // Commented out for performance
+      print('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final success = response.data['success'];
@@ -31,27 +32,32 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
           if (result != null && result is Map<String, dynamic>) {
             final data = result['data'];
             if (data != null && data is List) {
-              return data
-                  .map((categoryJson) => BlogCategoryModel.fromJson(categoryJson))
-                  .toList();
+              // Categories typically < 50 items, parse directly
+              // But use compute if list is large for consistency
+              if (data.length > BlogConstants.computeThreshold) {
+                print('🔄 Using compute() isolate for parsing ${data.length} blog categories');
+                return await compute(parseBlogCategoryListJson, data);
+              } else {
+                return parseBlogCategoryListJson(data);
+              }
             } else {
-              throw ServerException('Invalid data format for blog categories');
+              throw const ServerException(BlogConstants.errorInvalidData);
             }
           } else {
-            throw ServerException('Invalid result format for blog categories');
+            throw const ServerException(BlogConstants.errorInvalidData);
           }
         } else {
-          throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch blog categories');
+          throw ServerException(response.data['messageDTO']?['message'] ?? BlogConstants.errorLoadingCategories);
         }
       } else {
-        throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch blog categories');
+        throw ServerException(response.data['messageDTO']?['message'] ?? BlogConstants.errorLoadingCategories);
       }
     } catch (e) {
-      debugPrint('❌ Get blog categories error: $e');
+      print('❌ Get blog categories error: $e');
       if (e is AppException) {
         rethrow;
       }
-      throw ServerException('Failed to fetch blog categories: ${e.toString()}');
+      throw ServerException('${BlogConstants.errorLoadingCategories}: ${e.toString()}');
     }
   }
 
@@ -63,8 +69,8 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
     String sortOrder = 'desc',
   }) async {
     try {
-      debugPrint('📚 Fetching all blogs: ${AppConstants.baseUrl}${AppConstants.blogsEndpoint}');
-      debugPrint('📊 Page: $pageNumber, Size: $pageSize, Sort: $sortField $sortOrder');
+      print('📚 Fetching all blogs: ${AppConstants.baseUrl}${AppConstants.blogsEndpoint}');
+      print('📊 Page: $pageNumber, Size: $pageSize, Sort: $sortField $sortOrder');
       
       final response = await _apiClient.get(
         AppConstants.blogsEndpoint,
@@ -76,30 +82,51 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
         },
       );
       
-      debugPrint('📥 Response status: ${response.statusCode}');
-      // debugPrint('📥 Response data: ${response.data}'); // Commented out for performance
+      print('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final success = response.data['success'];
         if (success == true) {
           final result = response.data['result'];
           if (result != null && result is Map<String, dynamic>) {
-            return PaginatedBlogResponseModel.fromJson(result);
+            // Extract blog data list for compute isolate parsing
+            final data = result['data'];
+            if (data != null && data is List) {
+              List<BlogModel> blogsList;
+              
+              // Use compute() isolate for parsing if list is large (>50 items)
+              if (data.length > BlogConstants.computeThreshold) {
+                print('🔄 Using compute() isolate for parsing ${data.length} blogs');
+                blogsList = await compute(parseBlogListJson, data);
+              } else {
+                blogsList = parseBlogListJson(data);
+              }
+              
+              // Create paginated response with parsed blogs
+              return PaginatedBlogResponseModel(
+                data: blogsList,
+                currentPage: result['currentPage'] ?? pageNumber,
+                totalPages: result['totalPages'] ?? 1,
+                totalElements: result['totalElements'] ?? blogsList.length,
+              );
+            } else {
+              throw const ServerException(BlogConstants.errorInvalidData);
+            }
           } else {
-            throw ServerException('Invalid result format for blogs');
+            throw const ServerException(BlogConstants.errorInvalidData);
           }
         } else {
-          throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch blogs');
+          throw ServerException(response.data['messageDTO']?['message'] ?? BlogConstants.errorLoadingBlogs);
         }
       } else {
-        throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch blogs');
+        throw ServerException(response.data['messageDTO']?['message'] ?? BlogConstants.errorLoadingBlogs);
       }
     } catch (e) {
-      debugPrint('❌ Get all blogs error: $e');
+      print('❌ Get all blogs error: $e');
       if (e is AppException) {
         rethrow;
       }
-      throw ServerException('Failed to fetch blogs: ${e.toString()}');
+      throw ServerException('${BlogConstants.errorLoadingBlogs}: ${e.toString()}');
     }
   }
 
@@ -113,8 +140,8 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
     String? category,
   }) async {
     try {
-      debugPrint('🔍 Searching blogs: ${AppConstants.baseUrl}${AppConstants.blogsSearchEndpoint}');
-      debugPrint('📊 Page: $pageNumber, Size: $pageSize, Title: $title, Category: $category');
+      print('🔍 Searching blogs: ${AppConstants.baseUrl}${AppConstants.blogsSearchEndpoint}');
+      print('📊 Page: $pageNumber, Size: $pageSize, Title: $title, Category: $category');
       
       final queryParams = {
         'pageNumber': pageNumber.toString(),
@@ -135,42 +162,62 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
         queryParameters: queryParams,
       );
       
-      debugPrint('📥 Response status: ${response.statusCode}');
-      // debugPrint('📥 Response data: ${response.data}'); // Commented out for performance
+      print('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final success = response.data['success'];
         if (success == true) {
           final result = response.data['result'];
           if (result != null && result is Map<String, dynamic>) {
-            return PaginatedBlogResponseModel.fromJson(result);
+            // Extract blog data list for compute isolate parsing
+            final data = result['data'];
+            if (data != null && data is List) {
+              List<BlogModel> blogsList;
+              
+              // Use compute() isolate for parsing if list is large (>50 items)
+              if (data.length > BlogConstants.computeThreshold) {
+                print('🔄 Using compute() isolate for parsing ${data.length} search results');
+                blogsList = await compute(parseBlogListJson, data);
+              } else {
+                blogsList = parseBlogListJson(data);
+              }
+              
+              // Create paginated response with parsed blogs
+              return PaginatedBlogResponseModel(
+                data: blogsList,
+                currentPage: result['currentPage'] ?? pageNumber,
+                totalPages: result['totalPages'] ?? 1,
+                totalElements: result['totalElements'] ?? blogsList.length,
+              );
+            } else {
+              throw const ServerException(BlogConstants.errorInvalidData);
+            }
           } else {
-            throw ServerException('Invalid result format for search blogs');
+            throw const ServerException(BlogConstants.errorInvalidData);
           }
         } else {
-          throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to search blogs');
+          throw ServerException(response.data['messageDTO']?['message'] ?? BlogConstants.errorSearchingBlogs);
         }
       } else {
-        throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to search blogs');
+        throw ServerException(response.data['messageDTO']?['message'] ?? BlogConstants.errorSearchingBlogs);
       }
     } catch (e) {
-      debugPrint('❌ Search blogs error: $e');
+      print('❌ Search blogs error: $e');
       if (e is AppException) {
         rethrow;
       }
-      throw ServerException('Failed to search blogs: ${e.toString()}');
+      throw ServerException('${BlogConstants.errorSearchingBlogs}: ${e.toString()}');
     }
   }
 
   @override
   Future<BlogModel> getBlogById(String blogId) async {
     try {
-      debugPrint('📖 Fetching blog by ID: ${AppConstants.baseUrl}${AppConstants.blogsEndpoint}/$blogId');
+      print('📖 Fetching blog by ID: ${AppConstants.baseUrl}${AppConstants.blogsEndpoint}/$blogId');
       
       final response = await _apiClient.get('${AppConstants.blogsEndpoint}/$blogId');
       
-      debugPrint('📥 Response status: ${response.statusCode}');
-      // debugPrint('📥 Response data: ${response.data}'); // Commented out for performance
+      print('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final success = response.data['success'];
@@ -179,32 +226,31 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
           if (result != null) {
             return BlogModel.fromJson(result);
           } else {
-            throw ServerException('Invalid response format for blog detail');
+            throw const ServerException(BlogConstants.errorInvalidData);
           }
         } else {
-          throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch blog detail');
+          throw ServerException(response.data['messageDTO']?['message'] ?? BlogConstants.errorLoadingBlogDetail);
         }
       } else {
-        throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch blog detail');
+        throw ServerException(response.data['messageDTO']?['message'] ?? BlogConstants.errorLoadingBlogDetail);
       }
     } catch (e) {
-      debugPrint('❌ Get blog by ID error: $e');
+      print('❌ Get blog by ID error: $e');
       if (e is AppException) {
         rethrow;
       }
-      throw ServerException('Failed to fetch blog detail: ${e.toString()}');
+      throw ServerException('${BlogConstants.errorLoadingBlogDetail}: ${e.toString()}');
     }
   }
 
   @override
   Future<BlogModel> getBlogBySlug(String slugName) async {
     try {
-      debugPrint('📖 Fetching blog by slug: ${AppConstants.baseUrl}${AppConstants.blogsEndpoint}/$slugName');
+      print('📖 Fetching blog by slug: ${AppConstants.baseUrl}${AppConstants.blogsEndpoint}/$slugName');
       
       final response = await _apiClient.get('${AppConstants.blogsEndpoint}/$slugName');
       
-      debugPrint('📥 Response status: ${response.statusCode}');
-      // debugPrint('📥 Response data: ${response.data}'); // Commented out for performance
+      print('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final success = response.data['success'];
@@ -213,20 +259,20 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
           if (result != null) {
             return BlogModel.fromJson(result);
           } else {
-            throw ServerException('Invalid response format for blog detail');
+            throw const ServerException(BlogConstants.errorInvalidData);
           }
         } else {
-          throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch blog detail');
+          throw ServerException(response.data['messageDTO']?['message'] ?? BlogConstants.errorLoadingBlogDetail);
         }
       } else {
-        throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch blog detail');
+        throw ServerException(response.data['messageDTO']?['message'] ?? BlogConstants.errorLoadingBlogDetail);
       }
     } catch (e) {
-      debugPrint('❌ Get blog by slug error: $e');
+      print('❌ Get blog by slug error: $e');
       if (e is AppException) {
         rethrow;
       }
-      throw ServerException('Failed to fetch blog detail: ${e.toString()}');
+      throw ServerException('${BlogConstants.errorLoadingBlogDetail}: ${e.toString()}');
     }
   }
 }

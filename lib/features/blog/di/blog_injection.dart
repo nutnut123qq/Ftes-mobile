@@ -1,6 +1,5 @@
-import 'package:get_it/get_it.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/network/network_info.dart';
+import 'package:ftes/core/network/api_client.dart';
+import 'package:ftes/core/di/injection_container.dart' as core;
 import '../data/datasources/blog_remote_datasource.dart';
 import '../data/datasources/blog_remote_datasource_impl.dart';
 import '../data/repositories/blog_repository_impl.dart';
@@ -12,51 +11,35 @@ import '../domain/usecases/search_blogs_usecase.dart';
 import '../domain/usecases/get_blog_categories_usecase.dart';
 import '../presentation/viewmodels/blog_viewmodel.dart';
 
-/// Dependency injection setup for Blog feature
-class BlogInjection {
-  static void init(GetIt sl) {
-    // Data sources
-    sl.registerLazySingleton<BlogRemoteDataSource>(
-      () => BlogRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
-    );
+/// Initialize blog feature dependencies
+Future<void> initBlogDependencies() async {
+  final sl = core.sl;
 
-    // Repositories
-    sl.registerLazySingleton<BlogRepository>(
-      () => BlogRepositoryImpl(
-        remoteDataSource: sl<BlogRemoteDataSource>(),
-        networkInfo: sl<NetworkInfo>(),
-      ),
-    );
+  // Data sources
+  sl.registerLazySingleton<BlogRemoteDataSource>(
+    () => BlogRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+  );
 
-    // Use cases
-    sl.registerLazySingleton<GetAllBlogsUseCase>(
-      () => GetAllBlogsUseCase(sl<BlogRepository>()),
-    );
-    
-    sl.registerLazySingleton<GetBlogByIdUseCase>(
-      () => GetBlogByIdUseCase(sl<BlogRepository>()),
-    );
-    
-    sl.registerLazySingleton<GetBlogBySlugUseCase>(
-      () => GetBlogBySlugUseCase(sl<BlogRepository>()),
-    );
-    
-    sl.registerLazySingleton<SearchBlogsUseCase>(
-      () => SearchBlogsUseCase(sl<BlogRepository>()),
-    );
-    
-    sl.registerLazySingleton<GetBlogCategoriesUseCase>(
-      () => GetBlogCategoriesUseCase(sl<BlogRepository>()),
-    );
+  // Repository
+  sl.registerLazySingleton<BlogRepository>(
+    () => BlogRepositoryImpl(
+      remoteDataSource: sl(),
+      networkInfo: sl(),
+    ),
+  );
 
-    // ViewModels
-    sl.registerFactory<BlogViewModel>(
-      () => BlogViewModel(
-        getAllBlogsUseCase: sl<GetAllBlogsUseCase>(),
-        getBlogBySlugUseCase: sl<GetBlogBySlugUseCase>(),
-        searchBlogsUseCase: sl<SearchBlogsUseCase>(),
-        getBlogCategoriesUseCase: sl<GetBlogCategoriesUseCase>(),
-      ),
-    );
-  }
+  // Use cases
+  sl.registerLazySingleton(() => GetAllBlogsUseCase(sl()));
+  sl.registerLazySingleton(() => GetBlogByIdUseCase(sl()));
+  sl.registerLazySingleton(() => GetBlogBySlugUseCase(sl()));
+  sl.registerLazySingleton(() => SearchBlogsUseCase(sl()));
+  sl.registerLazySingleton(() => GetBlogCategoriesUseCase(sl()));
+
+  // ViewModels
+  sl.registerFactory(() => BlogViewModel(
+    getAllBlogsUseCase: sl(),
+    getBlogBySlugUseCase: sl(),
+    searchBlogsUseCase: sl(),
+    getBlogCategoriesUseCase: sl(),
+  ));
 }
