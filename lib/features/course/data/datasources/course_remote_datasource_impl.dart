@@ -1,8 +1,11 @@
+import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../models/course_detail_model.dart';
 import '../models/profile_model.dart';
+import '../models/video_playlist_model.dart';
+import '../models/video_status_model.dart';
 import 'course_remote_datasource.dart';
 
 /// Remote data source implementation for Course feature
@@ -113,6 +116,112 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
         rethrow;
       }
       throw ServerException('Failed to check enrollment: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<VideoPlaylistModel> getVideoPlaylist(String videoId, {bool presign = false}) async {
+    try {
+      // Video ID format: "video_81f4308f-25d" (giữ nguyên prefix "video_")
+      print('🎬 Fetching video playlist for ID: $videoId');
+      print('🎬 Video stream base URL: ${AppConstants.videoStreamBaseUrl}');
+      
+      // Construct full URL for video API (dùng videoStreamBaseUrl)
+      final playlistUrl = '${AppConstants.videoStreamBaseUrl}${AppConstants.videoPlaylistEndpoint}/$videoId/playlist';
+      final queryParams = presign ? {'presign': 'true'} : null;
+      
+      print('🔗 Full URL: $playlistUrl${queryParams != null ? '?presign=true' : ''}');
+      
+      // Try to call video API from stream.ftes.cloud
+      try {
+        // Tạo request trực tiếp tới video stream server
+        final dio = _apiClient.dio;
+        final token = _apiClient.sharedPreferences.getString(AppConstants.keyAccessToken);
+        
+        final response = await dio.get(
+          playlistUrl,
+          queryParameters: queryParams,
+          options: Options(
+            headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+          ),
+        );
+        
+        print('📥 Video playlist response status: ${response.statusCode}');
+        print('📥 Video playlist response data: ${response.data}');
+        
+        if (response.statusCode == 200) {
+          return VideoPlaylistModel(
+            videoId: videoId,
+            cdnPlaylistUrl: response.data['cdnPlaylistUrl'] ?? '',
+            presignedUrl: response.data['presignedUrl'],
+            proxyPlaylistUrl: response.data['proxyPlaylistUrl'] ?? '${AppConstants.videoStreamBaseUrl}${AppConstants.videoProxyEndpoint}/$videoId/master.m3u8',
+          );
+        }
+      } catch (apiError) {
+        print('⚠️ Video playlist API error: $apiError');
+        print('⚠️ Falling back to direct proxy URL');
+      }
+      
+      // Fallback: Use direct proxy URL from streaming server
+      final proxyUrl = '${AppConstants.videoStreamBaseUrl}${AppConstants.videoProxyEndpoint}/$videoId/master.m3u8';
+      print('✅ Using direct proxy URL: $proxyUrl');
+      
+      return VideoPlaylistModel(
+        videoId: videoId,
+        cdnPlaylistUrl: '',
+        presignedUrl: null,
+        proxyPlaylistUrl: proxyUrl,
+      );
+    } catch (e) {
+      print('❌ Get video playlist error: $e');
+      if (e is AppException) {
+        rethrow;
+      }
+      throw ServerException(AppConstants.videoFailedMessage);
+    }
+  }
+
+  @override
+  Future<VideoStatusModel> getVideoStatus(String videoId) async {
+    try {
+      // Video ID format: "video_81f4308f-25d" (giữ nguyên)
+      print('⏳ Fetching video status for ID: $videoId');
+      print('⏳ Video stream base URL: ${AppConstants.videoStreamBaseUrl}');
+      
+      // Construct full URL for video status API (dùng videoStreamBaseUrl)
+      final statusUrl = '${AppConstants.videoStreamBaseUrl}${AppConstants.videoStatusEndpoint}/$videoId/status';
+      print('🔗 Full URL: $statusUrl');
+      
+      try {
+        // Tạo request trực tiếp tới video stream server
+        final dio = _apiClient.dio;
+        final token = _apiClient.sharedPreferences.getString(AppConstants.keyAccessToken);
+        
+        final response = await dio.get(
+          statusUrl,
+          options: Options(
+            headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+          ),
+        );
+        
+        print('📥 Video status response status: ${response.statusCode}');
+        print('📥 Video status response data: ${response.data}');
+        
+        if (response.statusCode == 200) {
+          return VideoStatusModel.fromJson(response.data);
+        } else {
+          throw ServerException(response.data['message'] ?? AppConstants.videoFailedMessage);
+        }
+      } catch (apiError) {
+        print('❌ Video status API error: $apiError');
+        throw ServerException(AppConstants.videoFailedMessage);
+      }
+    } catch (e) {
+      print('❌ Get video status error: $e');
+      if (e is AppException) {
+        rethrow;
+      }
+      throw ServerException(AppConstants.videoFailedMessage);
     }
   }
 }

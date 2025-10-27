@@ -18,12 +18,14 @@ import '../features/home/presentation/viewmodels/home_viewmodel.dart';
 import '../features/my_courses/presentation/pages/my_courses_page.dart';
 import '../features/my_courses/presentation/viewmodels/my_courses_viewmodel.dart';
 import '../features/my_courses/di/my_courses_injection.dart';
+import '../features/course/di/course_injection.dart';
 import '../screens/popular_courses_screen.dart';
 import '../screens/top_mentors_screen.dart';
 import '../screens/courses_list_screen.dart';
 import '../screens/mentors_list_screen.dart';
 import '../screens/single_mentor_details_screen.dart';
 import '../features/course/presentation/pages/course_detail_page.dart';
+import '../features/course/presentation/pages/course_video_page.dart';
 import '../screens/learning_screen.dart';
 import '../screens/quiz_screen.dart';
 import '../screens/profile_screen.dart';
@@ -47,6 +49,7 @@ import '../models/course_item.dart';
 import '../models/chat_item.dart';
 import 'package:provider/provider.dart';
 import '../core/di/injection_container.dart' as di;
+import '../features/course/presentation/viewmodels/course_video_viewmodel.dart';
 import '../models/mentor_item.dart';
 
 class AppRoutes {
@@ -317,6 +320,21 @@ class AppRoutes {
         
         return MaterialPageRoute(
           builder: (context) => CourseDetailPage(course: course!),
+          settings: settings,
+        );
+      case core_constants.AppConstants.routeCourseVideo:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider(
+            create: (context) => di.sl<CourseVideoViewModel>(),
+            child: CourseVideoPage(
+              lessonId: args?['lessonId'] ?? '',
+              lessonTitle: args?['lessonTitle'] ?? '',
+              courseTitle: args?['courseTitle'] ?? '',
+              videoUrl: args?['videoUrl'] ?? '',
+              courseId: args?['courseId'] ?? '',
+            ),
+          ),
           settings: settings,
         );
       case core_constants.AppConstants.routeLearning:

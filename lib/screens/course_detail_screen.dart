@@ -934,7 +934,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            rating.toString(),
+                            rating.toStringAsFixed(1),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: const Color(0xFF202244),
                               fontSize: 13,

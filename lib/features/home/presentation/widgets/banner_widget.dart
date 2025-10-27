@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/banner.dart' as home_banner;
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/colors.dart';
 
 /// Widget for displaying banner
+/// Optimized with CachedNetworkImage for better performance
 class BannerWidget extends StatelessWidget {
   final home_banner.Banner banner;
   final VoidCallback? onTap;
@@ -35,16 +37,20 @@ class BannerWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: Stack(
             children: [
-              // Background Image
+              // Background Image with caching
               if (banner.imageUrl != null && banner.imageUrl!.isNotEmpty)
-                Image.network(
-                  banner.imageUrl!,
+                CachedNetworkImage(
+                  imageUrl: banner.imageUrl!,
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildDefaultBanner();
-                  },
+                  placeholder: (context, url) => _buildDefaultBanner(),
+                  errorWidget: (context, url, error) => _buildDefaultBanner(),
+                  // Memory cache configuration
+                  memCacheWidth: 800,
+                  memCacheHeight: 240,
+                  maxWidthDiskCache: 1600,
+                  maxHeightDiskCache: 480,
                 )
               else
                 _buildDefaultBanner(),

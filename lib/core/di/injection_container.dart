@@ -7,6 +7,7 @@ import '../../features/auth/di/auth_injection.dart';
 import '../../features/home/di/home_injection.dart';
 import '../../features/my_courses/di/my_courses_injection.dart';
 import '../../features/cart/di/cart_injection.dart';
+import '../../features/course/di/course_injection.dart';
 import '../../features/blog/di/blog_injection.dart';
 import '../../features/profile/di/profile_injection.dart';
 
@@ -29,6 +30,7 @@ Future<void> init() async {
   await initHomeDependencies();
   await initMyCourses();
   CartInjection.init(sl);
+  CourseInjection.init(sl);
   BlogInjection.init(sl);
   ProfileInjection.init(sl);
 }

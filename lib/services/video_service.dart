@@ -55,6 +55,7 @@ class VideoService {
   /// GET /api/videos/{videoId}/status
   Future<VideoStatus> getVideoStatus(String videoId) async {
     try {
+      // Keep video ID format as-is: "video_81f4308f-25d"
       final response = await _httpClient.get('/api/videos/$videoId/status');
       final data = json.decode(response.body);
       return VideoStatus.fromJson(data);
@@ -63,14 +64,26 @@ class VideoService {
     }
   }
 
-  /// Get HLS master playlist URL
-  String getPlaylistUrl(String videoId) {
-    return '${AppConstants.baseUrl}/api/videos/stream/$videoId/master.m3u8';
+  /// Get video playlist (returns VideoPlaylistResponse with all URLs)
+  /// GET /api/videos/{videoId}/playlist
+  Future<VideoPlaylistResponse> getVideoPlaylist(String videoId, {bool presign = false}) async {
+    try {
+      // Keep video ID format as-is: "video_81f4308f-25d"
+      final queryParams = presign ? '?presign=true' : '';
+      final response = await _httpClient.get('/api/videos/$videoId/playlist$queryParams');
+      final data = json.decode(response.body);
+      return VideoPlaylistResponse.fromJson(data);
+    } catch (e) {
+      throw Exception('Error getting video playlist: $e');
+    }
   }
 
-  /// Get segment URL
-  String getSegmentUrl(String videoId, String fileName) {
-    return '${AppConstants.baseUrl}/api/videos/stream/$videoId/$fileName';
+  /// Get HLS master playlist URL (fallback - prefer using getVideoPlaylist)
+  /// This constructs the proxy URL directly from streaming server
+  /// Format: https://stream.ftes.cloud/api/videos/proxy/video_81f4308f-25d/master.m3u8
+  String getPlaylistUrl(String videoId) {
+    // Keep video ID with "video_" prefix
+    return '${AppConstants.videoStreamBaseUrl}/api/videos/proxy/$videoId/master.m3u8';
   }
 
   /// Monitor video status until ready
@@ -132,10 +145,42 @@ class VideoUploadResponse {
   }
 }
 
+/// Video Playlist Response Model
+class VideoPlaylistResponse {
+  final String videoId;
+  final String? cdnPlaylistUrl;
+  final String? presignedUrl;
+  final String? proxyPlaylistUrl;
+
+  VideoPlaylistResponse({
+    required this.videoId,
+    this.cdnPlaylistUrl,
+    this.presignedUrl,
+    this.proxyPlaylistUrl,
+  });
+
+  factory VideoPlaylistResponse.fromJson(Map<String, dynamic> json) {
+    return VideoPlaylistResponse(
+      videoId: json['videoId'] as String? ?? '',
+      cdnPlaylistUrl: json['cdnPlaylistUrl'] as String?,
+      presignedUrl: json['presignedUrl'] as String?,
+      proxyPlaylistUrl: json['proxyPlaylistUrl'] as String?,
+    );
+  }
+
+  /// Get best available URL (priority: presignedUrl > cdnPlaylistUrl > proxyPlaylistUrl)
+  String? getBestUrl() {
+    if (presignedUrl != null && presignedUrl!.isNotEmpty) return presignedUrl;
+    if (cdnPlaylistUrl != null && cdnPlaylistUrl!.isNotEmpty) return cdnPlaylistUrl;
+    if (proxyPlaylistUrl != null && proxyPlaylistUrl!.isNotEmpty) return proxyPlaylistUrl;
+    return null;
+  }
+}
+
 /// Video Status Model
 class VideoStatus {
   final String videoId;
-  final String status; // queued, encoding, uploading, ready, streaming, error
+  final String status; // ready, processing, failed, pending
   final String? message;
   final int? progress; // 0-100
   final Map<String, dynamic>? metadata;
@@ -150,8 +195,8 @@ class VideoStatus {
 
   factory VideoStatus.fromJson(Map<String, dynamic> json) {
     return VideoStatus(
-      videoId: json['videoId'] as String,
-      status: json['status'] as String,
+      videoId: json['videoId'] as String? ?? '',
+      status: json['status'] as String? ?? 'pending',
       message: json['message'] as String?,
       progress: json['progress'] as int?,
       metadata: json['metadata'] as Map<String, dynamic>?,
@@ -163,23 +208,20 @@ class VideoStatus {
     if (progress != null) return progress!;
     
     switch (status) {
-      case 'queued':
+      case 'pending':
         return 10;
-      case 'encoding':
+      case 'processing':
         return 50;
-      case 'uploading':
-        return 80;
       case 'ready':
-      case 'streaming':
         return 100;
-      case 'error':
+      case 'failed':
         return 0;
       default:
         return 0;
     }
   }
 
-  bool get isReady => status == 'ready' || status == 'streaming';
-  bool get isProcessing => status == 'queued' || status == 'encoding' || status == 'uploading';
-  bool get hasError => status == 'error';
+  bool get isReady => status == 'ready';
+  bool get isProcessing => status == 'processing' || status == 'pending';
+  bool get hasError => status == 'failed';
 }

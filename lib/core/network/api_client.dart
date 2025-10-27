@@ -8,6 +8,10 @@ class ApiClient {
   final Dio _dio;
   final SharedPreferences _sharedPreferences;
   
+  // Expose dio and sharedPreferences for external URL calls (e.g., video stream server)
+  Dio get dio => _dio;
+  SharedPreferences get sharedPreferences => _sharedPreferences;
+  
   ApiClient({required Dio dio, required SharedPreferences sharedPreferences}) 
       : _dio = dio, _sharedPreferences = sharedPreferences {
     _setupDio();

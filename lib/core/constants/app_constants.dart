@@ -7,6 +7,8 @@ class AppConstants {
   
   // API Configuration
   static const String baseUrl = 'https://api.ftes.vn';
+  static const String videoStreamBaseUrl = 'https://stream.ftes.cloud'; // Video streaming server
+  static const String videoCdnBaseUrl = 'https://ftes-cdn.b-cdn.net'; // Video CDN server
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
   static const Duration apiTimeout = Duration(seconds: 30);
@@ -61,6 +63,7 @@ class AppConstants {
   static const String routeMentorsList = '/mentors-list';
   static const String routeSingleMentorDetails = '/single-mentor-details';
   static const String routeCourseDetail = '/course-detail';
+  static const String routeCourseVideo = '/course-video';
   static const String routeLearning = '/learning';
   static const String routeQuiz = '/quiz';
   static const String routeProfile = '/profile';
@@ -130,6 +133,12 @@ class AppConstants {
   static const String enrollCourseEndpoint = '/enrollments/enroll';
   static const String courseCategoriesEndpoint = '/api/course-categories';
   
+  // Video Endpoints (sử dụng videoStreamBaseUrl)
+  static const String videoPlaylistEndpoint = '/api/videos'; // /{videoId}/playlist
+  static const String videoStatusEndpoint = '/api/videos'; // /{videoId}/status
+  static const String videoProgressEndpoint = '/api/videos'; // /{videoId}/progress
+  static const String videoProxyEndpoint = '/api/videos/proxy'; // /{videoId}/master.m3u8
+  
   // Image Endpoints
   static const String uploadImageEndpoint = '/images/upload';
   
@@ -159,4 +168,21 @@ class AppConstants {
   static const String errorNotFound = 'Content not found.';
   static const String errorUnauthorized = 'Unauthorized. Please login again.';
   static const String errorServer = 'Server error. Please try again later.';
+  
+  // Video Messages
+  static const String videoLoadingMessage = 'Đang tải video...';
+  static const String videoProcessingMessage = 'Video đang được xử lý, vui lòng đợi...';
+  static const String videoFailedMessage = 'Không thể tải video. Vui lòng thử lại sau.';
+  static const String videoNotFoundMessage = 'Video không tồn tại.';
+  static const String videoReadyMessage = 'Video đã sẵn sàng';
+  
+  // Video Status Constants
+  static const String videoStatusReady = 'ready';
+  static const String videoStatusProcessing = 'processing';
+  static const String videoStatusFailed = 'failed';
+  static const String videoStatusPending = 'pending';
+  
+  // Video Type Detection
+  static const String youtubeEmbedUrl = 'https://www.youtube.com/embed/';
+  static const String vimeoEmbedUrl = 'https://player.vimeo.com/video/';
 }

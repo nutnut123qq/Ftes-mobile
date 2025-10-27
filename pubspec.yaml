@@ -49,7 +49,7 @@ dependencies:
   get_it: ^8.0.2
   dartz: ^0.10.1
   equatable: ^2.0.7
-  freezed_annotation: ^2.4.4
+  freezed_annotation: ^3.1.0
   
   # Google Sign In
   google_sign_in: ^7.2.0
@@ -78,6 +78,9 @@ dependencies:
   # Image picker for avatar upload
   image_picker: ^1.0.4
   
+  # Cached network image for better performance
+  cached_network_image: ^3.3.1
+  
   # WebSocket STOMP client for real-time notifications
   stomp_dart_client: ^2.0.0
 
@@ -93,14 +96,14 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   
   # JSON serialization code generation
-  json_serializable: ^6.7.1
-  build_runner: ^2.4.7
+  json_serializable: ^6.11.1
+  build_runner: ^2.10.1
   
   # Clean Architecture dev dependencies
-  freezed: ^2.5.7
+  freezed: ^3.2.3
   
   # Icon generator - tự động tạo icon cho app
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

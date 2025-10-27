@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 import '../services/video_service.dart';
 import 'dart:async';
 
+// Export VideoPlaylistResponse for consumers
+export '../services/video_service.dart' show VideoPlaylistResponse, VideoStatus;
+
 /// Video Provider - Manages video state and streaming
 class VideoProvider with ChangeNotifier {
   final VideoService _videoService = VideoService();
@@ -86,14 +89,30 @@ class VideoProvider with ChangeNotifier {
     _statusSubscription = null;
   }
 
-  /// Get HLS playlist URL for video
-  String getPlaylistUrl(String videoId) {
-    return _videoService.getPlaylistUrl(videoId);
+  /// Get video playlist (preferred method - calls API to get URLs)
+  Future<VideoPlaylistResponse?> fetchVideoPlaylist(String videoId, {bool presign = true}) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      final playlist = await _videoService.getVideoPlaylist(videoId, presign: presign);
+      
+      _isLoading = false;
+      notifyListeners();
+      
+      return playlist;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
   }
 
-  /// Get video segment URL
-  String getSegmentUrl(String videoId, String fileName) {
-    return _videoService.getSegmentUrl(videoId, fileName);
+  /// Get HLS playlist URL for video (fallback - prefer using fetchVideoPlaylist)
+  String getPlaylistUrl(String videoId) {
+    return _videoService.getPlaylistUrl(videoId);
   }
 
   /// Check if video is ready to play

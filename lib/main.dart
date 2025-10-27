@@ -7,7 +7,6 @@ import 'core/di/injection_container.dart' as di;
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/auth/presentation/viewmodels/register_viewmodel.dart';
 import 'features/course/presentation/viewmodels/course_detail_viewmodel.dart';
-import 'features/course/di/course_injection.dart';
 import 'features/blog/presentation/viewmodels/blog_viewmodel.dart';
 import 'features/profile/presentation/viewmodels/profile_viewmodel.dart';
 // import 'legacy/providers/auth_provider.dart'; // Deprecated - use auth feature instead
@@ -24,7 +23,6 @@ import 'providers/video_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await di.init();
-  CourseInjection.init(di.sl);
   runApp(const MyApp());
 }
 

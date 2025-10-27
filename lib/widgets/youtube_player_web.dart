@@ -28,3 +28,27 @@ Widget buildWebYouTubePlayer(String videoId) {
     child: HtmlElementView(viewType: viewType),
   );
 }
+
+Widget buildWebExternalPlayer(String embedUrl) {
+  final uniqueId = 'external-player-${embedUrl.hashCode}-${DateTime.now().millisecondsSinceEpoch}';
+  
+  // Register the view factory
+  ui_web.platformViewRegistry.registerViewFactory(
+    uniqueId,
+    (int viewId) {
+      final iframe = html.IFrameElement()
+        ..src = embedUrl
+        ..style.border = 'none'
+        ..style.width = '100%'
+        ..style.height = '100%'
+        ..allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+        ..allowFullscreen = true;
+      return iframe;
+    },
+  );
+
+  return Container(
+    color: Colors.black,
+    child: HtmlElementView(viewType: uniqueId),
+  );
+}

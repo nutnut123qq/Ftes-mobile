@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ftes/utils/text_styles.dart';
@@ -5,9 +6,9 @@ import 'package:ftes/utils/colors.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/core/di/injection_container.dart' as di;
 import 'package:ftes/core/constants/app_constants.dart';
+import 'package:ftes/features/profile/domain/usecases/profile_usecases.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dio/dio.dart';
-import 'dart:convert';
+import '../../domain/constants/home_constants.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../widgets/course_card_widget.dart';
 import '../widgets/banner_widget.dart';
@@ -21,107 +22,98 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String _userName = 'User';
+  String _userName = HomeConstants.defaultUserName;
   int _currentBannerIndex = 0;
   final PageController _bannerController = PageController();
 
   @override
   void initState() {
     super.initState();
-    _loadUserInfo();
-    // Initialize ViewModel
+    // Initialize ViewModel and load user info in parallel on background thread
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
-      homeViewModel.initialize();
-      homeViewModel.fetchCategories();
+      
+      // Run both operations in parallel without blocking main thread
+      Future.wait([
+        homeViewModel.initialize(),
+        homeViewModel.fetchCategories(),
+        _loadUserInfoAsync(),
+      ]);
     });
   }
 
-  Future<void> _loadUserInfo() async {
+  /// Load user info asynchronously using GetProfileByIdUseCase
+  /// This runs on background thread and doesn't block main thread
+  Future<void> _loadUserInfoAsync() async {
     try {
       final prefs = di.sl<SharedPreferences>();
+      final userId = prefs.getString(AppConstants.keyUserId);
       
-      // First try to get from cached user data
-      final userData = prefs.getString('user_data');
-      if (userData != null) {
-        final userMap = jsonDecode(userData) as Map<String, dynamic>;
-        final username = userMap['username'] as String?;
-        final fullName = userMap['fullName'] as String?;
-        
-        final displayName = fullName?.isNotEmpty == true 
-            ? fullName 
-            : username?.isNotEmpty == true 
-                ? username 
-                : 'User';
-        
-        setState(() {
-          _userName = displayName ?? 'User';
-        });
+      if (userId == null || userId.isEmpty) {
+        // No user logged in, keep default name
         return;
       }
       
-      // If no cached data, try to get userId and call profile API
-      final userId = prefs.getString('user_id');
-      final accessToken = prefs.getString('access_token');
-      
-      if (userId != null && accessToken != null) {
-        await _fetchUserProfile(userId, accessToken);
-        return;
+      // First check cache
+      final cachedUserData = prefs.getString(AppConstants.keyUserData);
+      if (cachedUserData != null && cachedUserData.isNotEmpty) {
+        // Use cached data immediately for fast UI update
+        _updateUserNameFromCache(cachedUserData);
       }
       
-      // Fallback to 'User'
-      setState(() {
-        _userName = 'User';
-      });
+      // Fetch fresh profile data using UseCase
+      final getProfileByIdUseCase = di.sl<GetProfileByIdUseCase>();
+      final result = await getProfileByIdUseCase(userId);
+      
+      result.fold(
+        (failure) {
+          // Failed to fetch profile, use cached data or default
+          print('❌ Failed to load user profile: ${failure.message}');
+        },
+        (profile) {
+          // Update UI with fresh profile data
+          final displayName = _getDisplayName(profile.name, profile.username);
+          
+          if (mounted) {
+            setState(() {
+              _userName = displayName;
+            });
+          }
+        },
+      );
     } catch (e) {
-      print('Error loading user info: $e');
-      setState(() {
-        _userName = 'User';
-      });
+      print('❌ Error loading user info: $e');
+      // Keep default username on error
     }
   }
-
-  Future<void> _fetchUserProfile(String userId, String accessToken) async {
+  
+  /// Update username from cached data
+  void _updateUserNameFromCache(String cachedData) {
     try {
-      final dio = Dio();
-      final response = await dio.get(
-        'https://api.ftes.vn/api/profiles/view/$userId',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $accessToken',
-            'Content-Type': 'application/json',
-          },
-        ),
-      );
-
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        final profileData = response.data['result'];
-        final username = profileData['username'] as String?;
-        final fullName = profileData['fullName'] as String?;
-        
-        final displayName = fullName?.isNotEmpty == true 
-            ? fullName 
-            : username?.isNotEmpty == true 
-                ? username 
-                : 'User';
-        
+      final userMap = jsonDecode(cachedData) as Map<String, dynamic>;
+      final username = userMap['username'] as String?;
+      final fullName = userMap['fullName'] as String?;
+      
+      final displayName = _getDisplayName(fullName, username);
+      
+      if (mounted) {
         setState(() {
-          _userName = displayName ?? 'User';
-        });
-        
-        // Cache the profile data for future use
-        final prefs = di.sl<SharedPreferences>();
-        await prefs.setString('user_data', jsonEncode(profileData));
-      } else {
-        setState(() {
-          _userName = 'User';
+          _userName = displayName;
         });
       }
     } catch (e) {
-      print('Error fetching user profile: $e');
-      setState(() {
-        _userName = 'User';
-      });
+      print('❌ Error parsing cached user data: $e');
+    }
+  }
+  
+  /// Get display name from fullName or username
+  String _getDisplayName(String? fullName, String? username) {
+    if (fullName != null && fullName.isNotEmpty) {
+      return fullName;
+    } else if (username != null && username.isNotEmpty) {
+      return username;
+    } else {
+      return HomeConstants.defaultUserName;
     }
   }
 
@@ -181,11 +173,11 @@ class _HomePageState extends State<HomePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
+            Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Xin chào! 👋',
+                HomeConstants.greetingText,
                 style: AppTextStyles.body1.copyWith(
                   color: Colors.grey[600]!,
                   fontSize: 16,
@@ -256,7 +248,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Tìm kiếm khóa học...',
+                HomeConstants.searchPlaceholder,
                 style: AppTextStyles.body1.copyWith(
                   color: Colors.grey[600]!,
                   fontSize: 14,
@@ -353,7 +345,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'Khóa học phổ biến',
+                HomeConstants.popularCoursesTitle,
                 style: AppTextStyles.h3.copyWith(
                   color: const Color(0xFF202244),
                   fontWeight: FontWeight.bold,
@@ -400,23 +392,29 @@ class _HomePageState extends State<HomePage> {
                 ),
               )
             else if (homeViewModel.categoryCourses.isEmpty)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: Text('Không có khóa học nào'),
+                  padding: const EdgeInsets.all(32.0),
+                  child: Text(HomeConstants.noCoursesAvailable),
                 ),
               )
             else
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: homeViewModel.categoryCourses.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    final course = entry.value;
+              // Use SizedBox + ListView.builder for lazy loading and better performance
+              SizedBox(
+                height: 280, // Fixed height for horizontal list
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: homeViewModel.categoryCourses.length,
+                  // Add caching for smoother scrolling
+                  cacheExtent: 1000,
+                  itemBuilder: (context, index) {
+                    final course = homeViewModel.categoryCourses[index];
                     
                     return Padding(
-                      padding: EdgeInsets.only(right: index < homeViewModel.categoryCourses.length - 1 ? 20 : 0),
+                      padding: EdgeInsets.only(
+                        right: index < homeViewModel.categoryCourses.length - 1 ? 20 : 0,
+                      ),
                       child: CourseCardWidget(
                         course: course,
                         onTap: () {
@@ -431,7 +429,7 @@ class _HomePageState extends State<HomePage> {
                         },
                       ),
                     );
-                  }).toList(),
+                  },
                 ),
               ),
           ],
@@ -447,7 +445,7 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Giảng viên hàng đầu',
+            HomeConstants.topMentorsTitle,
             style: AppTextStyles.h3.copyWith(
               color: const Color(0xFF202244),
               fontWeight: FontWeight.bold,

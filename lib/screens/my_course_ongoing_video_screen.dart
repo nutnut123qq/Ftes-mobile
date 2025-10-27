@@ -6,9 +6,9 @@ import 'package:video_player/video_player.dart';
 import 'package:provider/provider.dart';
 import '../providers/course_provider.dart';
 import '../providers/video_provider.dart';
-import '../services/video_service.dart';
 import '../widgets/youtube_player_widget.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyCourseOngoingVideoScreen extends StatefulWidget {
   final String lessonId;
@@ -102,23 +102,40 @@ class _MyCourseOngoingVideoScreenState extends State<MyCourseOngoingVideoScreen>
               _videoStatus = status;
             });
 
-            // If video is ready, use HLS streaming
+            // If video is ready, fetch playlist from API
             if (status.isReady) {
-              final playlistUrl = videoProvider.getPlaylistUrl(videoIdentifier);
-              await _setupVideoPlayer(playlistUrl);
+              final playlist = await videoProvider.fetchVideoPlaylist(videoIdentifier, presign: true);
+              if (playlist != null) {
+                final playlistUrl = playlist.getBestUrl();
+                if (playlistUrl != null && playlistUrl.isNotEmpty) {
+                  await _setupVideoPlayer(playlistUrl);
+                } else {
+                  // Fallback to direct proxy URL
+                  final fallbackUrl = videoProvider.getPlaylistUrl(videoIdentifier);
+                  await _setupVideoPlayer(fallbackUrl);
+                }
+              }
             } else if (status.isProcessing) {
               // Monitor status until ready
               videoProvider.monitorVideoStatus(
                 videoIdentifier,
-                onUpdate: (updatedStatus) {
+                onUpdate: (updatedStatus) async {
                   if (mounted) {
                     setState(() {
                       _videoStatus = updatedStatus;
                     });
                     
                     if (updatedStatus.isReady) {
-                      final playlistUrl = videoProvider.getPlaylistUrl(videoIdentifier);
-                      _setupVideoPlayer(playlistUrl);
+                      final playlist = await videoProvider.fetchVideoPlaylist(videoIdentifier, presign: true);
+                      if (playlist != null) {
+                        final playlistUrl = playlist.getBestUrl();
+                        if (playlistUrl != null && playlistUrl.isNotEmpty) {
+                          _setupVideoPlayer(playlistUrl);
+                        } else {
+                          final fallbackUrl = videoProvider.getPlaylistUrl(videoIdentifier);
+                          _setupVideoPlayer(fallbackUrl);
+                        }
+                      }
                     }
                   }
                 },
@@ -144,7 +161,24 @@ class _MyCourseOngoingVideoScreenState extends State<MyCourseOngoingVideoScreen>
 
   Future<void> _setupVideoPlayer(String url) async {
     try {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      // Get access token for HLS streaming
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      
+      // Use network() with httpHeaders instead of networkUrl()
+      if (accessToken != null && accessToken.isNotEmpty) {
+        // ignore: deprecated_member_use
+        _controller = VideoPlayerController.network(
+          url,
+          httpHeaders: {
+            'Authorization': 'Bearer $accessToken',
+          },
+        );
+      } else {
+        // Fallback to networkUrl if no token (shouldn't happen for authenticated users)
+        _controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      }
+      
       await _controller!.initialize();
       if (mounted) {
         setState(() {

@@ -304,7 +304,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    apiCourse?.avgStar.toString() ?? widget.course.rating,
+                    apiCourse?.avgStar.toStringAsFixed(1) ?? widget.course.rating,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
@@ -677,7 +677,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
           Row(
             children: [
               Text(
-                apiCourse?.avgStar.toString() ?? '4.5',
+                apiCourse?.avgStar.toStringAsFixed(1) ?? '4.5',
                 style: AppTextStyles.heading2.copyWith(
                   color: const Color(0xFF0961F5),
                   fontWeight: FontWeight.bold,
@@ -798,46 +798,80 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   }
 
   Widget _buildLessonItem(Lesson lesson) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          Icon(
-            Icons.play_circle_outline,
-            color: lesson.isCompleted ? const Color(0xFF00C851) : const Color(0xFF666666),
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${lesson.title} - ${lesson.description}',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: lesson.isCompleted ? const Color(0xFF00C851) : null,
-                  ),
-                ),
-                if (lesson.duration > 0) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    '${lesson.duration} phút',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: const Color(0xFF666666),
-                    ),
-                  ),
-                ],
-              ],
+    return GestureDetector(
+      onTap: () {
+        // Navigate to video page
+        final courseDetailViewModel = Provider.of<CourseDetailViewModel>(context, listen: false);
+        final courseDetail = courseDetailViewModel.courseDetail;
+        
+        if (courseDetail != null && lesson.video.isNotEmpty) {
+          print('📹 Navigating to video page with lesson.video: ${lesson.video}');
+          Navigator.pushNamed(
+            context,
+            AppConstants.routeCourseVideo,
+            arguments: {
+              'lessonId': lesson.id,
+              'lessonTitle': lesson.title,
+              'courseTitle': courseDetail.title,
+              'videoUrl': lesson.video,
+              'courseId': courseDetail.id,
+            },
+          );
+        } else {
+          // Show message if video not available
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Video chưa được tải lên'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+              ),
             ),
-          ),
-          if (lesson.isCompleted)
-            const Icon(
-              Icons.check_circle,
-              color: Color(0xFF00C851),
+          );
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              Icons.play_circle_outline,
+              color: lesson.isCompleted ? const Color(0xFF00C851) : const Color(0xFF666666),
               size: 20,
             ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${lesson.title} - ${lesson.description}',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: lesson.isCompleted ? const Color(0xFF00C851) : null,
+                    ),
+                  ),
+                  if (lesson.duration > 0) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      '${lesson.duration} phút',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: const Color(0xFF666666),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (lesson.isCompleted)
+              const Icon(
+                Icons.check_circle,
+                color: Color(0xFF00C851),
+                size: 20,
+              ),
+          ],
+        ),
       ),
     );
   }

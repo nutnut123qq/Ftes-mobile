@@ -8,7 +8,10 @@ import 'package:ftes/features/course/domain/repositories/course_repository.dart'
 import 'package:ftes/features/course/domain/usecases/get_course_detail_usecase.dart';
 import 'package:ftes/features/course/domain/usecases/get_profile_usecase.dart';
 import 'package:ftes/features/course/domain/usecases/check_enrollment_usecase.dart';
+import 'package:ftes/features/course/domain/usecases/get_video_playlist_usecase.dart';
+import 'package:ftes/features/course/domain/usecases/get_video_status_usecase.dart';
 import '../presentation/viewmodels/course_detail_viewmodel.dart';
+import '../presentation/viewmodels/course_video_viewmodel.dart';
 
 /// Dependency injection setup for Course feature
 class CourseInjection {
@@ -39,12 +42,29 @@ class CourseInjection {
       () => CheckEnrollmentUseCase(sl<CourseRepository>()),
     );
 
+    // Video use cases
+    sl.registerLazySingleton<GetVideoPlaylistUseCase>(
+      () => GetVideoPlaylistUseCase(sl<CourseRepository>()),
+    );
+
+    sl.registerLazySingleton<GetVideoStatusUseCase>(
+      () => GetVideoStatusUseCase(sl<CourseRepository>()),
+    );
+
     // ViewModels
     sl.registerFactory<CourseDetailViewModel>(
       () => CourseDetailViewModel(
         getCourseDetailUseCase: sl<GetCourseDetailUseCase>(),
         getProfileUseCase: sl<GetProfileUseCase>(),
         checkEnrollmentUseCase: sl<CheckEnrollmentUseCase>(),
+      ),
+    );
+
+    sl.registerFactory<CourseVideoViewModel>(
+      () => CourseVideoViewModel(
+        checkEnrollmentUseCase: sl<CheckEnrollmentUseCase>(),
+        getVideoPlaylistUseCase: sl<GetVideoPlaylistUseCase>(),
+        getVideoStatusUseCase: sl<GetVideoStatusUseCase>(),
       ),
     );
   }

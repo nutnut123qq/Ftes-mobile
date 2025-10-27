@@ -5,6 +5,8 @@ import '../../domain/entities/category.dart' as home_category;
 import '../../domain/usecases/get_latest_courses_usecase.dart';
 import '../../domain/usecases/get_featured_courses_usecase.dart';
 import '../../domain/usecases/get_banners_usecase.dart';
+import '../../domain/usecases/get_categories_usecase.dart';
+import '../../domain/constants/home_constants.dart';
 import 'package:ftes/core/error/failures.dart';
 import 'package:ftes/core/usecases/usecase.dart';
 
@@ -13,14 +15,17 @@ class HomeViewModel extends ChangeNotifier {
   final GetLatestCoursesUseCase _getLatestCoursesUseCase;
   final GetFeaturedCoursesUseCase _getFeaturedCoursesUseCase;
   final GetBannersUseCase _getBannersUseCase;
+  final GetCategoriesUseCase _getCategoriesUseCase;
 
   HomeViewModel({
     required GetLatestCoursesUseCase getLatestCoursesUseCase,
     required GetFeaturedCoursesUseCase getFeaturedCoursesUseCase,
     required GetBannersUseCase getBannersUseCase,
+    required GetCategoriesUseCase getCategoriesUseCase,
   })  : _getLatestCoursesUseCase = getLatestCoursesUseCase,
         _getFeaturedCoursesUseCase = getFeaturedCoursesUseCase,
-        _getBannersUseCase = getBannersUseCase;
+        _getBannersUseCase = getBannersUseCase,
+        _getCategoriesUseCase = getCategoriesUseCase;
 
   // State variables
   List<Course> _latestCourses = [];
@@ -52,16 +57,77 @@ class HomeViewModel extends ChangeNotifier {
   bool get isLoading => _isLoadingLatestCourses || _isLoadingFeaturedCourses || _isLoadingBanners;
 
   /// Initialize the ViewModel - fetch all data
+  /// Optimized to minimize notifyListeners() calls
   Future<void> initialize() async {
+    // Fetch all data in parallel without notifying listeners for each
     await Future.wait([
-      fetchLatestCourses(),
-      fetchFeaturedCourses(),
-      fetchBanners(),
+      _fetchLatestCoursesInternal(),
+      _fetchFeaturedCoursesInternal(),
+      _fetchBannersInternal(),
     ]);
     
     // Set default selected category to "Tất cả"
-    _selectedCategoryId = 'all';
+    _selectedCategoryId = HomeConstants.defaultCategoryId;
     _categoryCourses = _latestCourses;
+    
+    // Notify listeners only once after all data is loaded
+    notifyListeners();
+  }
+  
+  /// Internal method to fetch latest courses without notifying listeners
+  Future<void> _fetchLatestCoursesInternal() async {
+    _isLoadingLatestCourses = true;
+
+    final result = await _getLatestCoursesUseCase(
+      GetLatestCoursesParams(limit: HomeConstants.defaultPageSize),
+    );
+
+    result.fold(
+      (failure) {
+        _errorMessage = _mapFailureToMessage(failure);
+        _isLoadingLatestCourses = false;
+      },
+      (courses) {
+        _latestCourses = courses;
+        _isLoadingLatestCourses = false;
+      },
+    );
+  }
+  
+  /// Internal method to fetch featured courses without notifying listeners
+  Future<void> _fetchFeaturedCoursesInternal() async {
+    _isLoadingFeaturedCourses = true;
+
+    final result = await _getFeaturedCoursesUseCase(const NoParams());
+
+    result.fold(
+      (failure) {
+        _errorMessage = _mapFailureToMessage(failure);
+        _isLoadingFeaturedCourses = false;
+      },
+      (courses) {
+        _featuredCourses = courses;
+        _isLoadingFeaturedCourses = false;
+      },
+    );
+  }
+  
+  /// Internal method to fetch banners without notifying listeners
+  Future<void> _fetchBannersInternal() async {
+    _isLoadingBanners = true;
+
+    final result = await _getBannersUseCase(const NoParams());
+
+    result.fold(
+      (failure) {
+        _errorMessage = _mapFailureToMessage(failure);
+        _isLoadingBanners = false;
+      },
+      (banners) {
+        _banners = banners;
+        _isLoadingBanners = false;
+      },
+    );
   }
 
   /// Fetch latest courses
@@ -152,12 +218,10 @@ class HomeViewModel extends ChangeNotifier {
 
   void _setError(String error) {
     _errorMessage = error;
-    notifyListeners();
   }
 
   void _clearError() {
     _errorMessage = null;
-    notifyListeners();
   }
 
   /// Map failure to user-friendly message
@@ -165,80 +229,70 @@ class HomeViewModel extends ChangeNotifier {
     return failure.message;
   }
 
-  /// Fetch course categories
+  /// Fetch course categories from API
   Future<void> fetchCategories() async {
     _setLoadingCategories(true);
     _clearError();
     
-    // TODO: Implement with use case
-    // For now, we'll use hardcoded categories
-    _categories = [
-      const home_category.Category(
-        id: 'all',
-        name: 'Tất cả',
-        slug: 'all',
-        description: 'Tất cả khóa học',
-        active: true,
-      ),
-      const home_category.Category(
-        id: '2837e815-2ed8-49af-b0c3-6d3d8d883640',
-        name: 'Kỹ Thuật Phần Mềm',
-        slug: 'ky-thuat-phan-mem',
-        description: 'Khóa học lập trình và phát triển phần mềm',
-        active: true,
-      ),
-      const home_category.Category(
-        id: '2bbb2eed-d14d-43f2-b4a9-28fe867d49cb',
-        name: 'Toán Học',
-        slug: 'toan-hoc',
-        description: 'Khóa học toán học và thống kê',
-        active: true,
-      ),
-      const home_category.Category(
-        id: 'bc669cc6-a425-4af3-93b7-7eb66f666649',
-        name: 'Ngoại Ngữ',
-        slug: 'ngoai-ngu',
-        description: 'Khóa học ngoại ngữ',
-        active: true,
-      ),
-    ];
+    final result = await _getCategoriesUseCase(const NoParams());
     
-    _setLoadingCategories(false);
-    
-    // Set default selected category to "Tất cả" if not already set
-    if (_selectedCategoryId == null) {
-      _selectedCategoryId = 'all';
-      _categoryCourses = _latestCourses;
-    }
-    
-    notifyListeners();
+    result.fold(
+      (failure) {
+        _setError(_mapFailureToMessage(failure));
+        _setLoadingCategories(false);
+      },
+      (categories) {
+        // Add "Tất cả" category at the beginning
+        _categories = [
+          const home_category.Category(
+            id: HomeConstants.defaultCategoryId,
+            name: HomeConstants.defaultCategoryName,
+            slug: HomeConstants.defaultCategoryId,
+            description: 'Tất cả khóa học',
+            active: true,
+          ),
+          ...categories,
+        ];
+        
+        // Set default selected category to "Tất cả" if not already set
+        if (_selectedCategoryId == null) {
+          _selectedCategoryId = HomeConstants.defaultCategoryId;
+          _categoryCourses = _latestCourses;
+        }
+        
+        _setLoadingCategories(false);
+        notifyListeners();
+      },
+    );
   }
 
   /// Fetch courses by category
   Future<void> fetchCoursesByCategory(String categoryId) async {
-    _setLoadingCategoryCourses(true);
-    _clearError();
+    _isLoadingCategoryCourses = true;
     _selectedCategoryId = categoryId;
+    _clearError();
     
-    // TODO: Implement with use case
-    // For now, filter existing courses by category
-    if (categoryId == 'all') {
+    // Notify once at the start for loading state
+    notifyListeners();
+    
+    // Filter existing courses by category
+    // This avoids unnecessary API calls since we already have all courses
+    if (categoryId == HomeConstants.defaultCategoryId) {
       _categoryCourses = _latestCourses;
     } else {
-      _categoryCourses = _latestCourses.where((course) => course.categoryId == categoryId).toList();
+      _categoryCourses = _latestCourses
+          .where((course) => course.categoryId == categoryId)
+          .toList();
     }
     
-    _setLoadingCategoryCourses(false);
+    _isLoadingCategoryCourses = false;
+    
+    // Notify once at the end with the results
     notifyListeners();
   }
 
   void _setLoadingCategories(bool loading) {
     _isLoadingCategories = loading;
-    notifyListeners();
-  }
-
-  void _setLoadingCategoryCourses(bool loading) {
-    _isLoadingCategoryCourses = loading;
     notifyListeners();
   }
 }

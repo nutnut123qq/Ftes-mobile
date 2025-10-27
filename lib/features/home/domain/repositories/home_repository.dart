@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:ftes/core/error/failures.dart';
 import '../entities/course.dart';
 import '../entities/banner.dart';
+import '../entities/category.dart';
 
 /// Abstract repository for home feature
 abstract class HomeRepository {
@@ -13,4 +14,7 @@ abstract class HomeRepository {
   
   /// Get banners
   Future<Either<Failure, List<Banner>>> getBanners();
+  
+  /// Get course categories
+  Future<Either<Failure, List<Category>>> getCategories();
 }

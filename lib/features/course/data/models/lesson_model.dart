@@ -29,8 +29,13 @@ class LessonModel {
     this.isCompleted,
   });
 
-  factory LessonModel.fromJson(Map<String, dynamic> json) =>
-      _$LessonModelFromJson(json);
+  factory LessonModel.fromJson(Map<String, dynamic> json) {
+    // Debug log to check video field
+    if (json['video'] != null) {
+      print('🎬 LessonModel.fromJson - video field: ${json['video']}');
+    }
+    return _$LessonModelFromJson(json);
+  }
 
   Map<String, dynamic> toJson() => _$LessonModelToJson(this);
 
