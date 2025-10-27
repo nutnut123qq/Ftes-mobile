@@ -22,7 +22,7 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
       final response = await _apiClient.get(AppConstants.blogCategoriesEndpoint);
       
       debugPrint('📥 Response status: ${response.statusCode}');
-      debugPrint('📥 Response data: ${response.data}');
+      // debugPrint('📥 Response data: ${response.data}'); // Commented out for performance
       
       if (response.statusCode == 200) {
         final success = response.data['success'];
@@ -77,7 +77,7 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
       );
       
       debugPrint('📥 Response status: ${response.statusCode}');
-      debugPrint('📥 Response data: ${response.data}');
+      // debugPrint('📥 Response data: ${response.data}'); // Commented out for performance
       
       if (response.statusCode == 200) {
         final success = response.data['success'];
@@ -136,7 +136,7 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
       );
       
       debugPrint('📥 Response status: ${response.statusCode}');
-      debugPrint('📥 Response data: ${response.data}');
+      // debugPrint('📥 Response data: ${response.data}'); // Commented out for performance
       
       if (response.statusCode == 200) {
         final success = response.data['success'];
@@ -170,7 +170,7 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
       final response = await _apiClient.get('${AppConstants.blogsEndpoint}/$blogId');
       
       debugPrint('📥 Response status: ${response.statusCode}');
-      debugPrint('📥 Response data: ${response.data}');
+      // debugPrint('📥 Response data: ${response.data}'); // Commented out for performance
       
       if (response.statusCode == 200) {
         final success = response.data['success'];
@@ -204,7 +204,7 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
       final response = await _apiClient.get('${AppConstants.blogsEndpoint}/$slugName');
       
       debugPrint('📥 Response status: ${response.statusCode}');
-      debugPrint('📥 Response data: ${response.data}');
+      // debugPrint('📥 Response data: ${response.data}'); // Commented out for performance
       
       if (response.statusCode == 200) {
         final success = response.data['success'];

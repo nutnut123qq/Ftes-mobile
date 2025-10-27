@@ -37,3 +37,4 @@ class UploadImageResultModel {
 
   Map<String, dynamic> toJson() => _$UploadImageResultModelToJson(this);
 }
+

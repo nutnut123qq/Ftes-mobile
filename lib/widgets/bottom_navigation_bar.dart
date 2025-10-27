@@ -128,14 +128,14 @@ class AppBottomNavigationBar extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isSelected ? const Color(0xFF167F71) : const Color(0xFFA0A4AB),
+            color: isSelected ? const Color(0xFF0961F5) : const Color(0xFFA0A4AB),
             size: 24,
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: AppTextStyles.body1.copyWith(
-              color: isSelected ? const Color(0xFF167F71) : const Color(0xFFA0A4AB),
+              color: isSelected ? const Color(0xFF0961F5) : const Color(0xFFA0A4AB),
               fontSize: 9,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.4,

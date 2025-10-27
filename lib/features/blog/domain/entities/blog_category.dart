@@ -22,3 +22,4 @@ class BlogCategory {
     return 'BlogCategory(id: $id, name: $name)';
   }
 }
+

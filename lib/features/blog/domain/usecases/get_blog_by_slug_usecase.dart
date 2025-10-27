@@ -15,3 +15,4 @@ class GetBlogBySlugUseCase implements UseCase<Blog, String> {
     return await repository.getBlogBySlug(slugName);
   }
 }
+

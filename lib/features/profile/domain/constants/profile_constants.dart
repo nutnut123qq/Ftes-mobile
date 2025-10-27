@@ -42,3 +42,4 @@ class ProfileConstants {
   static const int maxJobNameLength = 100;
   static const int maxSocialUrlLength = 200;
 }
+

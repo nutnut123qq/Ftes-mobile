@@ -33,3 +33,4 @@ abstract class BlogRepository {
   /// Get blog by slug name
   Future<Either<Failure, Blog>> getBlogBySlug(String slugName);
 }
+

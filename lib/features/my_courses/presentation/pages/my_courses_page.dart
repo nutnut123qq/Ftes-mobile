@@ -74,7 +74,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
           ],
         ),
       ),
-      bottomNavigationBar: const AppBottomNavigationBar(),
+      bottomNavigationBar: const AppBottomNavigationBar(selectedIndex: 1),
     );
   }
 

@@ -19,6 +19,11 @@ class _CartScreenState extends State<CartScreen> {
   final TextEditingController _couponController = TextEditingController();
   final OrderService _orderService = OrderService();
   bool _isCreatingOrder = false;
+  
+  double _getCheckoutSectionHeight(CartProvider cartProvider) {
+    // Approximate height: coupon row + spacing + summary + spacing + button + padding
+    return 280; // Adjusted for checkout section content
+  }
 
   @override
   void initState() {
@@ -45,30 +50,45 @@ class _CartScreenState extends State<CartScreen> {
             final cartItems = cartProvider.cartItems;
             final isLoading = cartProvider.isLoading;
             
-            return Column(
+            return Stack(
               children: [
-                const SizedBox(height: 20),
-                
-                // Header
-                _buildHeader(cartItems.isNotEmpty),
-                
-                const SizedBox(height: 20),
-                
-                // Cart Items or Loading
-                Expanded(
-                  child: isLoading && cartItems.isEmpty
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF0961F5),
-                          ),
-                        )
-                      : cartItems.isEmpty
-                          ? _buildEmptyCart()
-                          : _buildCartItems(cartItems),
+                // Cart Items List
+                Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    
+                    // Header
+                    _buildHeader(cartItems.isNotEmpty),
+                    
+                    const SizedBox(height: 20),
+                    
+                    // Cart Items or Loading
+                    Expanded(
+                      child: isLoading && cartItems.isEmpty
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF0961F5),
+                              ),
+                            )
+                          : cartItems.isEmpty
+                              ? _buildEmptyCart()
+                              : _buildCartItems(cartItems),
+                    ),
+                    
+                    // Spacer for checkout section
+                    if (cartItems.isNotEmpty) 
+                      SizedBox(height: _getCheckoutSectionHeight(cartProvider)),
+                  ],
                 ),
                 
-                // Checkout Section
-                if (cartItems.isNotEmpty) _buildCheckoutSection(cartProvider),
+                // Checkout Section (floating at bottom)
+                if (cartItems.isNotEmpty) 
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: _buildCheckoutSection(cartProvider),
+                  ),
               ],
             );
           },
@@ -212,7 +232,7 @@ class _CartScreenState extends State<CartScreen> {
         await Provider.of<CartProvider>(context, listen: false).refreshCart();
       },
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 35),
+        padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 8),
         itemCount: cartItems.length,
         itemBuilder: (context, index) {
           final item = cartItems[index];

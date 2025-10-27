@@ -15,3 +15,4 @@ class GetBlogCategoriesUseCase implements UseCase<List<BlogCategory>, NoParams> 
     return await repository.getBlogCategories();
   }
 }
+

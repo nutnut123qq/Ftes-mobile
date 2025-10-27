@@ -93,24 +93,17 @@ class _LoginPageState extends State<LoginPage> {
     return Center(
       child: Column(
         children: [
-          // App icon placeholder
-          Container(
+          // App icon
+          Image.asset(
+            'assets/app_icon.png',
             width: 70,
             height: 70,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(
-              Icons.school,
-              color: Colors.white,
-              size: 40,
-            ),
+            fit: BoxFit.contain,
           ),
           const SizedBox(height: 8),
           // App name
           Text(
-            'FTES - AI Learning Platform',
+            'Học tốt với FTES',
             style: AppTextStyles.heading1.copyWith(
               color: AppColors.primary,
               fontSize: 30,
@@ -120,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Học Tập Tại Nhà',
+            'AI đồng hành, Mentor dẫn lối',
             style: AppTextStyles.body1.copyWith(
               color: AppColors.textPrimary,
               fontSize: 11,

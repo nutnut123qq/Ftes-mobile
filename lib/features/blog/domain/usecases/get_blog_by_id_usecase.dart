@@ -15,3 +15,4 @@ class GetBlogByIdUseCase implements UseCase<Blog, String> {
     return await repository.getBlogById(blogId);
   }
 }
+

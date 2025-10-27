@@ -101,12 +101,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Expanded(
               child: _buildProfileContent(),
             ),
-            
-            // Bottom Navigation Bar
-            AppBottomNavigationBar(selectedIndex: 4),
           ],
         ),
       ),
+      bottomNavigationBar: const AppBottomNavigationBar(selectedIndex: 4),
     );
   }
 

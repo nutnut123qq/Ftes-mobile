@@ -41,3 +41,4 @@ class SearchBlogsParams {
     this.category,
   });
 }
+

@@ -19,3 +19,4 @@ class PaginatedBlogResponse {
     return 'PaginatedBlogResponse(data: ${data.length} items, totalPages: $totalPages, currentPage: $currentPage)';
   }
 }
+

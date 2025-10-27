@@ -19,6 +19,7 @@ class _BlogListPageState extends State<BlogListPage> {
   final ScrollController _scrollController = ScrollController();
   String? _selectedCategory;
   bool _isInitialized = false;
+  bool _isLoadingMore = false; // Prevent duplicate API calls
 
   @override
   void initState() {
@@ -44,9 +45,16 @@ class _BlogListPageState extends State<BlogListPage> {
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       final blogViewModel = Provider.of<BlogViewModel>(context, listen: false);
-      // Only load more if there are more pages and not currently loading
-      if (blogViewModel.hasMore && !blogViewModel.isLoadingMore && !blogViewModel.isLoading) {
-        blogViewModel.loadMoreBlogs();
+      // Only load more if there are more pages and not currently loading and haven't triggered a load
+      if (blogViewModel.hasMore && !blogViewModel.isLoadingMore && !blogViewModel.isLoading && !_isLoadingMore) {
+        setState(() {
+          _isLoadingMore = true;
+        });
+        blogViewModel.loadMoreBlogs().then((_) {
+          setState(() {
+            _isLoadingMore = false;
+          });
+        });
       }
     }
   }

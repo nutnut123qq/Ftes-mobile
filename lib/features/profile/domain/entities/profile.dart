@@ -54,3 +54,4 @@ class Profile {
     return 'Profile(id: $id, username: $username, name: $name, email: $email)';
   }
 }
+
