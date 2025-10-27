@@ -4,7 +4,7 @@ import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../models/message_item.dart';
 import '../models/chat_item.dart';
-import '../providers/ai_chat_provider.dart';
+import '../legacy/providers/ai_chat_provider.dart';
 
 class ChatMessagesScreen extends StatefulWidget {
   final ChatItem? chat;

@@ -11,6 +11,7 @@ import '../../domain/entities/part.dart';
 import '../../domain/entities/lesson.dart';
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../../../../core/di/injection_container.dart' as di;
+import '../../../../routes/app_routes.dart';
 
 class CourseDetailPage extends StatefulWidget {
   final CourseItem course;
@@ -870,6 +871,31 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 ],
               ),
             ),
+            // Chat AI button for each lesson
+            GestureDetector(
+              onTap: () {
+                // Use lesson.video (video_id format) instead of lesson.id
+                final videoId = lesson.video.isNotEmpty ? lesson.video : lesson.id;
+                AppRoutes.navigateToAiChat(
+                  context,
+                  lessonId: videoId,
+                  lessonTitle: lesson.title,
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0961F5).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.smart_toy,
+                  color: Color(0xFF0961F5),
+                  size: 20,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             if (lesson.isCompleted)
               const Icon(
                 Icons.check_circle,

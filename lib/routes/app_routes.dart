@@ -31,10 +31,15 @@ import '../screens/quiz_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/notifications_screen.dart';
 import '../screens/chat_messages_screen.dart';
+import '../features/ai/presentation/pages/ai_chat_page.dart';
+import '../features/ai/presentation/viewmodels/ai_chat_viewmodel.dart';
 import '../screens/curriculum_screen.dart';
 import '../screens/reviews_screen.dart';
 import '../screens/write_review_screen.dart';
 import '../screens/payment_screen.dart';
+import '../features/cart/presentation/pages/payment_page.dart';
+import '../features/cart/presentation/viewmodels/payment_viewmodel.dart';
+import '../features/cart/di/cart_injection.dart';
 import '../screens/enroll_success_screen.dart';
 import '../screens/my_course_ongoing_lessons_screen.dart';
 import '../screens/my_course_ongoing_video_screen.dart';
@@ -135,10 +140,25 @@ class AppRoutes {
     core_constants.AppConstants.routeNotifications: (context) => const NotificationsScreen(),
     core_constants.AppConstants.routeChatMessages: (context) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final lessonId = args?['lessonId'] as String?;
+      final lessonTitle = args?['lessonTitle'] as String?;
+      
+      // Use AiChatPage if lessonId is provided, otherwise use old ChatMessagesScreen
+      if (lessonId != null && lessonTitle != null) {
+        return ChangeNotifierProvider(
+          create: (context) => di.sl<AiChatViewModel>(),
+          child: AiChatPage(
+            lessonId: lessonId,
+            lessonTitle: lessonTitle,
+          ),
+        );
+      }
+      
+      // Fallback to old screen for non-lesson chats
       return ChatMessagesScreen(
         chat: args?['chat'],
-        lessonId: args?['lessonId'],
-        lessonTitle: args?['lessonTitle'],
+        lessonId: lessonId,
+        lessonTitle: lessonTitle,
       );
     },
     core_constants.AppConstants.routeCurriculum: (context) => const CurriculumScreen(),
@@ -159,10 +179,13 @@ class AppRoutes {
     },
     core_constants.AppConstants.routePayment: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-      return PaymentScreen(
-        orderId: args?['orderId'] ?? '',
-        qrCodeUrl: args?['qrCodeUrl'],
-        description: args?['description'],
+      return ChangeNotifierProvider(
+        create: (context) => sl<PaymentViewModel>(),
+        child: PaymentPage(
+          orderId: args?['orderId'] ?? '',
+          qrCodeUrl: args?['qrCodeUrl'],
+          description: args?['description'],
+        ),
       );
     },
     core_constants.AppConstants.routeEnrollSuccess: (context) => const EnrollSuccessScreen(),
@@ -400,10 +423,13 @@ class AppRoutes {
       case core_constants.AppConstants.routePayment:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-          builder: (context) => PaymentScreen(
-            orderId: args?['orderId'] ?? '',
-            qrCodeUrl: args?['qrCodeUrl'],
-            description: args?['description'],
+          builder: (context) => ChangeNotifierProvider(
+            create: (context) => sl<PaymentViewModel>(),
+            child: PaymentPage(
+              orderId: args?['orderId'] ?? '',
+              qrCodeUrl: args?['qrCodeUrl'],
+              description: args?['description'],
+            ),
           ),
           settings: settings,
         );
@@ -575,6 +601,20 @@ class AppRoutes {
       context,
       core_constants.AppConstants.routeChatMessages,
       arguments: {'chat': chat},
+    );
+  }
+
+  static void navigateToAiChat(BuildContext context, {
+    required String lessonId,
+    required String lessonTitle,
+  }) {
+    Navigator.pushNamed(
+      context,
+      core_constants.AppConstants.routeChatMessages,
+      arguments: {
+        'lessonId': lessonId,
+        'lessonTitle': lessonTitle,
+      },
     );
   }
 

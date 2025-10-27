@@ -2,10 +2,13 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/cart_item.dart';
+import '../../domain/entities/order.dart' as order_entity;
 import '../../domain/usecases/add_to_cart_usecase.dart';
 import '../../domain/usecases/get_cart_items_usecase.dart';
 import '../../domain/usecases/get_cart_count_usecase.dart';
 import '../../domain/usecases/remove_from_cart_usecase.dart';
+import '../../domain/usecases/create_order_usecase.dart';
+import '../../domain/usecases/cancel_pending_orders_usecase.dart';
 import '../../domain/constants/cart_constants.dart';
 import '../../../../core/usecases/usecase.dart';
 
@@ -15,6 +18,8 @@ class CartViewModel extends ChangeNotifier {
   final GetCartItemsUseCase _getCartItemsUseCase;
   final GetCartCountUseCase _getCartCountUseCase;
   final RemoveFromCartUseCase _removeFromCartUseCase;
+  final CreateOrderUseCase _createOrderUseCase;
+  final CancelPendingOrdersUseCase _cancelPendingOrdersUseCase;
   final SharedPreferences _sharedPreferences;
 
   CartViewModel({
@@ -22,11 +27,15 @@ class CartViewModel extends ChangeNotifier {
     required GetCartItemsUseCase getCartItemsUseCase,
     required GetCartCountUseCase getCartCountUseCase,
     required RemoveFromCartUseCase removeFromCartUseCase,
+    required CreateOrderUseCase createOrderUseCase,
+    required CancelPendingOrdersUseCase cancelPendingOrdersUseCase,
     required SharedPreferences sharedPreferences,
   }) : _addToCartUseCase = addToCartUseCase,
        _getCartItemsUseCase = getCartItemsUseCase,
        _getCartCountUseCase = getCartCountUseCase,
        _removeFromCartUseCase = removeFromCartUseCase,
+       _createOrderUseCase = createOrderUseCase,
+       _cancelPendingOrdersUseCase = cancelPendingOrdersUseCase,
        _sharedPreferences = sharedPreferences;
 
   // State
@@ -452,6 +461,60 @@ class CartViewModel extends ChangeNotifier {
     _totalPages = 1;
     _hasMore = true;
     notifyListeners();
+  }
+
+  /// Create order
+  Future<order_entity.Order?> createOrder({String? couponName, bool usePoint = false}) async {
+    try {
+      _setLoading(true);
+      _clearMessages();
+      notifyListeners();
+
+      // Get course IDs from cart items
+      final courseIds = _cartItems.map((item) => item.courseId).toList();
+
+      // Cancel pending orders first
+      await cancelPendingOrders();
+
+      // Create order
+      final params = CreateOrderParams(
+        courseIds: courseIds,
+        couponName: couponName,
+        usePoint: usePoint,
+      );
+      final result = await _createOrderUseCase(params);
+
+      _setLoading(false);
+
+      return result.fold(
+        (failure) {
+          _setError(failure.message);
+          notifyListeners();
+          return null;
+        },
+        (order) {
+          _setSuccess('Đã tạo đơn hàng thành công');
+          notifyListeners();
+          return order;
+        },
+      );
+    } catch (e) {
+      _setLoading(false);
+      _setError('Failed to create order: $e');
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// Cancel pending orders
+  Future<void> cancelPendingOrders() async {
+    try {
+      final params = NoParams();
+      await _cancelPendingOrdersUseCase(params);
+    } catch (e) {
+      // Ignore cancel errors, continue with order creation
+      print('Failed to cancel pending orders: $e');
+    }
   }
 
   @override

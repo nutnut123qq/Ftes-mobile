@@ -10,6 +10,7 @@ import '../../features/cart/di/cart_injection.dart';
 import '../../features/course/di/course_injection.dart';
 import '../../features/blog/di/blog_injection.dart';
 import '../../features/profile/di/profile_injection.dart';
+import '../../features/ai/di/ai_injection.dart';
 
 /// Service Locator instance
 final sl = GetIt.instance;
@@ -33,4 +34,5 @@ Future<void> init() async {
   CourseInjection.init(sl);
   await initBlogDependencies();
   ProfileInjection.init(sl);
+  AiInjection.init(sl);
 }

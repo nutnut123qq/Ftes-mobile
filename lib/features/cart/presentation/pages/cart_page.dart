@@ -319,15 +319,52 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  void _handleCheckout(CartViewModel viewModel) {
-    // Navigate to payment screen
-    Navigator.pushNamed(
-      context,
-      AppConstants.routePayment,
-      arguments: {
-        'cartItems': viewModel.cartItems,
-        'totalAmount': viewModel.cartItems.fold(0.0, (sum, item) => sum + item.finalPrice),
-      },
-    );
+  Future<void> _handleCheckout(CartViewModel viewModel) async {
+    try {
+      // Create order
+      final order = await viewModel.createOrder();
+      
+      if (order != null && order.orderId != null && order.orderId!.isNotEmpty) {
+        // Navigate to payment screen
+        if (mounted) {
+          Navigator.pushNamed(
+            context,
+            AppConstants.routePayment,
+            arguments: {
+              'orderId': order.orderId,
+              'qrCodeUrl': order.qrCodeUrl,
+              'description': order.description,
+            },
+          );
+        }
+      } else {
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(viewModel.errorMessage ?? 'Không thể tạo đơn hàng'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      }
+    }
   }
 }

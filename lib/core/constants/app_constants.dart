@@ -143,8 +143,8 @@ class AppConstants {
   static const String uploadImageEndpoint = '/images/upload';
   
   // Order Endpoints
-  static const String orderEndpoint = '/orders';
-  static const String orderCancelEndpoint = '/orders/cancel';
+  static const String orderEndpoint = '/api/order';
+  static const String orderCancelEndpoint = '/api/order/cancel';
   
   // Profile Endpoints
   static const String viewProfileEndpoint = '/profile/view';
@@ -185,4 +185,8 @@ class AppConstants {
   // Video Type Detection
   static const String youtubeEmbedUrl = 'https://www.youtube.com/embed/';
   static const String vimeoEmbedUrl = 'https://player.vimeo.com/video/';
+  
+  // AI Chat Endpoints
+  static const String aiChatEndpoint = '/api/ai/chat';
+  static const String aiCheckVideoKnowledgeEndpoint = 'https://ai.ftes.vn/api/ai/check-video-knowledge';
 }
