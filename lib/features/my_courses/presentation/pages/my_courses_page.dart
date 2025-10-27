@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -5,6 +6,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../viewmodels/my_courses_viewmodel.dart';
 import '../widgets/my_course_card_widget.dart';
 import '../../../../widgets/bottom_navigation_bar.dart';
+import '../../domain/constants/my_courses_constants.dart';
 
 /// My Courses page using Clean Architecture
 class MyCoursesPage extends StatefulWidget {
@@ -16,38 +18,41 @@ class MyCoursesPage extends StatefulWidget {
 
 class _MyCoursesPageState extends State<MyCoursesPage> {
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounceTimer;
   String _userId = '';
 
   @override
   void initState() {
     super.initState();
-    _loadUserId();
+    // Optimize: Use PostFrameCallback to prevent blocking first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeAsync();
+    });
   }
 
-  Future<void> _loadUserId() async {
+  /// Optimized async initialization without blocking main thread
+  Future<void> _initializeAsync() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       
       // Try to get userId from SharedPreferences first
       final userId = prefs.getString(AppConstants.keyUserId);
       if (userId != null && userId.isNotEmpty) {
+        if (!mounted) return;
+        
         setState(() {
           _userId = userId;
         });
         
         // Fetch user courses
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          final viewModel = Provider.of<MyCoursesViewModel>(context, listen: false);
-          viewModel.fetchUserCourses(userId);
-        });
+        final viewModel = Provider.of<MyCoursesViewModel>(context, listen: false);
+        await viewModel.fetchUserCourses(userId);
         return;
       }
 
       // If no userId, try to get from user_data
       final userDataString = prefs.getString(AppConstants.keyUserData);
       if (userDataString != null && userDataString.isNotEmpty) {
-        // Parse user data to get userId
-        // This is a fallback - ideally userId should be stored separately
         print('⚠️ No userId found, using user_data fallback');
       }
     } catch (e) {
@@ -84,7 +89,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
       child: Row(
         children: [
           const Text(
-            'Khóa học của tôi',
+            MyCoursesConstants.titleMyCoursesPage,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -110,7 +115,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
 
   Widget _buildSearchBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -123,18 +128,45 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
           ),
         ],
       ),
-      child: TextField(
-        controller: _searchController,
-        decoration: const InputDecoration(
-          hintText: 'Tìm kiếm khóa học...',
-          prefixIcon: Icon(Icons.search, color: Color(0xFF202244)),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        ),
-        onChanged: (value) {
-          // TODO: Implement search functionality
+      child: Consumer<MyCoursesViewModel>(
+        builder: (context, viewModel, child) {
+          return TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: MyCoursesConstants.searchHintText,
+              prefixIcon: const Icon(Icons.search, color: Color(0xFF202244)),
+              suffixIcon: viewModel.searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, color: Color(0xFF202244)),
+                      onPressed: () {
+                        _searchController.clear();
+                        _onSearchChanged('');
+                      },
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            onChanged: _onSearchChanged,
+          );
         },
       ),
+    );
+  }
+
+  /// Handle search with debounce to avoid excessive filtering
+  void _onSearchChanged(String query) {
+    // Cancel previous timer
+    _debounceTimer?.cancel();
+    
+    // Create new timer for debounce
+    _debounceTimer = Timer(
+      const Duration(milliseconds: MyCoursesConstants.searchDebounceMs),
+      () {
+        // Perform search after debounce
+        final viewModel = Provider.of<MyCoursesViewModel>(context, listen: false);
+        viewModel.searchCourses(query);
+      },
     );
   }
 
@@ -181,18 +213,23 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
         }
 
         if (viewModel.myCourses.isEmpty) {
+          // Check if it's an empty search result or no courses at all
+          final isSearching = viewModel.searchQuery.isNotEmpty;
+          
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.school_outlined,
+                  isSearching ? Icons.search_off : Icons.school_outlined,
                   size: 64,
                   color: Colors.grey[400],
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Bạn chưa có khóa học nào',
+                  isSearching 
+                      ? MyCoursesConstants.emptySearchTitle
+                      : MyCoursesConstants.emptyCoursesTitle,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
@@ -201,7 +238,9 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Hãy tham gia các khóa học để bắt đầu học tập',
+                  isSearching
+                      ? MyCoursesConstants.emptySearchSubtitle
+                      : MyCoursesConstants.emptyCoursesSubtitle,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[500],
@@ -245,6 +284,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }

@@ -47,13 +47,16 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
     });
   }
 
+  /// Optimized video initialization with parallel async operations
   Future<void> _initializeVideo() async {
     try {
-      setState(() {
-        _isLoadingVideo = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingVideo = true;
+        });
+      }
 
-      // Get userId
+      // Get userId and access token in parallel
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString(app_constants.AppConstants.keyUserId);
 
@@ -62,9 +65,9 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
         return;
       }
 
-      // Check enrollment and load video
+      // Initialize video via optimized ViewModel method
       final viewModel = Provider.of<CourseVideoViewModel>(context, listen: false);
-      final canWatch = await viewModel.checkEnrollmentAndLoadVideo(
+      final canWatch = await viewModel.initializeVideo(
         userId,
         widget.courseId,
         widget.videoUrl,
@@ -77,13 +80,15 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
 
       // Load video based on type
       final videoType = viewModel.videoType;
-      
+
       if (videoType == VideoConstants.videoTypeYoutube || videoType == VideoConstants.videoTypeVimeo) {
         // External video (YouTube/Vimeo) - use web player
-        setState(() {
-          _isYouTubeVideo = true;
-          _isLoadingVideo = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isYouTubeVideo = true;
+            _isLoadingVideo = false;
+          });
+        }
       } else if (videoType == VideoConstants.videoTypeExternal) {
         // Direct URL - play directly
         await _setupDirectVideo();

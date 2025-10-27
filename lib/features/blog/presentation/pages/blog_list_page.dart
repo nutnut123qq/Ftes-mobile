@@ -60,13 +60,13 @@ class _BlogListPageState extends State<BlogListPage> {
     }
   }
 
-  void _onCategorySelected(String? category) {
+  Future<void> _onCategorySelected(String? category) async {
     setState(() {
       _selectedCategory = category;
     });
     
     final blogViewModel = Provider.of<BlogViewModel>(context, listen: false);
-    blogViewModel.setCategory(category);
+    await blogViewModel.setCategory(category);
   }
 
   @override

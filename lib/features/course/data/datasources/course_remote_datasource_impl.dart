@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -6,6 +7,8 @@ import '../models/course_detail_model.dart';
 import '../models/profile_model.dart';
 import '../models/video_playlist_model.dart';
 import '../models/video_status_model.dart';
+import '../helpers/json_parser_helper.dart';
+import '../../domain/constants/course_constants.dart';
 import 'course_remote_datasource.dart';
 
 /// Remote data source implementation for Course feature
@@ -35,24 +38,37 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
       );
       
       print('📥 Response status: ${response.statusCode}');
-      print('📥 Response data: ${response.data}');
       
       if (response.statusCode == 200) {
         final result = response.data['result'];
         if (result != null) {
-          return CourseDetailModel.fromJson(result);
+          // Calculate complexity to decide if compute isolate should be used
+          final partsCount = countParts(result);
+          final totalLessons = calculateTotalLessons(result);
+          
+          print('📊 Course complexity: $partsCount parts, $totalLessons lessons');
+          
+          // Use compute isolate for complex course data to avoid blocking main thread
+          if (partsCount > CourseConstants.defaultCourseDetailThreshold || 
+              totalLessons > CourseConstants.defaultLessonThreshold) {
+            print('⚡ Using compute isolate for JSON parsing');
+            return await compute<Map<String, dynamic>, CourseDetailModel>(parseCourseDetailJson, result);
+          } else {
+            print('⚡ Parsing JSON on main thread (simple data)');
+            return parseCourseDetailJson(result);
+          }
         } else {
-          throw ServerException('Invalid response format - missing result');
+          throw ServerException(CourseConstants.errorInvalidResponse);
         }
       } else {
-        throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch course detail');
+        throw ServerException(response.data['messageDTO']?['message'] ?? CourseConstants.errorLoadCourseFailed);
       }
     } catch (e) {
       print('❌ Get course detail error: $e');
       if (e is AppException) {
         rethrow;
       }
-      throw ServerException('Failed to fetch course detail: ${e.toString()}');
+      throw ServerException('${CourseConstants.errorLoadCourseFailed}: ${e.toString()}');
     }
   }
 
@@ -66,24 +82,24 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
       );
       
       print('📥 Profile response status: ${response.statusCode}');
-      print('📥 Profile response data: ${response.data}');
       
       if (response.statusCode == 200) {
         final result = response.data['result'];
         if (result != null) {
-          return ProfileModel.fromJson(result);
+          // Profile data is lightweight, no need for compute isolate
+          return parseProfileJson(result);
         } else {
-          throw ServerException('Invalid response format - missing result');
+          throw ServerException(CourseConstants.errorInvalidResponse);
         }
       } else {
-        throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to fetch profile');
+        throw ServerException(response.data['messageDTO']?['message'] ?? CourseConstants.errorLoadProfileFailed);
       }
     } catch (e) {
       print('❌ Get profile error: $e');
       if (e is AppException) {
         rethrow;
       }
-      throw ServerException('Failed to fetch profile: ${e.toString()}');
+      throw ServerException('${CourseConstants.errorLoadProfileFailed}: ${e.toString()}');
     }
   }
 
@@ -105,17 +121,17 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
           // API returns 0 = not enrolled, 1 = enrolled
           return result == 1;
         } else {
-          throw ServerException('Invalid response format - missing result');
+          throw ServerException(CourseConstants.errorInvalidResponse);
         }
       } else {
-        throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to check enrollment');
+        throw ServerException(response.data['messageDTO']?['message'] ?? CourseConstants.errorCheckEnrollmentFailed);
       }
     } catch (e) {
       print('❌ Check enrollment error: $e');
       if (e is AppException) {
         rethrow;
       }
-      throw ServerException('Failed to check enrollment: ${e.toString()}');
+      throw ServerException('${CourseConstants.errorCheckEnrollmentFailed}: ${e.toString()}');
     }
   }
 

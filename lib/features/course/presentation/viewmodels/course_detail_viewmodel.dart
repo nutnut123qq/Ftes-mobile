@@ -36,66 +36,113 @@ class CourseDetailViewModel extends ChangeNotifier {
   bool get isCheckingEnrollment => _isCheckingEnrollment;
   String? get errorMessage => _errorMessage;
 
-  /// Fetch course detail by slug
+  /// Initialize - fetch all data with optimized batch updates
+  /// Minimizes notifyListeners() calls for better performance
+  Future<void> initialize(String slugName, String? userId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners(); // Only once at start
+
+    // Fetch course detail first
+    await _fetchCourseDetailInternal(slugName, userId);
+
+    // Then fetch mentor profile and check enrollment in parallel if course loaded
+    if (_courseDetail != null && userId != null && userId.isNotEmpty) {
+      await Future.wait([
+        _fetchMentorProfileInternal(_courseDetail!.userId),
+        _checkEnrollmentInternal(userId, _courseDetail!.id),
+      ]);
+    }
+
+    _isLoading = false;
+    notifyListeners(); // Only once at end
+  }
+
+  /// Internal method to fetch course detail without notifying listeners
+  Future<void> _fetchCourseDetailInternal(String slugName, String? userId) async {
+    final params = CourseDetailParams(slugName: slugName, userId: userId);
+    final result = await _getCourseDetailUseCase(params);
+
+    result.fold(
+      (failure) {
+        _errorMessage = failure.message;
+      },
+      (courseDetail) {
+        _courseDetail = courseDetail;
+      },
+    );
+  }
+
+  /// Internal method to fetch mentor profile without notifying listeners
+  Future<void> _fetchMentorProfileInternal(String userId) async {
+    _isLoadingProfile = true;
+
+    final params = GetProfileParams(userId: userId);
+    final result = await _getProfileUseCase(params);
+
+    result.fold(
+      (failure) {
+        print('❌ Failed to fetch mentor profile: ${failure.message}');
+        _isLoadingProfile = false;
+      },
+      (profile) {
+        _mentorProfile = profile;
+        _isLoadingProfile = false;
+      },
+    );
+  }
+
+  /// Internal method to check enrollment without notifying listeners
+  Future<void> _checkEnrollmentInternal(String userId, String courseId) async {
+    _isCheckingEnrollment = true;
+
+    final params = CheckEnrollmentParams(userId: userId, courseId: courseId);
+    final result = await _checkEnrollmentUseCase(params);
+
+    result.fold(
+      (failure) {
+        print('❌ Failed to check enrollment: ${failure.message}');
+        _isEnrolled = null;
+        _isCheckingEnrollment = false;
+      },
+      (isEnrolled) {
+        _isEnrolled = isEnrolled;
+        _isCheckingEnrollment = false;
+      },
+    );
+  }
+
+  /// Public method - Fetch course detail by slug (legacy support)
+  /// Use initialize() for better performance
   Future<void> fetchCourseDetailBySlug(String slugName, String? userId) async {
     _setLoading(true);
     _clearError();
 
-    final params = CourseDetailParams(slugName: slugName, userId: userId);
-    final result = await _getCourseDetailUseCase(params);
-    
-    result.fold(
-      (failure) => _setError(failure.message),
-      (courseDetail) {
-        _setCourseDetail(courseDetail);
-        // Fetch mentor profile and check enrollment after course detail is loaded
-        if (userId != null && userId.isNotEmpty) {
-          fetchMentorProfile(courseDetail.userId);
-          checkEnrollment(userId, courseDetail.id);
-        }
-      },
-    );
+    await _fetchCourseDetailInternal(slugName, userId);
+
+    // Fetch mentor profile and check enrollment after course detail is loaded
+    if (_courseDetail != null && userId != null && userId.isNotEmpty) {
+      await Future.wait([
+        _fetchMentorProfileInternal(_courseDetail!.userId),
+        _checkEnrollmentInternal(userId, _courseDetail!.id),
+      ]);
+    }
 
     _setLoading(false);
   }
 
-  /// Fetch mentor profile by userId
+  /// Public method - Fetch mentor profile by userId (legacy support)
   Future<void> fetchMentorProfile(String userId) async {
     _setLoadingProfile(true);
-
-    final params = GetProfileParams(userId: userId);
-    final result = await _getProfileUseCase(params);
-    
-    result.fold(
-      (failure) {
-        print('❌ Failed to fetch mentor profile: ${failure.message}');
-        _setLoadingProfile(false);
-      },
-      (profile) {
-        _setMentorProfile(profile);
-        _setLoadingProfile(false);
-      },
-    );
+    await _fetchMentorProfileInternal(userId);
+    _setLoadingProfile(false);
   }
 
-  /// Check enrollment status
+  /// Public method - Check enrollment status (legacy support)
   Future<void> checkEnrollment(String userId, String courseId) async {
     _setCheckingEnrollment(true);
-
-    final params = CheckEnrollmentParams(userId: userId, courseId: courseId);
-    final result = await _checkEnrollmentUseCase(params);
-    
-    result.fold(
-      (failure) {
-        print('❌ Failed to check enrollment: ${failure.message}');
-        _setEnrollmentStatus(null);
-        _setCheckingEnrollment(false);
-      },
-      (isEnrolled) {
-        _setEnrollmentStatus(isEnrolled);
-        _setCheckingEnrollment(false);
-      },
-    );
+    await _checkEnrollmentInternal(userId, courseId);
+    _setCheckingEnrollment(false);
   }
 
   void _setLoading(bool loading) {
@@ -113,29 +160,8 @@ class CourseDetailViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _setMentorProfile(Profile profile) {
-    _mentorProfile = profile;
-    notifyListeners();
-  }
-
-  void _setEnrollmentStatus(bool? isEnrolled) {
-    _isEnrolled = isEnrolled;
-    notifyListeners();
-  }
-
-  void _setError(String error) {
-    _errorMessage = error;
-    notifyListeners();
-  }
-
-  void _setCourseDetail(CourseDetail courseDetail) {
-    _courseDetail = courseDetail;
-    notifyListeners();
-  }
-
   void _clearError() {
     _errorMessage = null;
-    notifyListeners();
   }
 
   /// Clear all data

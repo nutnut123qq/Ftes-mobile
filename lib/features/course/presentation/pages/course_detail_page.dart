@@ -34,39 +34,45 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   @override
   void initState() {
     super.initState();
-    // Fetch course detail when screen loads
+    // Optimize: Use PostFrameCallback to prevent blocking first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final viewModel = Provider.of<CourseDetailViewModel>(context, listen: false);
-      final enrollmentProvider = Provider.of<EnrollmentProvider>(context, listen: false);
-      
-      if (widget.course.id != null && widget.course.id!.isNotEmpty) {
-        // Skip API for hardcoded test IDs
-        if (widget.course.id!.startsWith('list_course_') || 
-            widget.course.id!.startsWith('featured_course_') ||
-            widget.course.id!.startsWith('home_course_') ||
-            widget.course.id!.startsWith('default_course')) {
-          return;
-        }
-        
-        // Check enrollment status
-        enrollmentProvider.checkEnrollment(widget.course.id!);
-        
-        // Get userId from SharedPreferences
-        _loadUserIdAndFetchCourse(viewModel);
-      }
+      _initializeAsync();
     });
   }
 
-  Future<void> _loadUserIdAndFetchCourse(CourseDetailViewModel viewModel) async {
+  /// Optimized async initialization without blocking main thread
+  Future<void> _initializeAsync() async {
+    if (widget.course.id == null || widget.course.id!.isEmpty) return;
+
+    // Skip API for hardcoded test IDs
+    if (widget.course.id!.startsWith('list_course_') ||
+        widget.course.id!.startsWith('featured_course_') ||
+        widget.course.id!.startsWith('home_course_') ||
+        widget.course.id!.startsWith('default_course')) {
+      return;
+    }
+
     try {
+      // Load userId and check enrollment in parallel
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString(AppConstants.keyUserId);
-      
-      // Use course.id as slugName (from My Courses navigation)
-      print('🚀 Fetching course detail for slugName: ${widget.course.id}');
-      await viewModel.fetchCourseDetailBySlug(widget.course.id!, userId);
+
+      if (!mounted) return;
+
+      final viewModel = Provider.of<CourseDetailViewModel>(context, listen: false);
+      final enrollmentProvider = Provider.of<EnrollmentProvider>(context, listen: false);
+
+      // Parallel operations
+      await Future.wait([
+        // Check enrollment status
+        Future(() => enrollmentProvider.checkEnrollment(widget.course.id!)),
+        // Initialize course detail (fetches course, profile, enrollment in one go)
+        viewModel.initialize(widget.course.id!, userId),
+      ]);
+
+      print('✅ Course detail initialized successfully');
     } catch (e) {
-      print('❌ Error loading userId: $e');
+      print('❌ Error initializing course detail: $e');
     }
   }
 
@@ -687,7 +693,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               ...List.generate(5, (index) {
                 return Icon(
                   Icons.star,
-                  color: index < (apiCourse?.avgStar?.round() ?? 4) 
+                  color: index < (apiCourse?.avgStar.round() ?? 4) 
                       ? const Color(0xFFFFB800) 
                       : const Color(0xFFE0E0E0),
                   size: 16,

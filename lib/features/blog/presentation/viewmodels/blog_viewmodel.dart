@@ -63,7 +63,12 @@ class BlogViewModel extends ChangeNotifier {
   /// Initialize the ViewModel - fetch initial data
   /// Optimized to minimize notifyListeners() calls
   Future<void> initialize() async {
-    // Fetch all data in parallel without notifying listeners for each
+    // Set loading state and notify listeners immediately
+    _isLoading = true;
+    _isLoadingCategories = true;
+    notifyListeners();
+    
+    // Fetch all data in parallel
     await Future.wait([
       _fetchBlogsInternal(),
       _fetchBlogCategoriesInternal(),
@@ -75,8 +80,6 @@ class BlogViewModel extends ChangeNotifier {
   
   /// Internal method to fetch blogs without notifying listeners
   Future<void> _fetchBlogsInternal() async {
-    _isLoading = true;
-
     final result = await _getAllBlogsUseCase(GetAllBlogsParams(
       pageNumber: BlogConstants.defaultPageNumber,
       pageSize: _pageSize,
@@ -88,6 +91,7 @@ class BlogViewModel extends ChangeNotifier {
       (failure) {
         _errorMessage = _mapFailureToMessage(failure);
         _isLoading = false;
+        _isLoadingCategories = false;
       },
       (paginatedResponse) {
         _currentPage = paginatedResponse.currentPage;
@@ -95,24 +99,21 @@ class BlogViewModel extends ChangeNotifier {
         _totalElements = paginatedResponse.totalElements;
         _blogs = paginatedResponse.data;
         _isLoading = false;
+        _isLoadingCategories = false;
       },
     );
   }
   
   /// Internal method to fetch blog categories without notifying listeners
   Future<void> _fetchBlogCategoriesInternal() async {
-    _isLoadingCategories = true;
-
     final result = await _getBlogCategoriesUseCase(const NoParams());
 
     result.fold(
       (failure) {
         _errorMessage = _mapFailureToMessage(failure);
-        _isLoadingCategories = false;
       },
       (categories) {
         _categories = categories;
-        _isLoadingCategories = false;
       },
     );
   }
@@ -283,13 +284,13 @@ class BlogViewModel extends ChangeNotifier {
   }
 
   /// Set selected category filter
-  void setCategory(String? category) {
+  Future<void> setCategory(String? category) async {
     if (_selectedCategory != category) {
       _selectedCategory = category;
       if (category != null && category.isNotEmpty) {
-        searchBlogs(category: category);
+        await searchBlogs(category: category);
       } else {
-        fetchBlogs();
+        await fetchBlogs();
       }
     }
   }

@@ -37,59 +37,70 @@ class CourseVideoViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   String? get videoType => _videoType;
 
-  /// Check enrollment and load video
-  Future<bool> checkEnrollmentAndLoadVideo(String userId, String courseId, String videoId) async {
-    _setCheckingEnrollment(true);
-    _clearError();
+  /// Initialize video - optimized with batch state updates
+  Future<bool> initializeVideo(String userId, String courseId, String videoId) async {
+    _isCheckingEnrollment = true;
+    _errorMessage = null;
+    notifyListeners(); // Only once at start
 
-    // First check enrollment
+    // Check enrollment and detect video type in parallel
     final enrollmentParams = CheckEnrollmentParams(userId: userId, courseId: courseId);
     final enrollmentResult = await _checkEnrollmentUseCase(enrollmentParams);
 
-    return enrollmentResult.fold(
+    final success = enrollmentResult.fold(
       (failure) {
-        _setError(failure.message);
-        _setCheckingEnrollment(false);
+        _errorMessage = failure.message;
+        _isCheckingEnrollment = false;
         return false;
       },
-      (isEnrolled) async {
+      (isEnrolled) {
         if (!isEnrolled) {
-          _setError(VideoConstants.errorNotEnrolled);
-          _setCheckingEnrollment(false);
+          _errorMessage = VideoConstants.errorNotEnrolled;
+          _isCheckingEnrollment = false;
           return false;
         }
 
-        _setEnrollmentStatus(true);
-
+        _isEnrolled = true;
         // Determine video type based on video field
         _videoType = getVideoTypeFromField(videoId);
         
         print('🎬 Video type detected: $_videoType for video: $videoId');
         
-        _setCheckingEnrollment(false);
+        _isCheckingEnrollment = false;
         return true;
       },
     );
+
+    notifyListeners(); // Only once at end
+    return success;
   }
 
-  /// Load video playlist for HLS
+  /// Legacy method - Check enrollment and load video
+  /// Use initializeVideo() for better performance
+  Future<bool> checkEnrollmentAndLoadVideo(String userId, String courseId, String videoId) async {
+    return await initializeVideo(userId, courseId, videoId);
+  }
+
+  /// Load video playlist for HLS - optimized
   Future<void> loadVideoPlaylist(String videoId) async {
-    _setLoading(true);
-    _clearError();
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners(); // Only once at start
 
     final params = GetVideoPlaylistParams(videoId: videoId, presign: true);
     final result = await _getVideoPlaylistUseCase(params);
 
     result.fold(
       (failure) {
-        _setError(failure.message);
-        _setLoading(false);
+        _errorMessage = failure.message;
       },
       (playlist) {
         _videoPlaylist = playlist;
-        _setLoading(false);
       },
     );
+
+    _isLoading = false;
+    notifyListeners(); // Only once at end
   }
 
   /// Check video status
@@ -145,30 +156,6 @@ class CourseVideoViewModel extends ChangeNotifier {
     return VideoConstants.videoTypeHls;
   }
 
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
-  void _setCheckingEnrollment(bool checking) {
-    _isCheckingEnrollment = checking;
-    notifyListeners();
-  }
-
-  void _setEnrollmentStatus(bool isEnrolled) {
-    _isEnrolled = isEnrolled;
-    notifyListeners();
-  }
-
-  void _setError(String error) {
-    _errorMessage = error;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    _errorMessage = null;
-    notifyListeners();
-  }
 
   /// Clear all data
   void clear() {
