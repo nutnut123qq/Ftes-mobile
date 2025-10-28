@@ -19,6 +19,8 @@ class BlogListPage extends StatefulWidget {
 
 class _BlogListPageState extends State<BlogListPage> {
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
   String? _selectedCategory;
   bool _isLoadingMore = false; // Prevent duplicate API calls
 
@@ -32,6 +34,8 @@ class _BlogListPageState extends State<BlogListPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -149,23 +153,43 @@ class _BlogListPageState extends State<BlogListPage> {
     );
   }
 
+  void _onSearchChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 350), () {
+      Provider.of<BlogViewModel>(context, listen: false).searchBlogs(
+        title: value.isEmpty ? null : value,
+        pageNumber: 1,
+        pageSize: BlogConstants.defaultPageSize,
+      );
+    });
+  }
+
   Widget _buildSearchBar(BuildContext context) {
-    final controller = TextEditingController();
-    Timer? debounce;
-
-    void onChanged(String value) {
-      debounce?.cancel();
-      debounce = Timer(const Duration(milliseconds: 350), () {
-        Provider.of<BlogViewModel>(context, listen: false).searchBlogs(title: value, pageNumber: 1, pageSize: BlogConstants.defaultPageSize);
-      });
-    }
-
     return TextField(
-      controller: controller,
-      onChanged: onChanged,
+      controller: _searchController,
+      onChanged: _onSearchChanged,
+      onSubmitted: (value) {
+        // Gửi request ngay lập tức khi bấm Enter
+        _debounce?.cancel();
+        Provider.of<BlogViewModel>(context, listen: false).searchBlogs(
+          title: value.isEmpty ? null : value,
+          pageNumber: 1,
+          pageSize: BlogConstants.defaultPageSize,
+        );
+      },
+      textInputAction: TextInputAction.search,
       decoration: InputDecoration(
         hintText: BlogConstants.searchPlaceholder,
         prefixIcon: const Icon(Icons.search),
+        suffixIcon: _searchController.text.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  _searchController.clear();
+                  _onSearchChanged('');
+                },
+              )
+            : null,
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
