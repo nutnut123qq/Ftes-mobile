@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/course.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/colors.dart';
+import 'package:intl/intl.dart';
 
 /// Widget for displaying course card
 /// Optimized with CachedNetworkImage for better scroll performance
@@ -20,23 +21,27 @@ class CourseCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final category = course.categoryName ?? 'Chưa phân loại';
     final title = course.title ?? 'Không có tiêu đề';
-    final price = course.salePrice != null && course.salePrice! > 0
-        ? '${course.salePrice!.toStringAsFixed(0)}\$'
-        : course.price != null
-            ? '${course.price!.toStringAsFixed(0)}\$'
-            : 'Miễn phí';
     final rating = course.rating?.toStringAsFixed(1) ?? '0.0';
-    final students = course.totalStudents != null && course.totalStudents! > 0
-        ? '${course.totalStudents} HV'
-        : '';
     final imageUrl = course.imageHeader ?? course.image;
+
+    final currencyFormat = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: '₫',
+      decimalDigits: 0,
+    );
+
+    final price = (course.salePrice != null && course.salePrice! > 0)
+        ? currencyFormat.format(course.salePrice)
+        : (course.price != null)
+        ? currencyFormat.format(course.price)
+        : 'Miễn phí';
 
     // Wrap with RepaintBoundary to isolate widget and reduce repaints
     return RepaintBoundary(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          width: 200,
+          width: 180,
           margin: const EdgeInsets.only(right: 20),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -56,6 +61,7 @@ class CourseCardWidget extends StatelessWidget {
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               child: SizedBox(
+                // full size to avoid layout shifts
                 height: 120,
                 width: double.infinity,
                 child: imageUrl != null && imageUrl.isNotEmpty
@@ -90,6 +96,7 @@ class CourseCardWidget extends StatelessWidget {
                         maxHeightDiskCache: 480,
                       )
                     : Container(
+                        clipBehavior: Clip.antiAlias,
                         color: AppColors.primary.withOpacity(0.1),
                         child: const Icon(
                           Icons.school,
@@ -99,15 +106,49 @@ class CourseCardWidget extends StatelessWidget {
                       ),
               ),
             ),
-              
+
+              // ClipRRect(
+              //   borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              //   child: SizedBox(
+              //     width: double.infinity,
+              //     height: 120,
+              //     child: imageUrl != null && imageUrl.isNotEmpty
+              //         ? CachedNetworkImage(
+              //       imageUrl: imageUrl,
+              //       fit: BoxFit.cover,
+              //       alignment: Alignment.center, // crop chính giữa
+              //       placeholder: (context, url) => Container(
+              //         color: AppColors.primary.withOpacity(0.1),
+              //         alignment: Alignment.center,
+              //         child: const CircularProgressIndicator(
+              //           strokeWidth: 2,
+              //           valueColor: AlwaysStoppedAnimation(AppColors.primary),
+              //         ),
+              //       ),
+              //       errorWidget: (context, url, error) => Container(
+              //         color: AppColors.primary.withOpacity(0.1),
+              //         alignment: Alignment.center,
+              //         child: const Icon(Icons.school, color: AppColors.primary, size: 40),
+              //       ),
+              //     )
+              //         : Container(
+              //       color: AppColors.primary.withOpacity(0.1),
+              //       alignment: Alignment.center,
+              //       child: const Icon(Icons.school, color: AppColors.primary, size: 40),
+              //     ),
+              //   ),
+              // ),
+
               // Course Info
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.only(left: 12, right: 12, top: 12, bottom: 0),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Category
                     Container(
+                      clipBehavior: Clip.antiAlias,
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withOpacity(0.1),
@@ -122,9 +163,9 @@ class CourseCardWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 8),
-                    
+
                     // Title
                     Text(
                       title,
@@ -135,48 +176,35 @@ class CourseCardWidget extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     const SizedBox(height: 8),
-                    
+
                     // Rating and Students
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Icon(
-                          Icons.star,
-                          size: 14,
-                          color: Colors.amber,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          rating,
-                          style: AppTextStyles.caption.copyWith(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (students.isNotEmpty) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            students,
-                            style: AppTextStyles.caption.copyWith(
-                              fontSize: 12,
-                              color: Colors.grey[600],
+                        Row(
+                          children: [
+                            const Icon(Icons.star, size: 14, color: Colors.amber),
+                            const SizedBox(width: 4),
+                            Text(
+                              rating,
+                              style: AppTextStyles.caption.copyWith(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
+                          ],
+                        ),
+                        Text(
+                          price,
+                          style: AppTextStyles.body1.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
                           ),
-                        ],
+                        ),
                       ],
-                    ),
-                    
-                    const SizedBox(height: 8),
-                    
-                    // Price
-                    Text(
-                      price,
-                      style: AppTextStyles.body1.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
                     ),
                   ],
                 ),

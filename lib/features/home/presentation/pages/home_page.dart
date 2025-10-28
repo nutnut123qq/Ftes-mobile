@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,100 +27,85 @@ class _HomePageState extends State<HomePage> {
   String _userName = HomeConstants.defaultUserName;
   int _currentBannerIndex = 0;
   final PageController _bannerController = PageController();
+  Timer? _autoSlideTimer;
 
   @override
   void initState() {
     super.initState();
-    // Initialize ViewModel and load user info in parallel on background thread
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
-      
-      // Run both operations in parallel without blocking main thread
       Future.wait([
         homeViewModel.initialize(),
         homeViewModel.fetchCategories(),
         _loadUserInfoAsync(),
       ]);
+
+      _autoSlideTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+        if (!mounted) return;
+        final banners = homeViewModel.banners;
+        if (banners.isEmpty) return;
+
+        setState(() {
+          _currentBannerIndex =
+              (_currentBannerIndex + 1) % banners.length;
+        });
+
+        _bannerController.animateToPage(
+          _currentBannerIndex,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      });
     });
   }
 
-  /// Load user info asynchronously using GetProfileByIdUseCase
-  /// This runs on background thread and doesn't block main thread
   Future<void> _loadUserInfoAsync() async {
     try {
       final prefs = di.sl<SharedPreferences>();
       final userId = prefs.getString(AppConstants.keyUserId);
-      
-      if (userId == null || userId.isEmpty) {
-        // No user logged in, keep default name
-        return;
-      }
-      
-      // First check cache
+      if (userId == null || userId.isEmpty) return;
+
       final cachedUserData = prefs.getString(AppConstants.keyUserData);
       if (cachedUserData != null && cachedUserData.isNotEmpty) {
-        // Use cached data immediately for fast UI update
         _updateUserNameFromCache(cachedUserData);
       }
-      
-      // Fetch fresh profile data using UseCase
+
       final getProfileByIdUseCase = di.sl<GetProfileByIdUseCase>();
       final result = await getProfileByIdUseCase(userId);
-      
       result.fold(
-        (failure) {
-          // Failed to fetch profile, use cached data or default
-          print('❌ Failed to load user profile: ${failure.message}');
-        },
-        (profile) {
-          // Update UI with fresh profile data
+            (failure) => debugPrint('❌ Failed to load user profile: ${failure.message}'),
+            (profile) {
           final displayName = _getDisplayName(profile.name, profile.username);
-          
-          if (mounted) {
-            setState(() {
-              _userName = displayName;
-            });
-          }
+          if (mounted) setState(() => _userName = displayName);
         },
       );
     } catch (e) {
-      print('❌ Error loading user info: $e');
-      // Keep default username on error
+      debugPrint('❌ Error loading user info: $e');
     }
   }
-  
-  /// Update username from cached data
+
   void _updateUserNameFromCache(String cachedData) {
     try {
       final userMap = jsonDecode(cachedData) as Map<String, dynamic>;
       final username = userMap['username'] as String?;
       final fullName = userMap['fullName'] as String?;
-      
       final displayName = _getDisplayName(fullName, username);
-      
-      if (mounted) {
-        setState(() {
-          _userName = displayName;
-        });
-      }
+      if (mounted) setState(() => _userName = displayName);
     } catch (e) {
-      print('❌ Error parsing cached user data: $e');
+      debugPrint('❌ Error parsing cached user data: $e');
     }
   }
-  
-  /// Get display name from fullName or username
+
   String _getDisplayName(String? fullName, String? username) {
-    if (fullName != null && fullName.isNotEmpty) {
-      return fullName;
-    } else if (username != null && username.isNotEmpty) {
-      return username;
-    } else {
-      return HomeConstants.defaultUserName;
-    }
+    if (fullName != null && fullName.isNotEmpty) return fullName;
+    if (username != null && username.isNotEmpty) return username;
+    return HomeConstants.defaultUserName;
   }
 
   @override
   void dispose() {
+    _autoSlideTimer?.cancel();
     _bannerController.dispose();
     super.dispose();
   }
@@ -133,38 +119,22 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Status Bar
               const SizedBox(height: 20),
-              
-              // Navigation Bar
               _buildNavigationBar(),
-              
               const SizedBox(height: 20),
-              
-              // Search Bar
               _buildSearchBar(),
-              
               const SizedBox(height: 30),
-              
-              // Offer Banner
               _buildOfferBanner(),
-              
               const SizedBox(height: 30),
-              
-              // Popular Courses Section
               _buildPopularCoursesSection(),
-              
               const SizedBox(height: 40),
-              
-              // Top Mentor Section
-              MentorCarousel(),
-
-              const SizedBox(height: 100), // Space for bottom navigation
+              const MentorCarousel(),
+              const SizedBox(height: 100),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: AppBottomNavigationBar(selectedIndex: 0),
+      bottomNavigationBar: const AppBottomNavigationBar(selectedIndex: 0),
     );
   }
 
@@ -174,7 +144,7 @@ class _HomePageState extends State<HomePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-            Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -195,9 +165,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, AppConstants.routeProfile);
-            },
+            onTap: () => Navigator.pushNamed(context, AppConstants.routeProfile),
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -211,11 +179,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.person,
-                color: AppColors.primary,
-                size: 24,
-              ),
+              child: const Icon(Icons.person, color: AppColors.primary, size: 24),
             ),
           ),
         ],
@@ -243,11 +207,7 @@ class _HomePageState extends State<HomePage> {
           onTap: () => Navigator.pushNamed(context, AppConstants.routeCourseSearch),
           child: Row(
             children: [
-              Icon(
-                Icons.search,
-                color: Colors.grey[600]!,
-                size: 20,
-              ),
+              Icon(Icons.search, color: Colors.grey[600]!, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -258,11 +218,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              Icon(
-                Icons.filter_list,
-                color: Colors.grey[600]!,
-                size: 20,
-              ),
+              Icon(Icons.filter_list, color: Colors.grey[600]!, size: 20),
             ],
           ),
         ),
@@ -286,54 +242,23 @@ class _HomePageState extends State<HomePage> {
           return const SizedBox.shrink();
         }
 
-        return Column(
-          children: [
-            SizedBox(
-              height: 160,
-              child: PageView.builder(
-                controller: _bannerController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentBannerIndex = index;
-                  });
-                },
-                itemCount: homeViewModel.banners.length,
-                itemBuilder: (context, index) {
-                  final banner = homeViewModel.banners[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: BannerWidget(
-                      banner: banner,
-                      onTap: () {
-                        // Handle banner tap
-                        print('Banner tapped: ${banner.title}');
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-            if (homeViewModel.banners.length > 1) ...[
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  homeViewModel.banners.length,
-                  (index) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _currentBannerIndex == index
-                          ? AppColors.primary
-                          : Colors.grey.withOpacity(0.3),
-                    ),
-                  ),
+        return SizedBox(
+          height: 160,
+          child: PageView.builder(
+            controller: _bannerController,
+            onPageChanged: (index) => setState(() => _currentBannerIndex = index),
+            itemCount: homeViewModel.banners.length,
+            itemBuilder: (context, index) {
+              final banner = homeViewModel.banners[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: BannerWidget(
+                  banner: banner,
+                  onTap: () => debugPrint('Banner tapped: ${banner.title}'),
                 ),
-              ),
-            ],
-          ],
+              );
+            },
+          ),
         );
       },
     );
@@ -345,7 +270,6 @@ class _HomePageState extends State<HomePage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Section Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
@@ -357,10 +281,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            
             const SizedBox(height: 20),
-            
-            // Category filters
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: SingleChildScrollView(
@@ -370,25 +291,19 @@ class _HomePageState extends State<HomePage> {
                     int index = entry.key;
                     final category = entry.value;
                     bool isSelected = category.id == homeViewModel.selectedCategoryId;
-                    
                     return Padding(
                       padding: EdgeInsets.only(right: index < homeViewModel.categories.length - 1 ? 12 : 0),
                       child: CategoryFilterWidget(
                         text: category.name ?? '',
                         isSelected: isSelected,
-                        onTap: () {
-                          homeViewModel.fetchCoursesByCategory(category.id ?? 'all');
-                        },
+                        onTap: () => homeViewModel.fetchCoursesByCategory(category.id ?? 'all'),
                       ),
                     );
                   }).toList(),
                 ),
               ),
             ),
-            
             const SizedBox(height: 20),
-            
-            // Course cards
             if (homeViewModel.isLoadingLatestCourses || homeViewModel.isLoadingCategoryCourses)
               const Center(
                 child: Padding(
@@ -404,26 +319,22 @@ class _HomePageState extends State<HomePage> {
                 ),
               )
             else
-              // Use SizedBox + ListView.builder for lazy loading and better performance
               SizedBox(
-                height: 280, // Fixed height for horizontal list
+                height: 250,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: homeViewModel.categoryCourses.length,
-                  // Add caching for smoother scrolling
                   cacheExtent: 1000,
                   itemBuilder: (context, index) {
                     final course = homeViewModel.categoryCourses[index];
-                    
                     return Padding(
                       padding: EdgeInsets.only(
-                        right: index < homeViewModel.categoryCourses.length - 1 ? 20 : 0,
+                        right: index < homeViewModel.categoryCourses.length - 1 ? 10 : 0,
                       ),
                       child: CourseCardWidget(
                         course: course,
                         onTap: () {
-                          // Navigate to course detail
                           if (course.slugName != null && course.slugName!.isNotEmpty) {
                             Navigator.pushNamed(
                               context,
