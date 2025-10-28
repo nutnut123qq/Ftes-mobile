@@ -155,18 +155,20 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
         throw Exception(VideoConstants.errorVideoLoadFailed);
       }
       
-      // Only use proxy URL - backend configured CDN to serve segments through proxy
+      // Get video playlist from API
       final playlist = viewModel.videoPlaylist!;
       
       String? videoUrl;
-      // Chọn URL theo nền tảng: mobile ưu tiên presigned để tránh thiếu header ở segment
-      if (!kIsWeb && playlist.presignedUrl != null && playlist.presignedUrl!.isNotEmpty) {
-        videoUrl = playlist.presignedUrl!;
-        print('✅ Using presigned URL for mobile: $videoUrl');
-      } else if (playlist.proxyPlaylistUrl != null && playlist.proxyPlaylistUrl!.isNotEmpty) {
-        // Proxy URL là full URL từ datasource
+      // Tất cả platforms ưu tiên proxy URL (chỉ có proxy là dùng được)
+      if (playlist.proxyPlaylistUrl != null && playlist.proxyPlaylistUrl!.isNotEmpty) {
         videoUrl = playlist.proxyPlaylistUrl!;
-        print('✅ Using proxy URL: $videoUrl');
+        print('✅ Using proxy URL (only proxy is available): $videoUrl');
+      } else if (playlist.cdnPlaylistUrl != null && playlist.cdnPlaylistUrl!.isNotEmpty) {
+        videoUrl = playlist.cdnPlaylistUrl!;
+        print('⚠️ Fallback to CDN URL: $videoUrl');
+      } else if (playlist.presignedUrl != null && playlist.presignedUrl!.isNotEmpty) {
+        videoUrl = playlist.presignedUrl!;
+        print('⚠️ Fallback to presigned URL: $videoUrl');
       } else {
         throw Exception('Không tìm thấy URL video hợp lệ từ server');
       }
@@ -182,10 +184,58 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
           throw Exception('Không tìm thấy URL video hợp lệ từ server');
         }
       } else {
-        // Mobile/desktop: dùng WebView Hls.js (tránh 403 ở segment)
-        _hlsVideoUrl = videoUrl;
-        print('📱 Mobile platform - Using WebView Hls.js with URL');
-        print('   $_hlsVideoUrl');
+        // Mobile: dùng VideoPlayerController.networkUrl (hỗ trợ HLS native)
+        if (videoUrl != null) {
+          print('📱 Mobile platform - Initializing VideoPlayerController with HLS');
+          print('   URL: $videoUrl');
+          print('⚠️ Note: If publicly available m3u8 fails, backend must transform m3u8 segments to proxy');
+          
+          // Initialize VideoPlayerController với HLS URL
+          // networkUrl() là API mới hỗ trợ HLS native trên Android/iOS
+          // Proxy URL: cần Authorization header để proxy có thể fetch từ S3
+          // Presigned URL: S3 signed URL có auth trong query params, không cần header
+          final isPresigned = playlist.presignedUrl != null && 
+                              playlist.presignedUrl!.isNotEmpty && 
+                              videoUrl == playlist.presignedUrl;
+          
+          final isProxy = playlist.proxyPlaylistUrl != null && 
+                          playlist.proxyPlaylistUrl!.isNotEmpty && 
+                          videoUrl == playlist.proxyPlaylistUrl;
+          
+          print('🔑 Is presigned URL: $isPresigned');
+          print('🔑 Is proxy URL: $isProxy');
+          
+          // Note: BunnyCDN requires Referer header to bypass Hotlink Protection
+          // Headers are forwarded to all segment requests by ExoPlayer
+          final Map<String, String> headers = {
+            'Referer': 'https://ftes.vn',
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0 Mobile Safari/537.36',
+          };
+          
+          print('🔑 Using headers: Referer + User-Agent for BunnyCDN Hotlink Protection bypass');
+          
+          _controller = VideoPlayerController.networkUrl(
+            Uri.parse(videoUrl),
+            httpHeaders: headers,
+          );
+          
+          // Initialize và play video
+          await _controller!.initialize();
+          await _controller!.play();
+          
+          // Add listener to update UI when video position changes
+          _controller!.addListener(() {
+            if (mounted) {
+              setState(() {
+                // This will trigger UI update when video position changes
+              });
+            }
+          });
+          
+          print('✅ Mobile video initialized and playing');
+        } else {
+          throw Exception('Không tìm thấy URL video hợp lệ từ server');
+        }
       }
       
       if (mounted) {
@@ -193,8 +243,6 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
           _isLoadingVideo = false;
         });
       }
-      
-      // WebView/HTML5 tự xử lý play
     } catch (e) {
       print('❌ Error setting up HLS video: $e');
       if (mounted) {
@@ -452,19 +500,14 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
       return _buildWebHlsPlayer(_hlsVideoUrl!);
     }
 
-    // HLS - Mobile: WebView Hls.js player (tránh 403/segment với ExoPlayer)
-    if (!kIsWeb && _hlsVideoUrl != null) {
-      return HlsWebViewPlayer(hlsUrl: _hlsVideoUrl!);
-    }
-
-    // Show video player if initialized (for mobile/desktop)
+    // Show video player if initialized (for mobile/desktop HLS hoặc direct video)
     if (_controller != null && _controller!.value.isInitialized) {
       return FittedBox(
         fit: BoxFit.contain,
         child: SizedBox(
           width: _controller!.value.size.width,
           height: _controller!.value.size.height,
-          child: VideoPlayer(_controller!),
+          child: _buildVideoPlayerWithControls(),
         ),
       );
     }
@@ -484,6 +527,139 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
         valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0961F5)),
       ),
     );
+  }
+
+  Widget _buildVideoPlayerWithControls() {
+    return Stack(
+      children: [
+        // Video player
+        VideoPlayer(_controller!),
+        
+        // Custom video controls overlay
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: () {
+              // Toggle play/pause when tapping video
+              setState(() {
+                if (_controller!.value.isPlaying) {
+                  _controller!.pause();
+                } else {
+                  _controller!.play();
+                }
+              });
+            },
+            child: Container(
+              color: Colors.transparent,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Progress bar with seek functionality
+                  GestureDetector(
+                    onTapDown: (details) async {
+                      // Seek to tapped position
+                      final RenderBox box = context.findRenderObject() as RenderBox;
+                      final double x = details.globalPosition.dx;
+                      final double boxLeft = box.localToGlobal(Offset.zero).dx;
+                      final double localX = x - boxLeft;
+                      final double width = box.size.width;
+                      final double percentage = (localX / width).clamp(0.0, 1.0);
+                      
+                      if (_controller!.value.duration.inMilliseconds > 0) {
+                        final Duration newPosition = Duration(
+                          milliseconds: (percentage * _controller!.value.duration.inMilliseconds).round(),
+                        );
+                        await _controller!.seekTo(newPosition);
+                      }
+                    },
+                    child: Container(
+                      height: 32, // Larger touch area
+                      padding: EdgeInsets.symmetric(vertical: 15),
+                      child: Container(
+                        height: 2,
+                        color: Colors.white.withOpacity(0.3),
+                        child: Stack(
+                          children: [
+                            // Current position indicator
+                            if (_controller!.value.position.inSeconds < _controller!.value.duration.inSeconds)
+                              FractionallySizedBox(
+                                widthFactor: _controller!.value.duration.inMilliseconds > 0
+                                    ? _controller!.value.position.inMilliseconds / 
+                                      _controller!.value.duration.inMilliseconds
+                                    : 0.0,
+                                child: Container(
+                                  height: 2,
+                                  color: Color(0xFF0961F5),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  // Control buttons
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                        ],
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        // Play/Pause button
+                        IconButton(
+                          icon: Icon(
+                            _controller!.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              if (_controller!.value.isPlaying) {
+                                _controller!.pause();
+                              } else {
+                                _controller!.play();
+                              }
+                            });
+                          },
+                        ),
+                        
+                        // Time display
+                        Expanded(
+                          child: Text(
+                            '${_formatDuration(_controller!.value.position)} / ${_formatDuration(_controller!.value.duration)}',
+                            style: TextStyle(color: Colors.white, fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+    
+    if (hours > 0) {
+      return '${twoDigits(hours)}:${twoDigits(minutes)}:${twoDigits(seconds)}';
+    } else {
+      return '${twoDigits(minutes)}:${twoDigits(seconds)}';
+    }
   }
 
   void _initializeHlsPlayer(String hlsUrl) {
