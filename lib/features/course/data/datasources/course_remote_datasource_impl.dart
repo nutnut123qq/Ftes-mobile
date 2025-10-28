@@ -166,11 +166,21 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
         print('📥 Video playlist response data: ${response.data}');
         
         if (response.statusCode == 200) {
+          // Extract proxy URL - could be relative or absolute
+          var proxyUrl = response.data['proxyPlaylistUrl'];
+          if (proxyUrl == null || proxyUrl.isEmpty) {
+            // Fallback: construct full proxy URL
+            proxyUrl = '${AppConstants.videoStreamBaseUrl}${AppConstants.videoProxyEndpoint}/$videoId/master.m3u8';
+          } else if (!proxyUrl.startsWith('http')) {
+            // Relative path - prepend base URL
+            proxyUrl = '${AppConstants.videoStreamBaseUrl}$proxyUrl';
+          }
+          
           return VideoPlaylistModel(
             videoId: videoId,
             cdnPlaylistUrl: response.data['cdnPlaylistUrl'] ?? '',
             presignedUrl: response.data['presignedUrl'],
-            proxyPlaylistUrl: response.data['proxyPlaylistUrl'] ?? '${AppConstants.videoStreamBaseUrl}${AppConstants.videoProxyEndpoint}/$videoId/master.m3u8',
+            proxyPlaylistUrl: proxyUrl,
           );
         }
       } catch (apiError) {

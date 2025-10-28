@@ -168,11 +168,12 @@ class VideoPlaylistResponse {
     );
   }
 
-  /// Get best available URL (priority: presignedUrl > cdnPlaylistUrl > proxyPlaylistUrl)
+  /// Get best available URL (priority: proxyPlaylistUrl > cdnPlaylistUrl > presignedUrl)
+  /// Proxy endpoint is preferred as it handles both master.m3u8 and segments through CDN
   String? getBestUrl() {
-    if (presignedUrl != null && presignedUrl!.isNotEmpty) return presignedUrl;
-    if (cdnPlaylistUrl != null && cdnPlaylistUrl!.isNotEmpty) return cdnPlaylistUrl;
     if (proxyPlaylistUrl != null && proxyPlaylistUrl!.isNotEmpty) return proxyPlaylistUrl;
+    if (cdnPlaylistUrl != null && cdnPlaylistUrl!.isNotEmpty) return cdnPlaylistUrl;
+    if (presignedUrl != null && presignedUrl!.isNotEmpty) return presignedUrl;
     return null;
   }
 }

@@ -3,25 +3,55 @@ import '../../domain/entities/exercise.dart';
 
 part 'exercise_model.g.dart';
 
+// Helper functions to convert between String and bool
+bool _boolFromString(dynamic value) {
+  if (value is bool) return value;
+  if (value is String) return value.toLowerCase() == 'true';
+  return false;
+}
+
+String _boolToString(bool value) => value.toString();
+
 /// Exercise model for JSON serialization
 @JsonSerializable(explicitToJson: true)
 class ExerciseModel {
   final String id;
+  final String type;
   final String title;
   final String description;
-  final int? order;
+  final String question;
+  final String expectedOutput;
+  final String criteria;
+  @JsonKey(fromJson: _boolFromString, toJson: _boolToString)
+  final bool checkLogic;
+  
+  @JsonKey(fromJson: _boolFromString, toJson: _boolToString)
+  final bool checkPerform;
+  
+  @JsonKey(fromJson: _boolFromString, toJson: _boolToString)
+  final bool checkEdgeCase;
+  final String fileExtension;
+  final int order;
   final int? partOrder;
-  final String createdAt;
-  final String updatedAt;
+  final String? createdAt;
+  final String? updatedAt;
 
   const ExerciseModel({
     required this.id,
+    required this.type,
     required this.title,
     required this.description,
-    this.order,
+    required this.question,
+    required this.expectedOutput,
+    required this.criteria,
+    required this.checkLogic,
+    required this.checkPerform,
+    required this.checkEdgeCase,
+    required this.fileExtension,
+    required this.order,
     this.partOrder,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory ExerciseModel.fromJson(Map<String, dynamic> json) =>
@@ -32,10 +62,18 @@ class ExerciseModel {
   Exercise toEntity() {
     return Exercise(
       id: id,
+      type: type,
       title: title,
       description: description,
-      order: order ?? 0,
-      partOrder: partOrder ?? 0,
+      question: question,
+      expectedOutput: expectedOutput,
+      criteria: criteria,
+      checkLogic: checkLogic,
+      checkPerform: checkPerform,
+      checkEdgeCase: checkEdgeCase,
+      fileExtension: fileExtension,
+      order: order,
+      partOrder: partOrder,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -44,10 +82,18 @@ class ExerciseModel {
   factory ExerciseModel.fromEntity(Exercise exercise) {
     return ExerciseModel(
       id: exercise.id,
+      type: exercise.type,
       title: exercise.title,
       description: exercise.description,
-      order: exercise.order == 0 ? null : exercise.order,
-      partOrder: exercise.partOrder == 0 ? null : exercise.partOrder,
+      question: exercise.question,
+      expectedOutput: exercise.expectedOutput,
+      criteria: exercise.criteria,
+      checkLogic: exercise.checkLogic,
+      checkPerform: exercise.checkPerform,
+      checkEdgeCase: exercise.checkEdgeCase,
+      fileExtension: exercise.fileExtension,
+      order: exercise.order,
+      partOrder: exercise.partOrder,
       createdAt: exercise.createdAt,
       updatedAt: exercise.updatedAt,
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_html/flutter_html.dart';
 import '../../../../utils/text_styles.dart';
 import '../../../../models/course_item.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -9,6 +10,7 @@ import '../viewmodels/course_detail_viewmodel.dart';
 import '../../domain/entities/course_detail.dart';
 import '../../domain/entities/part.dart';
 import '../../domain/entities/lesson.dart';
+import '../../domain/entities/exercise.dart';
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../../routes/app_routes.dart';
@@ -782,7 +784,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                     ),
                   ),
                   Text(
-                    '${part.lessons.length} bài học',
+                    '${part.lessons.length} bài học${part.exercises.isNotEmpty ? ', ${part.exercises.length} bài tập' : ''}',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: const Color(0xFF666666),
                     ),
@@ -793,26 +795,340 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
           ),
           if (isExpanded) ...[
             const Divider(height: 1),
+            // Lessons
             ...(() {
               final sortedLessons = part.lessons.toList()
                 ..sort((a, b) => a.order.compareTo(b.order));
               return sortedLessons.map((lesson) => _buildLessonItem(lesson));
             })(),
+            // Exercises
+            if (part.exercises.isNotEmpty) ...[
+              const Divider(height: 1),
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  'Bài tập:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF666666),
+                  ),
+                ),
+              ),
+              ...(() {
+                final sortedExercises = part.exercises.toList()
+                  ..sort((a, b) => a.order.compareTo(b.order));
+                return sortedExercises.map((exercise) => _buildExerciseItem(exercise));
+              })(),
+            ],
           ],
         ],
       ),
     );
   }
 
+  IconData _getLessonIcon(String? type) {
+    switch (type) {
+      case 'VIDEO':
+        return Icons.play_circle_outline;
+      case 'DOCUMENT':
+        return Icons.description_outlined;
+      case 'EXERCISE':
+        return Icons.quiz_outlined;
+      default:
+        return Icons.play_circle_outline; // Default to video icon
+    }
+  }
+
+  Widget _buildExerciseItem(Exercise exercise) {
+    return GestureDetector(
+      onTap: () {
+        // Show exercise details popup
+        _showExercisePopup(exercise);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              Icons.quiz_outlined,
+              color: const Color(0xFF666666),
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    exercise.title,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (exercise.description.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      exercise.description,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: const Color(0xFF666666),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExerciseInfoSection(String label, String content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF0961F5),
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          content,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showExercisePopup(Exercise exercise) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: const Color(0xFF1E293B), // Dark blue color
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 600, maxHeight: 600),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'EXERCISE',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+                const Divider(color: Colors.grey, height: 24),
+                // Scrollable content
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title
+                        Text(
+                          exercise.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 20),
+                        // Mô tả
+                        _buildExerciseInfoSection('Mô tả:', exercise.description),
+                        const SizedBox(height: 16),
+                        // Yêu cầu
+                        _buildExerciseInfoSection('Yêu cầu:', exercise.question),
+                        const SizedBox(height: 16),
+                        // Output mong đợi
+                        _buildExerciseInfoSection('Output mong đợi:', exercise.expectedOutput),
+                        const SizedBox(height: 16),
+                        // Tiêu chí
+                        _buildExerciseInfoSection('Tiêu chí:', exercise.criteria),
+                        const SizedBox(height: 16),
+                        // File extension
+                        if (exercise.fileExtension.isNotEmpty)
+                          _buildExerciseInfoSection('File extension:', exercise.fileExtension),
+                        const SizedBox(height: 16),
+                        // Check options
+                        if (exercise.checkLogic || exercise.checkPerform || exercise.checkEdgeCase)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Check:',
+                                style: TextStyle(
+                                  color: Color(0xFF0961F5),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              if (exercise.checkLogic)
+                                const Text('  • Logic', style: TextStyle(color: Colors.white)),
+                              if (exercise.checkPerform)
+                                const Text('  • Performance', style: TextStyle(color: Colors.white)),
+                              if (exercise.checkEdgeCase)
+                                const Text('  • Edge Case', style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Note
+                const Text(
+                  'Vui lòng truy cập trang web để nộp bài tập',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showContentPopup(Lesson lesson) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: const Color(0xFF1E293B), // Dark blue color
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 600, maxHeight: 600),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      lesson.type ?? 'Content',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+                const Divider(color: Colors.grey, height: 24),
+                // Title
+                Text(
+                  lesson.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                // Description if exists
+                if (lesson.description.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      lesson.description,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                // Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Html(
+                      data: lesson.video,
+                      style: {
+                        "body": Style(
+                          color: Colors.white,
+                          margin: Margins.zero,
+                        ),
+                        "a": Style(
+                          color: const Color(0xFF0961F5), // Blue links
+                          textDecoration: TextDecoration.underline,
+                        ),
+                        "p": Style(
+                          margin: Margins.only(bottom: 8),
+                        ),
+                        "ul": Style(
+                          margin: Margins.only(bottom: 8),
+                          padding: HtmlPaddings.zero,
+                        ),
+                        "li": Style(
+                          margin: Margins.only(bottom: 4),
+                        ),
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildLessonItem(Lesson lesson) {
     return GestureDetector(
       onTap: () {
-        // Navigate to video page
+        // Check lesson type
+        if (lesson.type != null && lesson.type != 'VIDEO') {
+          // Show popup for non-video lessons
+          _showContentPopup(lesson);
+          return;
+        }
+
+        // Navigate to video page for VIDEO lessons
         final courseDetailViewModel = Provider.of<CourseDetailViewModel>(context, listen: false);
         final courseDetail = courseDetailViewModel.courseDetail;
         
         if (courseDetail != null && lesson.video.isNotEmpty) {
           print('📹 Navigating to video page with lesson.video: ${lesson.video}');
+          print('📋 Lesson type: ${lesson.type}');
           Navigator.pushNamed(
             context,
             AppConstants.routeCourseVideo,
@@ -822,6 +1138,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               'courseTitle': courseDetail.title,
               'videoUrl': lesson.video,
               'courseId': courseDetail.id,
+              'type': lesson.type, // Pass lesson type
             },
           );
         } else {
@@ -843,7 +1160,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         child: Row(
           children: [
             Icon(
-              Icons.play_circle_outline,
+              _getLessonIcon(lesson.type),
               color: lesson.isCompleted ? const Color(0xFF00C851) : const Color(0xFF666666),
               size: 20,
             ),
