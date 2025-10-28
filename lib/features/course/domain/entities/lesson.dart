@@ -8,6 +8,7 @@ class Lesson {
   final int partOrder;
   final int duration;
   final bool isCompleted;
+  final String? type; // VIDEO, DOCUMENT, EXERCISE
 
   const Lesson({
     required this.id,
@@ -18,6 +19,7 @@ class Lesson {
     required this.partOrder,
     required this.duration,
     required this.isCompleted,
+    this.type,
   });
 
   @override
@@ -31,7 +33,8 @@ class Lesson {
         other.order == order &&
         other.partOrder == partOrder &&
         other.duration == duration &&
-        other.isCompleted == isCompleted;
+        other.isCompleted == isCompleted &&
+        other.type == type;
   }
 
   @override
@@ -43,7 +46,8 @@ class Lesson {
         order.hashCode ^
         partOrder.hashCode ^
         duration.hashCode ^
-        isCompleted.hashCode;
+        isCompleted.hashCode ^
+        (type?.hashCode ?? 0);
   }
 
   @override

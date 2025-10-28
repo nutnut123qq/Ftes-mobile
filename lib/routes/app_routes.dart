@@ -353,6 +353,7 @@ class AppRoutes {
               courseTitle: args?['courseTitle'] ?? '',
               videoUrl: args?['videoUrl'] ?? '',
               courseId: args?['courseId'] ?? '',
+              type: args?['type'], // Pass lesson type
             ),
           ),
           settings: settings,
