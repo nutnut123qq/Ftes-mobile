@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:html' as html;
-import 'dart:js' as js;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
@@ -11,6 +9,8 @@ import '../../../../core/constants/app_constants.dart' as app_constants;
 import '../../../../widgets/youtube_player_widget.dart';
 import '../viewmodels/course_video_viewmodel.dart';
 import '../../domain/constants/video_constants.dart';
+import 'web_hls_helper.dart';
+import 'hls_webview_player.dart';
 
 class CourseVideoPage extends StatefulWidget {
   final String lessonId;
@@ -159,8 +159,12 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
       final playlist = viewModel.videoPlaylist!;
       
       String? videoUrl;
-      if (playlist.proxyPlaylistUrl != null && playlist.proxyPlaylistUrl!.isNotEmpty) {
-        // Proxy URL is already a full URL from datasource
+      // Chọn URL theo nền tảng: mobile ưu tiên presigned để tránh thiếu header ở segment
+      if (!kIsWeb && playlist.presignedUrl != null && playlist.presignedUrl!.isNotEmpty) {
+        videoUrl = playlist.presignedUrl!;
+        print('✅ Using presigned URL for mobile: $videoUrl');
+      } else if (playlist.proxyPlaylistUrl != null && playlist.proxyPlaylistUrl!.isNotEmpty) {
+        // Proxy URL là full URL từ datasource
         videoUrl = playlist.proxyPlaylistUrl!;
         print('✅ Using proxy URL: $videoUrl');
       } else {
@@ -178,28 +182,10 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
           throw Exception('Không tìm thấy URL video hợp lệ từ server');
         }
       } else {
-        // For mobile/desktop platforms, use VideoPlayerController with proxy URL
-        try {
-          print('🎥 Initializing video player with proxy URL');
-          print('   $videoUrl');
-          
-          // Initialize video player with auth header
-          // ignore: deprecated_member_use
-          _controller = VideoPlayerController.network(
-            videoUrl!,
-            httpHeaders: {
-              'Authorization': 'Bearer $accessToken',
-            },
-          );
-          
-          await _controller!.initialize();
-          
-          print('✅ Successfully initialized video player');
-          
-        } catch (e) {
-          print('❌ Failed to initialize video player: $e');
-          throw Exception('Không thể tải video: $e');
-        }
+        // Mobile/desktop: dùng WebView Hls.js (tránh 403 ở segment)
+        _hlsVideoUrl = videoUrl;
+        print('📱 Mobile platform - Using WebView Hls.js with URL');
+        print('   $_hlsVideoUrl');
       }
       
       if (mounted) {
@@ -208,10 +194,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
         });
       }
       
-      // Play video (only for mobile/desktop, web uses HTML5 player)
-      if (!kIsWeb && _controller != null) {
-        _controller!.play();
-      }
+      // WebView/HTML5 tự xử lý play
     } catch (e) {
       print('❌ Error setting up HLS video: $e');
       if (mounted) {
@@ -323,12 +306,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
   void dispose() {
     // Clean up web video wrapper element
     if (kIsWeb) {
-      try {
-        final wrapper = html.document.getElementById('hls-video-wrapper');
-        wrapper?.remove();
-      } catch (e) {
-        print('Error cleaning up video: $e');
-      }
+      getWebHlsHelper().cleanupWrapper();
     }
     
     SystemChrome.setPreferredOrientations([
@@ -469,9 +447,14 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
       );
     }
 
-    // Show HLS video for web platform using HTML5 video player
+    // HLS - Web: HTML5 layer
     if (kIsWeb && _hlsVideoUrl != null) {
       return _buildWebHlsPlayer(_hlsVideoUrl!);
+    }
+
+    // HLS - Mobile: WebView Hls.js player (tránh 403/segment với ExoPlayer)
+    if (!kIsWeb && _hlsVideoUrl != null) {
+      return HlsWebViewPlayer(hlsUrl: _hlsVideoUrl!);
     }
 
     // Show video player if initialized (for mobile/desktop)
@@ -506,56 +489,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
   void _initializeHlsPlayer(String hlsUrl) {
     if (!kIsWeb) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      try {
-        final old = html.document.getElementById('hls-video-wrapper');
-        old?.remove();
-        
-        // Create wrapper div positioned properly
-        final wrapper = html.DivElement()
-          ..id = 'hls-video-wrapper'
-          ..style.position = 'fixed'
-          ..style.top = '0'
-          ..style.left = '0'
-          ..style.width = '100vw'
-          ..style.height = '100vh'
-          ..style.zIndex = '0'
-          ..style.backgroundColor = 'black';
-        
-        // Create video element
-        final video = html.VideoElement()
-          ..id = 'hls-video-player'
-          ..controls = true
-          ..autoplay = true
-          ..muted = false
-          ..style.width = '100%'
-          ..style.height = '100%'
-          ..style.objectFit = 'contain';
-        
-        wrapper.append(video);
-        
-        // Append wrapper to Flutter container
-        final appContainer = html.document.querySelector('flt-scene-host') ?? html.document.body;
-        appContainer?.append(wrapper);
-        js.context.callMethod('eval', ['''
-          var v = document.getElementById('hls-video-player');
-          var src = "$hlsUrl";
-          console.log('🎥 Initializing HLS with URL:', src);
-          if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-            console.log('✅ Using HLS.js');
-            var hls = new Hls({debug: true});
-            hls.loadSource(src);
-            hls.attachMedia(v);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => v.play());
-            hls.on(Hls.Events.FRAGMENT_LOADED, (e, d) => console.log('📦 Fragment:', d.frag.url));
-          } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
-            console.log('🍎 Using Safari HLS');
-            v.src = src;
-            v.play();
-          }
-        ''']);
-      } catch (e) {
-        print('❌ HLS init error: $e');
-      }
+      getWebHlsHelper().initHlsPlayer(hlsUrl);
     });
   }
   

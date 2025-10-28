@@ -16,3 +16,4 @@ class GetAllOrdersUseCase implements UseCase<List<OrderSummary>, NoParams> {
   }
 }
 
+
