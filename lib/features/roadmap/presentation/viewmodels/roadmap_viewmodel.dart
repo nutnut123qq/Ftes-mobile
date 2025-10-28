@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/skills.dart';
+import '../../domain/entities/roadmap.dart';
+import '../../domain/usecases/generate_roadmap_usecase.dart';
+import '../../domain/repositories/roadmap_repository.dart';
+import '../../domain/constants/roadmap_constants.dart';
+import '../../../../core/error/failures.dart';
 
 class RoadmapViewModel extends ChangeNotifier {
+  final GenerateRoadmapUseCase _generateRoadmapUseCase;
+  
+  RoadmapViewModel({required GenerateRoadmapUseCase generateRoadmapUseCase})
+      : _generateRoadmapUseCase = generateRoadmapUseCase;
+
   Semester? semester;
   TargetMajor? target;
   final List<Skill> allSkills = const [
@@ -24,15 +34,17 @@ class RoadmapViewModel extends ChangeNotifier {
 
   final Set<String> selectedSkillIds = {};
 
-  // --- thêm state loading như team ---
-  bool _isBusy = false;
+  // State management
+  bool _isGenerating = false;
   String? _errorMessage;
+  Roadmap? _generatedRoadmap;
 
-  bool get isBusy => _isBusy;
+  bool get isGenerating => _isGenerating;
   String? get errorMessage => _errorMessage;
+  Roadmap? get generatedRoadmap => _generatedRoadmap;
 
-  void _setBusy(bool value) {
-    _isBusy = value;
+  void _setGenerating(bool value) {
+    _isGenerating = value;
     notifyListeners();
   }
 
@@ -41,7 +53,10 @@ class RoadmapViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // -------------------------------
+  void _setRoadmap(Roadmap? roadmap) {
+    _generatedRoadmap = roadmap;
+    notifyListeners();
+  }
 
   void setSemester(Semester? v) {
     semester = v;
@@ -64,25 +79,69 @@ class RoadmapViewModel extends ChangeNotifier {
 
   String get selectedCountLabel => 'Kỹ năng đã có (${selectedSkillIds.length})';
 
-  Future<void> submit(BuildContext context) async {
-    _setBusy(true);
+  Future<Roadmap?> submit(BuildContext context) async {
+    _setGenerating(true);
     _setError(null);
+    _setRoadmap(null);
 
     try {
-      await Future.delayed(const Duration(milliseconds: 400));
+      // Validate inputs
+      if (semester == null) {
+        _setError('Vui lòng chọn học kỳ');
+        return null;
+      }
+      
+      if (target == null) {
+        _setError('Vui lòng chọn chuyên ngành');
+        return null;
+      }
 
-      final snack = SnackBar(
-        content: Text(
-          'Học kỳ: ${semester?.name.toUpperCase() ?? '-'}, '
-              'Ngành: ${target?.name ?? '-'}, '
-              'Skills: ${selectedSkillIds.length}',
-        ),
+      if (selectedSkillIds.isEmpty) {
+        _setError('Vui lòng chọn ít nhất một kỹ năng');
+        return null;
+      }
+
+      // Map enum to string
+      final specialization = RoadmapConstants.getSpecializationString(target!.name);
+      final currentSkills = selectedSkillIds.map((id) {
+        return allSkills.firstWhere((skill) => skill.id == id).label;
+      }).toList();
+
+      // Create params
+      final params = GenerateRoadmapParams(
+        specialization: specialization,
+        currentSkills: currentSkills,
+        term: semester!.index + 1,
       );
-      ScaffoldMessenger.of(context).showSnackBar(snack);
+
+      // Call use case
+      final result = await _generateRoadmapUseCase(params);
+      
+      return result.fold(
+        (failure) {
+          String errorMsg;
+          if (failure is ServerFailure) {
+            errorMsg = failure.message;
+          } else if (failure is NetworkFailure) {
+            errorMsg = failure.message;
+          } else if (failure is ValidationFailure) {
+            errorMsg = failure.message;
+          } else {
+            errorMsg = RoadmapConstants.errorGeneratingRoadmap;
+          }
+          _setError(errorMsg);
+          return null;
+        },
+        (roadmap) {
+          _setRoadmap(roadmap);
+          return roadmap;
+        },
+      );
     } catch (e) {
-      _setError(e.toString());
+      _setError('${RoadmapConstants.errorGeneratingRoadmap}: $e');
+      return null;
     } finally {
-      _setBusy(false);
+      _setGenerating(false);
     }
   }
 }

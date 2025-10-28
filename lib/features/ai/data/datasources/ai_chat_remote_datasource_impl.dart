@@ -144,7 +144,7 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
         } else {
           final errorMsg = (aiResponse.error?.isNotEmpty == true)
               ? aiResponse.error!
-              : ((aiResponse.message?.isNotEmpty == true)
+              : ((aiResponse.message ?.isNotEmpty == true)
                   ? aiResponse.message!
                   : AiConstants.errorSendMessageFailed);
           throw ServerException(errorMsg);

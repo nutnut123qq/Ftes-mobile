@@ -1,20 +1,14 @@
 import 'package:flutter/foundation.dart';
-import '../../data/repositories/roadmap_repository_impl.dart';
 import '../../domain/entities/roadmap.dart';
 
 class RoadmapResultViewModel extends ChangeNotifier {
-  final _repo = RoadmapRepositoryImpl();
+  final Roadmap roadmap;
 
-  Roadmap? roadmap;
-  bool isLoading = false;
+  RoadmapResultViewModel({required this.roadmap});
 
-  Future<void> loadRoadmap() async {
-    isLoading = true;
-    notifyListeners();
-
-    roadmap = await _repo.fetchRoadmapMock();
-
-    isLoading = false;
-    notifyListeners();
-  }
+  // Simple getters for display
+  List<String> get currentSkills => roadmap.currentSkills;
+  List<RoadmapSkill> get skillsRoadMap => roadmap.skillsRoadMap;
+  int get term => roadmap.term;
+  GenerationParams get generationParams => roadmap.generationParams;
 }

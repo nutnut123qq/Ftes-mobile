@@ -88,7 +88,7 @@ AiChatMessage _parseAiChatResponseInIsolate(Map<String, dynamic> json) {
       throw Exception(errorMsg);
     }
   } catch (e) {
-    print('❌ Parse AI response in isolate error: $e');
+    print('Parse AI response in isolate error: $e');
     rethrow;
   }
 }

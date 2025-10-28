@@ -1,31 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../domain/entities/roadmap.dart';
 import '../viewmodels/roadmap_result_viewmodel.dart';
 import '../widgets/roadmap_timeline.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 
 class RoadmapResultPage extends StatelessWidget {
-  const RoadmapResultPage({super.key});
+  final Roadmap roadmap;
+
+  const RoadmapResultPage({
+    super.key,
+    required this.roadmap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => RoadmapResultViewModel()..loadRoadmap(),
+      create: (_) => RoadmapResultViewModel(roadmap: roadmap),
       child: Consumer<RoadmapResultViewModel>(
         builder: (context, vm, _) {
-          if (vm.isLoading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-
           final theme = Theme.of(context);
-          final roadmap = vm.roadmap;
-          if (roadmap == null) {
-            return const Scaffold(
-              body: Center(child: Text('Không thể tải dữ liệu')),
-            );
-          }
 
           return Scaffold(
             backgroundColor: const Color(0xFFF8FAFF),
@@ -64,7 +58,7 @@ class RoadmapResultPage extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     alignment: WrapAlignment.center,
-                    children: roadmap.skills
+                    children: vm.currentSkills
                         .map(
                           (skill) => Chip(
                         label: Text(skill),
@@ -91,7 +85,7 @@ class RoadmapResultPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  RoadmapTimeline(steps: roadmap.steps),
+                  RoadmapTimeline(skills: vm.skillsRoadMap),
 
                   const SizedBox(height: 10),
                   ElevatedButton.icon(

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/roadmap.dart';
+import '../../../../core/constants/app_constants.dart';
 
 class RoadmapCard extends StatelessWidget {
-  final RoadmapStep step;
-  const RoadmapCard({super.key, required this.step});
+  final RoadmapSkill skill;
+  const RoadmapCard({super.key, required this.skill});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasCourse = skill.slugName.isNotEmpty;
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -25,12 +28,20 @@ class RoadmapCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(step.title,
+          Text(skill.skill,
               style: theme.textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),
-          Text(step.description,
+          Text(skill.description,
               style: theme.textTheme.bodyMedium?.copyWith(height: 1.4)),
+          const SizedBox(height: 8),
+          Text(
+            'Học kỳ ${skill.term}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -39,17 +50,24 @@ class RoadmapCard extends StatelessWidget {
                 padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 side: BorderSide(
-                  color: step.hasCourse ? const Color(0xFF265DFF) : Colors.grey,
+                  color: hasCourse ? const Color(0xFF265DFF) : Colors.grey,
                 ),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
               ),
-              onPressed: step.hasCourse ? () {} : null,
+              onPressed: hasCourse ? () {
+                // Navigate to Course Detail page with slug
+                Navigator.pushNamed(
+                  context,
+                  AppConstants.routeCourseDetail,
+                  arguments: skill.slugName,
+                );
+              } : null,
               child: Text(
-                step.hasCourse ? step.buttonLabel ?? 'Xem khóa học' : 'Sắp có khóa học',
+                hasCourse ? 'Xem khóa học' : 'Sắp có khóa học',
                 style: TextStyle(
                   color:
-                  step.hasCourse ? const Color(0xFF265DFF) : Colors.grey,
+                  hasCourse ? const Color(0xFF265DFF) : Colors.grey,
                   fontWeight: FontWeight.w600,
                 ),
               ),

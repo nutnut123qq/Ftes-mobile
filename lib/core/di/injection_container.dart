@@ -11,6 +11,7 @@ import '../../features/course/di/course_injection.dart';
 import '../../features/blog/di/blog_injection.dart';
 import '../../features/profile/di/profile_injection.dart';
 import '../../features/ai/di/ai_injection.dart';
+import '../../features/roadmap/di/roadmap_injection.dart';
 
 /// Service Locator instance
 final sl = GetIt.instance;
@@ -35,4 +36,5 @@ Future<void> init() async {
   await initBlogDependencies();
   ProfileInjection.init(sl);
   AiInjection.init(sl);
+  await initRoadmapDependencies();
 }

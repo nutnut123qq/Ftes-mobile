@@ -7,6 +7,7 @@ import '../widgets/skill_chip.dart';
 import '../widgets/gradient_button.dart';
 import './roadmap_result_page.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
+import '../../../../core/di/injection_container.dart' as di;
 
 class RoadmapPage extends StatelessWidget {
   const RoadmapPage({super.key});
@@ -15,7 +16,7 @@ class RoadmapPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => RoadmapViewModel(),
+      create: (_) => di.sl<RoadmapViewModel>(),
       child: Consumer<RoadmapViewModel>(
         builder: (context, vm, _) {
           final theme = Theme.of(context);
@@ -61,7 +62,7 @@ class RoadmapPage extends StatelessWidget {
                         // --- Progress Bar ---
                         LinearProgressIndicator(
                           value: 0,
-                          backgroundColor: theme.colorScheme.surfaceVariant,
+                          backgroundColor: theme.colorScheme.surfaceContainerHighest,
                           minHeight: 6,
                           borderRadius: BorderRadius.circular(999),
                         ),
@@ -146,16 +147,35 @@ class RoadmapPage extends StatelessWidget {
 
                         const SizedBox(height: 24),
                         GradientButton(
-                          loading: vm.isBusy,
+                          loading: vm.isGenerating,
                           label: 'Tạo Lộ Trình Ngay',
-                          onPressed: () {
+                          onPressed: () async {
                             final form = _formKey.currentState!;
                             if (form.validate()) {
-                              vm.submit(context);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const RoadmapResultPage()),
-                              );
+                              final roadmap = await vm.submit(context);
+                              if (roadmap != null && context.mounted) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => RoadmapResultPage(roadmap: roadmap),
+                                  ),
+                                );
+                              } else if (vm.errorMessage != null && context.mounted) {
+                                // Show error dialog
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Lỗi'),
+                                    content: Text(vm.errorMessage!),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
                             }
                           },
                         ),

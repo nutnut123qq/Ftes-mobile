@@ -1,47 +1,51 @@
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/network_info.dart';
 import '../../domain/entities/roadmap.dart';
+import '../../domain/repositories/roadmap_repository.dart';
+import '../../domain/constants/roadmap_constants.dart';
+import '../datasources/roadmap_remote_datasource.dart';
+import '../models/generate_roadmap_request_model.dart';
 
+/// Repository implementation for Roadmap feature
+class RoadmapRepositoryImpl implements RoadmapRepository {
+  final RoadmapRemoteDataSource remoteDataSource;
+  final NetworkInfo networkInfo;
 
-// Mock implementation of RoadmapRepository: Mock data for testing purposes
-// Thay bằng dữ liệu thật từ API hoặc database trong tương lai
-class RoadmapRepositoryImpl {
-  Future<Roadmap> fetchRoadmapMock() async {
-    await Future.delayed(const Duration(seconds: 1)); // simulate network
+  RoadmapRepositoryImpl({
+    required this.remoteDataSource,
+    required this.networkInfo,
+  });
 
-    return Roadmap(
-      skills: ['C programming', 'Data Structures', 'Algorithms', 'Git'],
-      steps: [
-        RoadmapStep(
-          title: 'Java Programming Fundamentals',
-          description:
-          'Giới thiệu về ngôn ngữ Java, cú pháp cơ bản, JVM, các kiểu dữ liệu, cấu trúc điều khiển, xử lý lỗi và ngoại lệ.',
-          hasCourse: false,
-        ),
-        RoadmapStep(
-          title: 'Object-Oriented Programming in Java',
-          description:
-          'Nghiên cứu sâu về các nguyên tắc lập trình hướng đối tượng (Kế thừa, Đa hình, Trừu tượng) và cách áp dụng trong Java.',
-          hasCourse: false,
-        ),
-        RoadmapStep(
-          title: 'Advanced Java Concepts',
-          description:
-          'Tìm hiểu về Java Collections, Generics, Stream API, Lambda, Concurrency và I/O.',
-          hasCourse: false,
-        ),
-        RoadmapStep(
-          title: 'Database Management with SQL',
-          description:
-          'Học về hệ quản trị cơ sở dữ liệu quan hệ (RDBMS), thiết kế ERD, truy vấn SQL.',
-          hasCourse: false,
-        ),
-        RoadmapStep(
-          title: 'DevOps and CI/CD for Java Applications',
-          description:
-          'Tích hợp liên tục (CI) và triển khai liên tục (CD) với Jenkins, GitLab CI/CD cho ứng dụng Java.',
-          hasCourse: true,
-          buttonLabel: 'Xem khóa học',
-        ),
-      ],
-    );
+  @override
+  Future<Either<Failure, Roadmap>> generateRoadmap({
+    required GenerateRoadmapParams params,
+  }) async {
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(RoadmapConstants.errorNoInternet));
+      }
+
+      final request = GenerateRoadmapRequestModel(
+        specialization: params.specialization,
+        currentSkills: params.currentSkills,
+        term: params.term,
+      );
+
+      final responseModel = await remoteDataSource.generateRoadmap(request: request);
+      return Right(responseModel.toEntity(
+        currentSkills: params.currentSkills,
+        specialization: params.specialization,
+      ));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('${RoadmapConstants.errorGeneratingRoadmap}: $e'));
+    }
   }
 }

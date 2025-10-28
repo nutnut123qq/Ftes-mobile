@@ -192,4 +192,9 @@ class AppConstants {
   static const String aiChatBaseUrl = 'https://ai.ftes.vn';
   static const String aiChatEndpoint = '/api/ai/chat';
   static const String aiCheckVideoKnowledgeEndpoint = 'https://ai.ftes.vn/api/ai/check-video-knowledge';
+  
+  // AI Service Configuration
+  static const String aiBaseUrl = 'https://ai.ftes.vn';
+  static const String generateRoadmapEndpoint = '/api/ai/generate-roadmap';
+  static const Duration aiApiTimeout = Duration(seconds: 100);
 }

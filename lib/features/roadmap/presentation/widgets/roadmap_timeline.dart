@@ -3,15 +3,15 @@ import '../../domain/entities/roadmap.dart';
 import 'roadmap_card.dart';
 
 class RoadmapTimeline extends StatelessWidget {
-  final List<RoadmapStep> steps;
-  const RoadmapTimeline({super.key, required this.steps});
+  final List<RoadmapSkill> skills;
+  const RoadmapTimeline({super.key, required this.skills});
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: List.generate(steps.length, (i) {
-        final step = steps[i];
-        final isLast = i == steps.length - 1;
+      children: List.generate(skills.length, (i) {
+        final skill = skills[i];
+        final isLast = i == skills.length - 1;
 
         return Column(
           children: [
@@ -23,10 +23,10 @@ class RoadmapTimeline extends StatelessWidget {
                   height: 20,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: step.hasCourse ? const Color(0xFF265DFF) : Colors.white,
+                    color: skill.slugName.isNotEmpty ? const Color(0xFF265DFF) : Colors.white,
                     border: Border.all(color: const Color(0xFF265DFF), width: 3),
                   ),
-                  child: step.hasCourse
+                  child: skill.slugName.isNotEmpty
                       ? const Icon(Icons.check, size: 12, color: Colors.white)
                       : null,
                 ),
@@ -47,7 +47,7 @@ class RoadmapTimeline extends StatelessWidget {
             // --- Card ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: RoadmapCard(step: step),
+              child: RoadmapCard(skill: skill),
             ),
 
             const SizedBox(height: 32),
