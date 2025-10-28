@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/widgets/course_filter_screen.dart';
 import 'package:ftes/screens/mentors_list_screen.dart';
-import 'package:ftes/screens/course_detail_screen.dart';
+import 'package:ftes/features/course/presentation/pages/course_detail_page.dart';
 import 'package:ftes/models/course_item.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 
@@ -458,7 +458,7 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CourseDetailScreen(course: course),
+            builder: (context) => CourseDetailPage(course: course),
           ),
         );
       },

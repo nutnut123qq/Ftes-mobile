@@ -10,7 +10,6 @@ import '../../../../widgets/youtube_player_widget.dart';
 import '../viewmodels/course_video_viewmodel.dart';
 import '../../domain/constants/video_constants.dart';
 import 'web_hls_helper.dart';
-import 'hls_webview_player.dart';
 
 class CourseVideoPage extends StatefulWidget {
   final String lessonId;
@@ -679,81 +678,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
     );
   }
   
-  Widget _buildWebHlsPlayer_OLD(String hlsUrl) {
-    // For web, use HLS.js to handle HLS video playback
-    // HLS.js will parse m3u8 and load segments automatically
-    return Center(
-      child: Html(
-        data: '''
-          <video 
-            id="hls-video-player" 
-            controls 
-            autoplay 
-            playsinline
-            style="width: 100%; height: 100%; object-fit: contain;"
-          >
-            Your browser does not support the video tag or HLS streaming.
-          </video>
-          <script>
-            (function() {
-              var video = document.getElementById('hls-video-player');
-              var videoSrc = "$hlsUrl";
-              
-              if (Hls.isSupported()) {
-                // Use HLS.js for non-Safari browsers (Chrome, Edge, Firefox)
-                console.log('Using HLS.js for video playback');
-                var hls = new Hls({
-                  enableWorker: true,
-                  lowLatencyMode: false,
-                  backBufferLength: 90
-                });
-                
-                hls.loadSource(videoSrc);
-                hls.attachMedia(video);
-                
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                  console.log('HLS manifest parsed, starting playback');
-                  video.play().catch(function(error) {
-                    console.log('Auto-play failed:', error);
-                  });
-                });
-                
-                hls.on(Hls.Events.ERROR, function(event, data) {
-                  console.error('HLS error:', data);
-                  if (data.fatal) {
-                    switch (data.type) {
-                      case Hls.ErrorTypes.NETWORK_ERROR:
-                        console.error('Network error, trying to recover...');
-                        hls.startLoad();
-                        break;
-                      case Hls.ErrorTypes.MEDIA_ERROR:
-                        console.error('Media error, trying to recover...');
-                        hls.recoverMediaError();
-                        break;
-                      default:
-                        console.error('Fatal error, destroying player');
-                        hls.destroy();
-                        break;
-                    }
-                  }
-                });
-              } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Safari native HLS support
-                console.log('Using Safari native HLS support');
-                video.src = videoSrc;
-                video.play().catch(function(error) {
-                  console.log('Auto-play failed:', error);
-                });
-              } else {
-                console.error('HLS is not supported');
-                video.innerHTML = 'HLS video playback is not supported in your browser.';
-              }
-            })();
-          </script>
-        ''',
-      ),
-    );
-  }
+  // Removed legacy web HLS builder (unused)
 
   Widget _buildEmptyState() {
     return Center(

@@ -650,10 +650,24 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            instructorName,
-                            style: AppTextStyles.bodyLarge.copyWith(
-                              fontWeight: FontWeight.w600,
+                          GestureDetector(
+                            onTap: () {
+                              // Navigate to instructor profile
+                              final username = mentorProfile?.username ?? apiCourse?.userName;
+                              if (username != null && username.isNotEmpty) {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppConstants.routeInstructorProfile,
+                                  arguments: username,
+                                );
+                              }
+                            },
+                            child: Text(
+                              instructorName,
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF0961F5),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 4),

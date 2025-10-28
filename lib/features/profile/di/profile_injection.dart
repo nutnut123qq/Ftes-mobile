@@ -4,7 +4,10 @@ import '../../../../core/network/network_info.dart';
 import '../domain/repositories/profile_repository.dart';
 import '../data/repositories/profile_repository_impl.dart';
 import '../domain/usecases/profile_usecases.dart';
+import '../domain/usecases/get_instructor_profile_usecase.dart';
+import '../domain/usecases/get_instructor_courses_usecase.dart';
 import '../presentation/viewmodels/profile_viewmodel.dart';
+import '../presentation/viewmodels/instructor_profile_viewmodel.dart';
 
 /// Dependency injection setup for Profile feature
 class ProfileInjection {
@@ -24,6 +27,14 @@ class ProfileInjection {
     
     sl.registerLazySingleton<GetProfileByUsernameUseCase>(
       () => GetProfileByUsernameUseCase(sl<ProfileRepository>()),
+    );
+    
+    sl.registerLazySingleton<GetInstructorProfileByUsernameUseCase>(
+      () => GetInstructorProfileByUsernameUseCase(sl<ProfileRepository>()),
+    );
+    
+    sl.registerLazySingleton<GetInstructorCoursesUseCase>(
+      () => GetInstructorCoursesUseCase(sl<ProfileRepository>()),
     );
     
     sl.registerLazySingleton<CreateProfileUseCase>(
@@ -61,6 +72,14 @@ class ProfileInjection {
         getParticipantsCountUseCase: sl<GetParticipantsCountUseCase>(),
         checkApplyCourseUseCase: sl<CheckApplyCourseUseCase>(),
         uploadImageUseCase: sl<UploadImageUseCase>(),
+      ),
+    );
+    
+    sl.registerFactory<InstructorProfileViewModel>(
+      () => InstructorProfileViewModel(
+        getInstructorProfileUseCase: sl<GetInstructorProfileByUsernameUseCase>(),
+        getInstructorCoursesUseCase: sl<GetInstructorCoursesUseCase>(),
+        getParticipantsCountUseCase: sl<GetParticipantsCountUseCase>(),
       ),
     );
   }

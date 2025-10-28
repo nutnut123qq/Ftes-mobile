@@ -23,7 +23,11 @@ class AiJsonParserHelper {
           throw Exception(AiConstants.errorEmptyResponse);
         }
       } else {
-        final errorMsg = response.error ?? response.message ?? AiConstants.errorSendMessageFailed;
+        final errorMsg = (response.error?.isNotEmpty == true)
+            ? response.error!
+            : ((response.message?.isNotEmpty == true)
+                ? response.message!
+                : AiConstants.errorSendMessageFailed);
         throw Exception(errorMsg);
       }
     } catch (e) {
@@ -76,7 +80,11 @@ AiChatMessage _parseAiChatResponseInIsolate(Map<String, dynamic> json) {
         throw Exception(AiConstants.errorEmptyResponse);
       }
     } else {
-      final errorMsg = response.error ?? response.message ?? AiConstants.errorSendMessageFailed;
+      final errorMsg = (response.error?.isNotEmpty == true)
+          ? response.error!
+          : ((response.message?.isNotEmpty == true)
+              ? response.message!
+              : AiConstants.errorSendMessageFailed);
       throw Exception(errorMsg);
     }
   } catch (e) {

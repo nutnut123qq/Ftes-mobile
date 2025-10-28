@@ -18,7 +18,6 @@ import '../features/home/presentation/viewmodels/home_viewmodel.dart';
 import '../features/my_courses/presentation/pages/my_courses_page.dart';
 import '../features/my_courses/presentation/viewmodels/my_courses_viewmodel.dart';
 import '../features/my_courses/di/my_courses_injection.dart';
-import '../features/course/di/course_injection.dart';
 import '../screens/popular_courses_screen.dart';
 import '../screens/top_mentors_screen.dart';
 import '../screens/courses_list_screen.dart';
@@ -29,6 +28,7 @@ import '../features/course/presentation/pages/course_video_page.dart';
 import '../screens/learning_screen.dart';
 import '../screens/quiz_screen.dart';
 import '../screens/profile_screen.dart';
+import '../features/profile/presentation/pages/instructor_profile_page.dart';
 import '../screens/notifications_screen.dart';
 import '../screens/chat_messages_screen.dart';
 import '../features/ai/presentation/pages/ai_chat_page.dart';
@@ -36,10 +36,8 @@ import '../features/ai/presentation/viewmodels/ai_chat_viewmodel.dart';
 import '../screens/curriculum_screen.dart';
 import '../screens/reviews_screen.dart';
 import '../screens/write_review_screen.dart';
-import '../screens/payment_screen.dart';
 import '../features/cart/presentation/pages/payment_page.dart';
 import '../features/cart/presentation/viewmodels/payment_viewmodel.dart';
-import '../features/cart/di/cart_injection.dart';
 import '../screens/enroll_success_screen.dart';
 import '../screens/my_course_ongoing_lessons_screen.dart';
 import '../screens/my_course_ongoing_video_screen.dart';
@@ -136,7 +134,17 @@ class AppRoutes {
       
       return CourseDetailPage(course: course);
     },
-    core_constants.AppConstants.routeProfile: (context) => const ProfileScreen(),
+    core_constants.AppConstants.routeInstructorProfile: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is String) {
+        return InstructorProfilePage(username: args);
+      }
+      return const Scaffold(
+        body: Center(
+          child: Text('Invalid instructor username'),
+        ),
+      );
+    },
     core_constants.AppConstants.routeNotifications: (context) => const NotificationsScreen(),
     core_constants.AppConstants.routeChatMessages: (context) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;

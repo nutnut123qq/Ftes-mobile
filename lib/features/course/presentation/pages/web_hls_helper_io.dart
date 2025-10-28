@@ -1,4 +1,4 @@
-import 'web_hls_helper_base.dart';
+import 'web_hls_helper.dart';
 
 class _WebHlsHelperIO implements WebHlsHelper {
   @override

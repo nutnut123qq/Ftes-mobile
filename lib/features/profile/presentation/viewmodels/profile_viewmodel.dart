@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/usecases/profile_usecases.dart';
 import '../../../../core/error/failures.dart';
-import 'package:dartz/dartz.dart';
 
 /// ViewModel for Profile operations
 class ProfileViewModel extends ChangeNotifier {

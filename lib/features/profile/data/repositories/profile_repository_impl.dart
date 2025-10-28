@@ -1,13 +1,13 @@
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../../core/error/exceptions.dart';
-import '../../../../core/error/failures.dart';
 import '../../domain/entities/profile.dart';
+import '../../domain/entities/instructor_course.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../domain/constants/profile_constants.dart';
 import '../models/profile_model.dart';
-import '../models/profile_request_model.dart';
 import '../models/upload_image_response_model.dart';
+import '../helpers/instructor_json_parser_helper.dart';
 import 'package:dio/dio.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -90,6 +90,88 @@ class ProfileRepositoryImpl implements ProfileRepository {
         rethrow;
       }
       throw ServerException('${ProfileConstants.errorGetProfileFailed}: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Profile> getInstructorProfileByUsername(String userName) async {
+    if (!await _networkInfo.isConnected) {
+      throw NetworkException('No internet connection');
+    }
+
+    try {
+      final response = await _apiClient.get(
+        '${ProfileConstants.getProfileByUsernameEndpoint}/$userName',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data != null && data['result'] != null) {
+          return ProfileModel.fromJson(data['result']).toEntity();
+        } else {
+          throw ServerException(ProfileConstants.errorProfileNotFound);
+        }
+      } else {
+        final data = response.data;
+        throw ServerException(
+          data?['messageDTO']?['message'] ?? ProfileConstants.errorGetProfileFailed,
+        );
+      }
+    } catch (e) {
+      if (e is AppException) {
+        rethrow;
+      }
+      throw ServerException('${ProfileConstants.errorGetProfileFailed}: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<InstructorCourse>> getCoursesByCreator(String userId) async {
+    if (!await _networkInfo.isConnected) {
+      throw NetworkException('No internet connection');
+    }
+
+    try {
+      final response = await _apiClient.get(
+        '${ProfileConstants.getInstructorCoursesEndpoint}/$userId',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data != null && data['result'] != null) {
+          final result = data['result'];
+          List<dynamic> coursesList;
+          
+          if (result['data'] is List) {
+            coursesList = result['data'] as List;
+          } else {
+            coursesList = [];
+          }
+
+          // Use compute isolate for parsing if list is large
+          if (coursesList.length > ProfileConstants.instructorCoursesThreshold) {
+            print('⚡ Using compute isolate for parsing ${coursesList.length} instructor courses');
+            final courseModels = await compute(parseInstructorCoursesJson, coursesList);
+            return courseModels.map((model) => model.toEntity()).toList();
+          } else {
+            print('⚡ Parsing instructor courses on main thread (${coursesList.length} courses)');
+            final courseModels = parseInstructorCoursesJson(coursesList);
+            return courseModels.map((model) => model.toEntity()).toList();
+          }
+        } else {
+          throw ServerException(ProfileConstants.errorGetInstructorCoursesFailed);
+        }
+      } else {
+        final data = response.data;
+        throw ServerException(
+          data?['messageDTO']?['message'] ?? ProfileConstants.errorGetInstructorCoursesFailed,
+        );
+      }
+    } catch (e) {
+      if (e is AppException) {
+        rethrow;
+      }
+      throw ServerException('${ProfileConstants.errorGetInstructorCoursesFailed}: ${e.toString()}');
     }
   }
 

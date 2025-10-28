@@ -67,6 +67,7 @@ class AppConstants {
   static const String routeLearning = '/learning';
   static const String routeQuiz = '/quiz';
   static const String routeProfile = '/profile';
+  static const String routeInstructorProfile = '/instructor-profile';
   static const String routeNotifications = '/notifications';
   static const String routeChatMessages = '/chat-messages';
   static const String routeCurriculum = '/curriculum';
