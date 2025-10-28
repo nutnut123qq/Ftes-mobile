@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'dart:async';
+import 'package:ftes/features/auth/domain/constants/auth_constants.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/login_with_google_usecase.dart';
@@ -48,7 +50,7 @@ class AuthViewModel extends ChangeNotifier {
         },
       );
     } catch (e) {
-      _setError('Initialization failed: $e');
+      _setError(AuthConstants.errorServer);
     } finally {
       _setLoading(false);
     }
@@ -116,28 +118,33 @@ class AuthViewModel extends ChangeNotifier {
         },
       );
     } catch (e) {
-      _setError('Logout failed: $e');
+      _setError(AuthConstants.errorServer);
     } finally {
       _setLoading(false);
     }
   }
 
   /// Refresh user information
+  Timer? _refreshDebounce;
+
   Future<void> refreshUserInfo() async {
     if (!_isLoggedIn) return;
 
-    try {
-      final result = await _getCurrentUserUseCase();
-      result.fold(
-        (failure) => _setError(_mapFailureToMessage(failure)),
-        (user) {
-          _currentUser = user;
-          notifyListeners();
-        },
-      );
-    } catch (e) {
-      _setError('Failed to refresh user info: $e');
-    }
+    _refreshDebounce?.cancel();
+    _refreshDebounce = Timer(const Duration(milliseconds: 300), () async {
+      try {
+        final result = await _getCurrentUserUseCase();
+        result.fold(
+          (failure) => _setError(_mapFailureToMessage(failure)),
+          (user) {
+            _currentUser = user;
+            notifyListeners();
+          },
+        );
+      } catch (e) {
+        _setError(AuthConstants.errorServer);
+      }
+    });
   }
 
   /// Clear error message

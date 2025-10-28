@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ftes/core/constants/app_constants.dart';
 import 'package:ftes/core/error/exceptions.dart';
+import 'package:ftes/features/auth/domain/constants/auth_constants.dart';
 import '../models/user_model.dart';
 import 'auth_local_datasource.dart';
 
@@ -15,24 +17,18 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> cacheAccessToken(String token) async {
     try {
-      print('💾 Caching access token: ${token.substring(0, 20)}...');
       await _sharedPreferences.setString(AppConstants.keyAccessToken, token);
-      print('✅ Access token cached successfully');
     } catch (e) {
-      print('❌ Failed to cache access token: $e');
-      throw CacheException('Failed to cache access token: $e');
+      throw const CacheException(AuthConstants.errorCache);
     }
   }
 
   @override
   Future<void> cacheUserId(String userId) async {
     try {
-      print('💾 Caching user ID: $userId');
       await _sharedPreferences.setString(AppConstants.keyUserId, userId);
-      print('✅ User ID cached successfully');
     } catch (e) {
-      print('❌ Failed to cache user ID: $e');
-      throw CacheException('Failed to cache user ID: $e');
+      throw const CacheException(AuthConstants.errorCache);
     }
   }
 
@@ -41,7 +37,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     try {
       return _sharedPreferences.getString(AppConstants.keyAccessToken);
     } catch (e) {
-      throw CacheException('Failed to get cached access token: $e');
+      throw const CacheException(AuthConstants.errorCache);
     }
   }
 
@@ -50,7 +46,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     try {
       await _sharedPreferences.setString(AppConstants.keyRefreshToken, token);
     } catch (e) {
-      throw CacheException('Failed to cache refresh token: $e');
+      throw const CacheException(AuthConstants.errorCache);
     }
   }
 
@@ -59,7 +55,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     try {
       return _sharedPreferences.getString(AppConstants.keyRefreshToken);
     } catch (e) {
-      throw CacheException('Failed to get cached refresh token: $e');
+      throw const CacheException(AuthConstants.errorCache);
     }
   }
 
@@ -69,17 +65,17 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       await _sharedPreferences.remove(AppConstants.keyAccessToken);
       await _sharedPreferences.remove(AppConstants.keyRefreshToken);
     } catch (e) {
-      throw CacheException('Failed to clear tokens: $e');
+      throw const CacheException(AuthConstants.errorCache);
     }
   }
 
   @override
   Future<void> cacheUser(UserModel user) async {
     try {
-      final userJson = jsonEncode(user.toJson());
+      final userJson = await compute(_encodeUserJson, user.toJson());
       await _sharedPreferences.setString(AppConstants.keyUserData, userJson);
     } catch (e) {
-      throw CacheException('Failed to cache user: $e');
+      throw const CacheException(AuthConstants.errorCache);
     }
   }
 
@@ -88,12 +84,12 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     try {
       final userJson = _sharedPreferences.getString(AppConstants.keyUserData);
       if (userJson != null) {
-        final userMap = jsonDecode(userJson) as Map<String, dynamic>;
+        final userMap = await compute(_decodeUserJson, userJson);
         return UserModel.fromJson(userMap);
       }
       return null;
     } catch (e) {
-      throw CacheException('Failed to get cached user: $e');
+      throw const CacheException(AuthConstants.errorCache);
     }
   }
 
@@ -102,7 +98,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     try {
       await _sharedPreferences.remove(AppConstants.keyUserData);
     } catch (e) {
-      throw CacheException('Failed to clear user: $e');
+      throw const CacheException(AuthConstants.errorCache);
     }
   }
 
@@ -121,18 +117,24 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     try {
       await _sharedPreferences.setBool('is_logged_in', isLoggedIn);
     } catch (e) {
-      throw CacheException('Failed to set login status: $e');
+      throw const CacheException(AuthConstants.errorCache);
     }
   }
 
   @override
   Future<void> clearAuthData() async {
     try {
-      await clearTokens();
-      await clearUser();
-      await setLoggedIn(false);
+      await Future.wait([
+        clearTokens(),
+        clearUser(),
+        setLoggedIn(false),
+      ]);
     } catch (e) {
-      throw CacheException('Failed to clear auth data: $e');
+      throw const CacheException(AuthConstants.errorCache);
     }
   }
 }
+
+// Off-main-thread helpers for JSON (compute requires top-level functions)
+String _encodeUserJson(Map<String, dynamic> json) => jsonEncode(json);
+Map<String, dynamic> _decodeUserJson(String jsonStr) => jsonDecode(jsonStr) as Map<String, dynamic>;

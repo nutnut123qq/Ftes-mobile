@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'dart:async';
+import 'package:ftes/features/auth/domain/constants/auth_constants.dart';
 import 'package:ftes/core/error/failures.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/register_usecase.dart';
@@ -55,15 +57,15 @@ class RegisterViewModel extends ChangeNotifier {
           _isRegistered = true;
           _registeredEmail = email;
           
-          // Auto-create profile after successful registration
-          _createProfileAuto(user.id);
+          // Auto-create profile after successful registration (fire-and-forget)
+          unawaited(_createProfileAuto(user.id));
           
           notifyListeners();
           return true;
         },
       );
     } catch (e) {
-      _setError('Registration failed: $e');
+      _setError(AuthConstants.errorRegisterFailed);
       return false;
     } finally {
       _setLoading(false);
@@ -93,7 +95,7 @@ class RegisterViewModel extends ChangeNotifier {
         },
       );
     } catch (e) {
-      _setError('OTP verification failed: $e');
+      _setError(AuthConstants.errorVerifyOTPFailed);
       return false;
     } finally {
       _setLoading(false);
@@ -119,7 +121,7 @@ class RegisterViewModel extends ChangeNotifier {
         },
       );
     } catch (e) {
-      _setError('Resend code failed: $e');
+      _setError(AuthConstants.errorResendCodeFailed);
       return false;
     } finally {
       _setLoading(false);
@@ -172,19 +174,6 @@ class RegisterViewModel extends ChangeNotifier {
 
   /// Map failure to user-friendly message
   String _mapFailureToMessage(Failure failure) {
-    switch (failure.runtimeType) {
-      case ServerFailure:
-        return 'Server error: ${failure.message}';
-      case NetworkFailure:
-        return 'Network error: ${failure.message}';
-      case CacheFailure:
-        return 'Cache error: ${failure.message}';
-      case AuthFailure:
-        return 'Authentication error: ${failure.message}';
-      case ValidationFailure:
-        return 'Validation error: ${failure.message}';
-      default:
-        return failure.message;
-    }
+    return failure.message;
   }
 }

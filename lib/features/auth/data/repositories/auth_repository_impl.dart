@@ -4,6 +4,7 @@ import 'package:ftes/core/error/exceptions.dart';
 import 'package:ftes/core/error/failures.dart';
 import 'package:ftes/core/network/network_info.dart';
 import 'package:ftes/core/config/env_config.dart';
+import 'package:ftes/features/auth/domain/constants/auth_constants.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_local_datasource.dart';
@@ -26,13 +27,12 @@ class AuthRepositoryImpl implements AuthRepository {
     if (await networkInfo.isConnected) {
       try {
         final authResponse = await remoteDataSource.login(email, password);
-        await localDataSource.cacheAccessToken(authResponse.accessToken);
-        
-        // Cache userId if available in response
-        if (authResponse.userId != null && authResponse.userId!.isNotEmpty) {
-          await localDataSource.cacheUserId(authResponse.userId!);
-        }
-        
+        await Future.wait([
+          localDataSource.cacheAccessToken(authResponse.accessToken),
+          if (authResponse.userId != null && authResponse.userId!.isNotEmpty)
+            localDataSource.cacheUserId(authResponse.userId!),
+        ]);
+
         // Since API doesn't return user info in login response, we'll fetch it separately
         // For now, return a placeholder user
         return Right(UserModel(id: authResponse.userId ?? 'temp', email: email));
@@ -46,7 +46,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(NetworkFailure(e.message));
       }
     } else {
-      return const Left(NetworkFailure('No internet connection'));
+      return const Left(NetworkFailure(AuthConstants.errorNoInternet));
     }
   }
 
@@ -57,7 +57,7 @@ class AuthRepositoryImpl implements AuthRepository {
         // Step 1: Get authorization code from Google OAuth
         final authCode = await _getGoogleAuthCode();
         if (authCode == null) {
-          return const Left(ServerFailure('Google authentication cancelled'));
+          return const Left(ServerFailure(AuthConstants.errorGoogleCancelled));
         }
         
         // Step 2: Exchange code with backend
@@ -79,7 +79,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(NetworkFailure(e.message));
       }
     } else {
-      return const Left(NetworkFailure('No internet connection'));
+      return const Left(NetworkFailure(AuthConstants.errorNoInternet));
     }
   }
 
@@ -104,7 +104,6 @@ class AuthRepositoryImpl implements AuthRepository {
       // Temporary fallback - return null for now
       return null;
     } catch (e) {
-      print('❌ Google OAuth error: $e');
       return null;
     }
   }
@@ -122,7 +121,7 @@ class AuthRepositoryImpl implements AuthRepository {
         await localDataSource.cacheUser(remoteUser);
         return Right(remoteUser);
       }
-      return const Left(CacheFailure('No cached user found'));
+      return const Left(CacheFailure(AuthConstants.errorGetUserInfo));
     } on CacheException catch (e) {
       return Left(CacheFailure(e.message));
     } on ServerException catch (e) {
@@ -157,7 +156,7 @@ class AuthRepositoryImpl implements AuthRepository {
         if (response.success && response.result != null) {
           return Right(response.result!);
         } else {
-          return Left(ServerFailure(response.messageDTO?.message ?? 'Registration failed'));
+          return Left(ServerFailure(response.messageDTO?.message ?? AuthConstants.errorRegisterFailed));
         }
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message));
@@ -169,7 +168,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(NetworkFailure(e.message));
       }
     } else {
-      return const Left(NetworkFailure('No internet connection'));
+      return const Left(NetworkFailure(AuthConstants.errorNoInternet));
     }
   }
 
@@ -183,7 +182,7 @@ class AuthRepositoryImpl implements AuthRepository {
           await localDataSource.cacheAccessToken(response.result!.accessToken);
           return Right(response.result!.accessToken);
         } else {
-          return Left(ServerFailure(response.messageDTO?.message ?? 'OTP verification failed'));
+          return Left(ServerFailure(response.messageDTO?.message ?? AuthConstants.errorVerifyOTPFailed));
         }
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message));
@@ -195,7 +194,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(NetworkFailure(e.message));
       }
     } else {
-      return const Left(NetworkFailure('No internet connection'));
+      return const Left(NetworkFailure(AuthConstants.errorNoInternet));
     }
   }
 
@@ -215,7 +214,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(NetworkFailure(e.message));
       }
     } else {
-      return const Left(NetworkFailure('No internet connection'));
+      return const Left(NetworkFailure(AuthConstants.errorNoInternet));
     }
   }
 

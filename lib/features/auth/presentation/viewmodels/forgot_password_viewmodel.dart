@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:ftes/features/auth/domain/constants/auth_constants.dart';
 import '../../domain/usecases/send_forgot_password_email_usecase.dart';
 import '../../domain/usecases/verify_forgot_password_otp_usecase.dart';
 import '../../domain/usecases/reset_password_usecase.dart';
@@ -72,7 +73,7 @@ class ForgotPasswordViewModel extends ChangeNotifier {
 
   Future<bool> resetPassword(String password) async {
     if (_accessToken == null) {
-      _setError('Access token not found. Please restart the process.');
+      _setError(AuthConstants.errorAccessTokenMissing);
       return false;
     }
 
