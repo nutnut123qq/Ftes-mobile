@@ -36,7 +36,6 @@ class _InstructorProfilePageState extends State<InstructorProfilePage> {
 
   @override
   void dispose() {
-    _viewModel.clear();
     super.dispose();
   }
 

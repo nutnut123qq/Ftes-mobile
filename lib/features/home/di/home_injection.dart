@@ -8,6 +8,7 @@ import '../domain/usecases/get_latest_courses_usecase.dart';
 import '../domain/usecases/get_featured_courses_usecase.dart';
 import '../domain/usecases/get_banners_usecase.dart';
 import '../domain/usecases/get_categories_usecase.dart';
+import '../domain/usecases/search_courses_usecase.dart';
 import '../presentation/viewmodels/home_viewmodel.dart';
 
 /// Initialize home feature dependencies
@@ -32,6 +33,7 @@ Future<void> initHomeDependencies() async {
   sl.registerLazySingleton(() => GetFeaturedCoursesUseCase(sl()));
   sl.registerLazySingleton(() => GetBannersUseCase(sl()));
   sl.registerLazySingleton(() => GetCategoriesUseCase(sl()));
+  sl.registerLazySingleton(() => SearchCoursesUseCase(sl()));
 
   // ViewModels
   sl.registerFactory(() => HomeViewModel(
@@ -39,5 +41,6 @@ Future<void> initHomeDependencies() async {
     getFeaturedCoursesUseCase: sl(),
     getBannersUseCase: sl(),
     getCategoriesUseCase: sl(),
+    searchCoursesUseCase: sl(),
   ));
 }

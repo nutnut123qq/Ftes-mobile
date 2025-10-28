@@ -17,4 +17,16 @@ abstract class HomeRepository {
   
   /// Get course categories
   Future<Either<Failure, List<Category>>> getCategories();
+
+  /// Search courses
+  Future<Either<Failure, List<Course>>> searchCourses({
+    String? code,
+    String? categoryId,
+    String? level,
+    double? avgStar,
+    int pageNumber = 1,
+    int pageSize = 10,
+    String sortField = 'title',
+    String sortOrder = 'ASC',
+  });
 }

@@ -18,4 +18,16 @@ abstract class HomeRemoteDataSource {
   
   /// Get courses by category
   Future<List<CourseModel>> getCoursesByCategory(String categoryId);
+
+  /// Search courses with filters
+  Future<List<CourseModel>> searchCourses({
+    String? code,
+    String? categoryId,
+    String? level,
+    double? avgStar,
+    int pageNumber = 1,
+    int pageSize = 10,
+    String sortField = 'title',
+    String sortOrder = 'ASC',
+  });
 }

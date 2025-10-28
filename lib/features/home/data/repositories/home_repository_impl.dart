@@ -80,4 +80,38 @@ class HomeRepositoryImpl implements HomeRepository {
       return const Left(NetworkFailure('No internet connection'));
     }
   }
+
+  @override
+  Future<Either<Failure, List<Course>>> searchCourses({
+    String? code,
+    String? categoryId,
+    String? level,
+    double? avgStar,
+    int pageNumber = 1,
+    int pageSize = 10,
+    String sortField = 'title',
+    String sortOrder = 'ASC',
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final courses = await remoteDataSource.searchCourses(
+          code: code,
+          categoryId: categoryId,
+          level: level,
+          avgStar: avgStar,
+          pageNumber: pageNumber,
+          pageSize: pageSize,
+          sortField: sortField,
+          sortOrder: sortOrder,
+        );
+        return Right(courses.map((course) => course.toEntity()).toList());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(e.message));
+      }
+    } else {
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
 }

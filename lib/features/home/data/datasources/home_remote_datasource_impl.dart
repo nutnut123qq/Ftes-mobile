@@ -245,4 +245,65 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       throw ServerException(e.toString());
     }
   }
+
+  @override
+  Future<List<CourseModel>> searchCourses({
+    String? code,
+    String? categoryId,
+    String? level,
+    double? avgStar,
+    int pageNumber = 1,
+    int pageSize = 10,
+    String sortField = 'title',
+    String sortOrder = 'ASC',
+  }) async {
+    try {
+      print('🔍 Searching courses: ${AppConstants.baseUrl}${AppConstants.coursesSearchEndpoint}');
+      final queryParams = <String, dynamic>{
+        'pageNumber': pageNumber.toString(),
+        'pageSize': pageSize.toString(),
+        'sortField': sortField,
+        'sortOrder': sortOrder,
+      };
+      if (code != null && code.isNotEmpty) queryParams['code'] = code;
+      if (categoryId != null && categoryId.isNotEmpty) queryParams['categoryId'] = categoryId;
+      if (level != null && level.isNotEmpty) queryParams['level'] = level;
+      if (avgStar != null) queryParams['avgStar'] = avgStar.toString();
+
+      final response = await _apiClient.get(
+        AppConstants.coursesSearchEndpoint,
+        queryParameters: queryParams,
+      );
+
+      print('📥 Response status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final result = response.data['result'];
+        List<dynamic> coursesList;
+
+        if (result != null && result['data'] is List) {
+          coursesList = result['data'] as List;
+        } else if (response.data is List) {
+          coursesList = response.data as List;
+        } else {
+          throw const ServerException('Invalid response format for search courses');
+        }
+
+        if (coursesList.length > 50) {
+          print('🔄 Using compute() isolate for parsing ${coursesList.length} search courses');
+          return await compute(parseCourseListJson, coursesList);
+        } else {
+          return parseCourseListJson(coursesList);
+        }
+      } else {
+        throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to search courses');
+      }
+    } catch (e) {
+      print('❌ Search courses error: $e');
+      if (e is ServerException) {
+        rethrow;
+      }
+      throw ServerException(e.toString());
+    }
+  }
 }

@@ -238,29 +238,32 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.search,
-              color: Colors.grey[600]!,
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                HomeConstants.searchPlaceholder,
-                style: AppTextStyles.body1.copyWith(
-                  color: Colors.grey[600]!,
-                  fontSize: 14,
+        child: InkWell(
+          onTap: () => Navigator.pushNamed(context, AppConstants.routeCourseSearch),
+          child: Row(
+            children: [
+              Icon(
+                Icons.search,
+                color: Colors.grey[600]!,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  HomeConstants.searchPlaceholder,
+                  style: AppTextStyles.body1.copyWith(
+                    color: Colors.grey[600]!,
+                    fontSize: 14,
+                  ),
                 ),
               ),
-            ),
-            Icon(
-              Icons.filter_list,
-              color: Colors.grey[600]!,
-              size: 20,
-            ),
-          ],
+              Icon(
+                Icons.filter_list,
+                color: Colors.grey[600]!,
+                size: 20,
+              ),
+            ],
+          ),
         ),
       ),
     );

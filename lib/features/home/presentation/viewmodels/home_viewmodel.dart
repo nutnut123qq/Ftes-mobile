@@ -6,6 +6,7 @@ import '../../domain/usecases/get_latest_courses_usecase.dart';
 import '../../domain/usecases/get_featured_courses_usecase.dart';
 import '../../domain/usecases/get_banners_usecase.dart';
 import '../../domain/usecases/get_categories_usecase.dart';
+import '../../domain/usecases/search_courses_usecase.dart';
 import '../../domain/constants/home_constants.dart';
 import 'package:ftes/core/error/failures.dart';
 import 'package:ftes/core/usecases/usecase.dart';
@@ -16,16 +17,19 @@ class HomeViewModel extends ChangeNotifier {
   final GetFeaturedCoursesUseCase _getFeaturedCoursesUseCase;
   final GetBannersUseCase _getBannersUseCase;
   final GetCategoriesUseCase _getCategoriesUseCase;
+  final SearchCoursesUseCase _searchCoursesUseCase;
 
   HomeViewModel({
     required GetLatestCoursesUseCase getLatestCoursesUseCase,
     required GetFeaturedCoursesUseCase getFeaturedCoursesUseCase,
     required GetBannersUseCase getBannersUseCase,
     required GetCategoriesUseCase getCategoriesUseCase,
+    required SearchCoursesUseCase searchCoursesUseCase,
   })  : _getLatestCoursesUseCase = getLatestCoursesUseCase,
         _getFeaturedCoursesUseCase = getFeaturedCoursesUseCase,
         _getBannersUseCase = getBannersUseCase,
-        _getCategoriesUseCase = getCategoriesUseCase;
+        _getCategoriesUseCase = getCategoriesUseCase,
+        _searchCoursesUseCase = searchCoursesUseCase;
 
   // State variables
   List<Course> _latestCourses = [];
@@ -40,6 +44,8 @@ class HomeViewModel extends ChangeNotifier {
   bool _isLoadingCategoryCourses = false;
   String? _errorMessage;
   String? _selectedCategoryId;
+  List<Course> _searchSuggestions = [];
+  bool _isSearching = false;
 
   // Getters
   List<Course> get latestCourses => _latestCourses;
@@ -47,6 +53,7 @@ class HomeViewModel extends ChangeNotifier {
   List<Banner> get banners => _banners;
   List<home_category.Category> get categories => _categories;
   List<Course> get categoryCourses => _categoryCourses;
+  List<Course> get searchSuggestions => _searchSuggestions;
   bool get isLoadingLatestCourses => _isLoadingLatestCourses;
   bool get isLoadingFeaturedCourses => _isLoadingFeaturedCourses;
   bool get isLoadingBanners => _isLoadingBanners;
@@ -55,6 +62,7 @@ class HomeViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   String? get selectedCategoryId => _selectedCategoryId;
   bool get isLoading => _isLoadingLatestCourses || _isLoadingFeaturedCourses || _isLoadingBanners;
+  bool get isSearching => _isSearching;
 
   /// Initialize the ViewModel - fetch all data
   /// Optimized to minimize notifyListeners() calls
@@ -72,6 +80,39 @@ class HomeViewModel extends ChangeNotifier {
     
     // Notify listeners only once after all data is loaded
     notifyListeners();
+  }
+
+  /// Search courses to provide suggestions (debounced from UI)
+  Future<void> searchCoursesSuggestions(String keyword) async {
+    final query = keyword.trim();
+    if (query.isEmpty) {
+      _searchSuggestions = [];
+      notifyListeners();
+      return;
+    }
+    _isSearching = true;
+    notifyListeners();
+
+    final result = await _searchCoursesUseCase(SearchCoursesParams(
+      code: query,
+      pageNumber: 1,
+      pageSize: 10,
+      sortField: 'title',
+      sortOrder: 'ASC',
+    ));
+
+    result.fold(
+      (_) {
+        _searchSuggestions = [];
+        _isSearching = false;
+        notifyListeners();
+      },
+      (courses) {
+        _searchSuggestions = courses;
+        _isSearching = false;
+        notifyListeners();
+      },
+    );
   }
   
   /// Internal method to fetch latest courses without notifying listeners

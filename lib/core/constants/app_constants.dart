@@ -49,6 +49,7 @@ class AppConstants {
   static const String routeLetsYouIn = '/lets-you-in';
   static const String routeSignIn = '/signin';
   static const String routeSignUp = '/signup';
+  static const String routeCourseSearch = '/course-search';
   static const String routeForgotPassword = '/forgot-password';
   static const String routeVerifyForgotPassword = '/verify-forgot-password';
   static const String routeVerifyEmail = '/verify-email';

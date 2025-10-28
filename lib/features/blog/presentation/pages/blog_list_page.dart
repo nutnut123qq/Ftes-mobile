@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -92,6 +93,9 @@ class _BlogListPageState extends State<BlogListPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Search input
+                  _buildSearchBar(context),
+                  const SizedBox(height: 16),
                   // Featured Blog Post (first blog)
                   if (blogViewModel.blogs.isNotEmpty)
                     _buildFeaturedPost(blogViewModel.blogs.first),
@@ -142,6 +146,33 @@ class _BlogListPageState extends State<BlogListPage> {
         },
       ),
       bottomNavigationBar: AppBottomNavigationBar(selectedIndex: 3),
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
+    final controller = TextEditingController();
+    Timer? debounce;
+
+    void onChanged(String value) {
+      debounce?.cancel();
+      debounce = Timer(const Duration(milliseconds: 350), () {
+        Provider.of<BlogViewModel>(context, listen: false).searchBlogs(title: value, pageNumber: 1, pageSize: BlogConstants.defaultPageSize);
+      });
+    }
+
+    return TextField(
+      controller: controller,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        hintText: BlogConstants.searchPlaceholder,
+        prefixIcon: const Icon(Icons.search),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
     );
   }
 

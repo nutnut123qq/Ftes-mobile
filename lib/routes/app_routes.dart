@@ -14,6 +14,7 @@ import '../features/auth/presentation/pages/create_new_password_page.dart';
 import '../screens/congratulations_screen.dart';
 import '../screens/create_pin_screen.dart';
 import '../features/home/presentation/pages/home_page.dart';
+import '../features/home/presentation/pages/course_search_page.dart';
 import '../features/home/presentation/viewmodels/home_viewmodel.dart';
 import '../features/my_courses/presentation/pages/my_courses_page.dart';
 import '../features/my_courses/presentation/viewmodels/my_courses_viewmodel.dart';
@@ -83,6 +84,10 @@ class AppRoutes {
     core_constants.AppConstants.routeHome: (context) => ChangeNotifierProvider(
       create: (context) => di.sl<HomeViewModel>(),
       child: const HomePage(),
+    ),
+    core_constants.AppConstants.routeCourseSearch: (context) => ChangeNotifierProvider(
+      create: (context) => di.sl<HomeViewModel>(),
+      child: const CourseSearchPage(),
     ),
     core_constants.AppConstants.routePopularCourses: (context) => const PopularCoursesScreen(),
     core_constants.AppConstants.routeTopMentors: (context) => const TopMentorsScreen(),
