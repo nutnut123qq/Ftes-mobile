@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/core/constants/app_constants.dart';
 import 'package:ftes/features/blog/presentation/pages/blog_list_page.dart';
+import 'package:ftes/features/roadmap/presentation/pages/roadmap_page.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
@@ -15,60 +16,113 @@ class AppBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 100,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F9FF),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+    return SizedBox(
+      height: 110,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          Positioned.fill(
+            top: 10,
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F9FF),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(25),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildBottomNavItem(
+                        context,
+                        Icons.home,
+                        'Trang chủ',
+                        selectedIndex == 0,
+                        onTap: () => _handleTap(context, 0),
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildBottomNavItem(
+                        context,
+                        Icons.book,
+                        'Khóa học',
+                        selectedIndex == 1,
+                        onTap: () => _handleTap(context, 1),
+                      ),
+                    ),
+                    const SizedBox(width: 48),
+                    Expanded(
+                      child: _buildBottomNavItem(
+                        context,
+                        Icons.article,
+                        'Blog',
+                        selectedIndex == 3,
+                        onTap: () => _handleTap(context, 3),
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildBottomNavItem(
+                        context,
+                        Icons.shopping_cart,
+                        'Giỏ hàng',
+                        selectedIndex == 4,
+                        onTap: () => _handleTap(context, 4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Floating Action Button có hiệu ứng chọn
+          Positioned(
+            top: -20,
+            child: GestureDetector(
+              onTap: () => _handleTap(context, 2),
+              child: AnimatedScale(
+                scale: selectedIndex == 2 ? 1.1 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: selectedIndex == 2
+                        ? const Color(0xFF0741C8)
+                        : const Color(0xFF0961F5),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: selectedIndex == 2
+                            ? Colors.blue.withAlpha(128)
+                            : Colors.black26,
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.auto_awesome,
+                    color: selectedIndex == 2
+                        ? Colors.white
+                        : const Color(0xFFE0E0E0),
+                    size: 28,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildBottomNavItem(
-              context,
-              Icons.home,
-              'Trang chủ',
-              selectedIndex == 0,
-              onTap: () => _handleTap(context, 0),
-            ),
-            _buildBottomNavItem(
-              context,
-              Icons.book,
-              'Khóa học',
-              selectedIndex == 1,
-              onTap: () => _handleTap(context, 1),
-            ),
-            _buildBottomNavItem(
-              context,
-              Icons.shopping_cart,
-              'Giỏ hàng',
-              selectedIndex == 2,
-              onTap: () => _handleTap(context, 2),
-            ),
-            _buildBottomNavItem(
-              context,
-              Icons.article,
-              'Blog',
-              selectedIndex == 3,
-              onTap: () => _handleTap(context, 3),
-            ),
-            _buildBottomNavItem(
-              context,
-              Icons.person,
-              'Hồ sơ',
-              selectedIndex == 4,
-              onTap: () => _handleTap(context, 4),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -79,42 +133,39 @@ class AppBottomNavigationBar extends StatelessWidget {
       return;
     }
 
-    // Default navigation logic
     switch (index) {
       case 0: // Home
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/home',
-          (route) => false,
-        );
+        Navigator.pushNamedAndRemoveUntil(context, AppConstants.routeHome, (route) => false);
         break;
       case 1: // My Courses
         Navigator.pushNamed(context, AppConstants.routeMyCourses);
         break;
-      case 2: // Cart
-        Navigator.pushNamed(context, AppConstants.routeCart);
+      case 2: // AI Roadmap
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const RoadmapPage()),
+        );
+        // Navigator.pushNamed(context, AppConstants.routeRoadmap);
         break;
       case 3: // Blog
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const BlogListPage(),
-          ),
+          MaterialPageRoute(builder: (context) => const BlogListPage()),
         );
         break;
-      case 4: // Profile
-        Navigator.pushNamed(context, '/profile');
+      case 4: // Cart
+        Navigator.pushNamed(context, AppConstants.routeCart);
         break;
     }
   }
 
   Widget _buildBottomNavItem(
-    BuildContext context,
-    IconData icon,
-    String label,
-    bool isSelected, {
-    VoidCallback? onTap,
-  }) {
+      BuildContext context,
+      IconData icon,
+      String label,
+      bool isSelected, {
+        VoidCallback? onTap,
+      }) {
     return GestureDetector(
       onTap: onTap,
       child: Column(

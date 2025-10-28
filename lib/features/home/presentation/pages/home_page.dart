@@ -195,7 +195,7 @@ class _HomePageState extends State<HomePage> {
           ),
           GestureDetector(
             onTap: () {
-              // Handle notification tap
+              Navigator.pushNamed(context, AppConstants.routeProfile);
             },
             child: Container(
               padding: const EdgeInsets.all(12),
@@ -204,14 +204,14 @@ class _HomePageState extends State<HomePage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withAlpha(26),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: const Icon(
-                Icons.notifications_outlined,
+                Icons.person,
                 color: AppColors.primary,
                 size: 24,
               ),
