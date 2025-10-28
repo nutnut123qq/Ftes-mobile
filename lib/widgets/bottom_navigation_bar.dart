@@ -17,13 +17,12 @@ class AppBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 110,
+      height: 88,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.topCenter,
         children: [
           Positioned.fill(
-            top: 10,
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFFF5F9FF),
@@ -57,7 +56,7 @@ class AppBottomNavigationBar extends StatelessWidget {
                         onTap: () => _handleTap(context, 1),
                       ),
                     ),
-                    const SizedBox(width: 48),
+                    const SizedBox(width: 52),
                     Expanded(
                       child: _buildBottomNavItem(
                         context,
@@ -84,7 +83,7 @@ class AppBottomNavigationBar extends StatelessWidget {
 
           // Floating Action Button có hiệu ứng chọn
           Positioned(
-            top: -20,
+            top: -16,
             child: GestureDetector(
               onTap: () => _handleTap(context, 2),
               child: AnimatedScale(
@@ -112,7 +111,7 @@ class AppBottomNavigationBar extends StatelessWidget {
                     ],
                   ),
                   child: Icon(
-                    Icons.auto_awesome,
+                    Icons.route,
                     color: selectedIndex == 2
                         ? Colors.white
                         : const Color(0xFFE0E0E0),
