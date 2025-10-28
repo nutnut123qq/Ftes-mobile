@@ -210,44 +210,145 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               ),
             ),
             
-            // Video Play Button
+            // Video Play Button / Cart Button
             Positioned(
               right: 34,
               bottom: 20,
-              child: GestureDetector(
-                onTap: () {
-                  // Show message that user needs to purchase the course
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Bạn cần mua khóa học để xem video'),
-                      backgroundColor: const Color(0xFF0961F5),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+              child: Consumer<CourseDetailViewModel>(
+                builder: (context, viewModel, child) {
+                  final isEnrolled = viewModel.isEnrolled;
+                  
+                  return GestureDetector(
+                    onTap: () async {
+                      if (isEnrolled == true) {
+                        // Navigate to first lesson when enrolled
+                        final courseDetail = viewModel.courseDetail;
+                        
+                        if (courseDetail != null && courseDetail.parts.isNotEmpty) {
+                          final firstPart = courseDetail.parts.first;
+                          if (firstPart.lessons.isNotEmpty) {
+                            final firstLesson = firstPart.lessons.first;
+                            
+                            // Navigate to video page
+                            Navigator.pushNamed(
+                              context,
+                              AppConstants.routeCourseVideo,
+                              arguments: {
+                                'lessonId': firstLesson.id,
+                                'lessonTitle': firstLesson.title,
+                                'courseTitle': courseDetail.title,
+                                'videoUrl': firstLesson.video,
+                                'courseId': courseDetail.id,
+                                'type': firstLesson.type,
+                              },
+                            );
+                          } else {
+                            // No lessons available
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Không có bài học nào'),
+                                backgroundColor: Colors.red,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                                ),
+                              ),
+                            );
+                          }
+                        } else {
+                          // No parts available
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Khóa học chưa có nội dung'),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(8)),
+                              ),
+                            ),
+                          );
+                        }
+                      } else {
+                        // Add to cart when not enrolled
+                        final cartViewModel = Provider.of<CartViewModel>(context, listen: false);
+                        final courseDetail = viewModel.courseDetail;
+                        final apiPrice = courseDetail?.totalPrice ?? 0.0;
+                        final coursePrice = double.tryParse(widget.course.price.replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
+                        final price = apiPrice > 0 ? apiPrice : coursePrice;
+                        
+                        if (price > 0) {
+                          // Add to cart for paid courses
+                          final courseId = courseDetail?.id ?? widget.course.id ?? '';
+                          if (courseId.isNotEmpty) {
+                            final success = await cartViewModel.addToCart(courseId);
+                            
+                            if (success) {
+                              // Show success message
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text('Đã thêm khóa học vào giỏ hàng'),
+                                  backgroundColor: Colors.green,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  action: SnackBarAction(
+                                    label: 'Xem giỏ hàng',
+                                    textColor: Colors.white,
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, AppConstants.routeCart);
+                                    },
+                                  ),
+                                ),
+                              );
+                            } else {
+                              // Show error message
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(cartViewModel.errorMessage ?? 'Không thể thêm vào giỏ hàng'),
+                                  backgroundColor: Colors.red,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+                        } else {
+                          // Navigate to payment screen for free courses (enrollment)
+                          Navigator.pushNamed(
+                            context,
+                            AppConstants.routePayment,
+                            arguments: {
+                              'course': widget.course,
+                            },
+                          );
+                        }
+                      }
+                    },
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        isEnrolled == true ? Icons.play_arrow : Icons.shopping_cart,
+                        color: const Color(0xFF0961F5),
+                        size: 30,
                       ),
                     ),
                   );
                 },
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.play_arrow,
-                    color: Color(0xFF0961F5),
-                    size: 30,
-                  ),
-                ),
               ),
             ),
           ],
@@ -1113,117 +1214,140 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   }
 
   Widget _buildLessonItem(Lesson lesson) {
-    return GestureDetector(
-      onTap: () {
-        // Check lesson type
-        if (lesson.type != null && lesson.type != 'VIDEO') {
-          // Show popup for non-video lessons
-          _showContentPopup(lesson);
-          return;
-        }
-
-        // Navigate to video page for VIDEO lessons
-        final courseDetailViewModel = Provider.of<CourseDetailViewModel>(context, listen: false);
-        final courseDetail = courseDetailViewModel.courseDetail;
+    return Consumer<CourseDetailViewModel>(
+      builder: (context, viewModel, child) {
+        final isEnrolled = viewModel.isEnrolled;
         
-        if (courseDetail != null && lesson.video.isNotEmpty) {
-          print('📹 Navigating to video page with lesson.video: ${lesson.video}');
-          print('📋 Lesson type: ${lesson.type}');
-          Navigator.pushNamed(
-            context,
-            AppConstants.routeCourseVideo,
-            arguments: {
-              'lessonId': lesson.id,
-              'lessonTitle': lesson.title,
-              'courseTitle': courseDetail.title,
-              'videoUrl': lesson.video,
-              'courseId': courseDetail.id,
-              'type': lesson.type, // Pass lesson type
-            },
-          );
-        } else {
-          // Show message if video not available
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Video chưa được tải lên'),
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-              ),
-            ),
-          );
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Icon(
-              _getLessonIcon(lesson.type),
-              color: lesson.isCompleted ? const Color(0xFF00C851) : const Color(0xFF666666),
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${lesson.title} - ${lesson.description}',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: lesson.isCompleted ? const Color(0xFF00C851) : null,
-                    ),
+        return GestureDetector(
+          onTap: () {
+            // Check if user is enrolled
+            if (isEnrolled != true) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Vui lòng mua khóa học để xem bài học'),
+                  backgroundColor: Colors.orange,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
                   ),
-                  if (lesson.duration > 0) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      '${lesson.duration} phút',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: const Color(0xFF666666),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            // Chat AI button for each lesson
-            GestureDetector(
-              onTap: () {
-                // Use lesson.video (video_id format) instead of lesson.id
-                final videoId = lesson.video.isNotEmpty ? lesson.video : lesson.id;
-                // Use full lesson info: title - description
-                final fullLessonTitle = '${lesson.title} - ${lesson.description}';
-                AppRoutes.navigateToAiChat(
-                  context,
-                  lessonId: videoId,
-                  lessonTitle: fullLessonTitle,
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0961F5).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.smart_toy,
-                  color: Color(0xFF0961F5),
+              );
+              return;
+            }
+            
+            // Check lesson type
+            if (lesson.type != null && lesson.type != 'VIDEO') {
+              // Show popup for non-video lessons
+              _showContentPopup(lesson);
+              return;
+            }
+
+            // Navigate to video page for VIDEO lessons
+            final courseDetailViewModel = Provider.of<CourseDetailViewModel>(context, listen: false);
+            final courseDetail = courseDetailViewModel.courseDetail;
+            
+            if (courseDetail != null && lesson.video.isNotEmpty) {
+              print('📹 Navigating to video page with lesson.video: ${lesson.video}');
+              print('📋 Lesson type: ${lesson.type}');
+              Navigator.pushNamed(
+                context,
+                AppConstants.routeCourseVideo,
+                arguments: {
+                  'lessonId': lesson.id,
+                  'lessonTitle': lesson.title,
+                  'courseTitle': courseDetail.title,
+                  'videoUrl': lesson.video,
+                  'courseId': courseDetail.id,
+                  'type': lesson.type, // Pass lesson type
+                },
+              );
+            } else {
+              // Show message if video not available
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Video chưa được tải lên'),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                  ),
+                ),
+              );
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  _getLessonIcon(lesson.type),
+                  color: lesson.isCompleted ? const Color(0xFF00C851) : const Color(0xFF666666),
                   size: 20,
                 ),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${lesson.title} - ${lesson.description}',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: lesson.isCompleted ? const Color(0xFF00C851) : null,
+                        ),
+                      ),
+                      if (lesson.duration > 0) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          '${lesson.duration} phút',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: const Color(0xFF666666),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                // Chat AI button for each lesson - only show if enrolled
+                if (isEnrolled == true) ...[
+                  GestureDetector(
+                    onTap: () {
+                      // Use lesson.video (video_id format) instead of lesson.id
+                      final videoId = lesson.video.isNotEmpty ? lesson.video : lesson.id;
+                      // Use full lesson info: title - description
+                      final fullLessonTitle = '${lesson.title} - ${lesson.description}';
+                      AppRoutes.navigateToAiChat(
+                        context,
+                        lessonId: videoId,
+                        lessonTitle: fullLessonTitle,
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0961F5).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.smart_toy,
+                        color: Color(0xFF0961F5),
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                if (lesson.isCompleted)
+                  const Icon(
+                    Icons.check_circle,
+                    color: Color(0xFF00C851),
+                    size: 20,
+                  ),
+              ],
             ),
-            const SizedBox(width: 8),
-            if (lesson.isCompleted)
-              const Icon(
-                Icons.check_circle,
-                color: Color(0xFF00C851),
-                size: 20,
-              ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -1238,13 +1362,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         final coursePrice = double.tryParse(widget.course.price.replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
         final price = apiPrice > 0 ? apiPrice : coursePrice;
         
-        // Don't show button if user is enrolled
-        if (isEnrolled == true) {
-          return const SizedBox.shrink();
-        }
-        
         return GestureDetector(
-          onTap: (isCheckingEnrollment || isAddingToCart) ? null : () => _handleEnrollButtonTap(false, cartViewModel),
+          onTap: (isCheckingEnrollment || isAddingToCart) ? null : () => _handleEnrollButtonTap(isEnrolled == true, cartViewModel),
           child: Container(
             margin: const EdgeInsets.all(34),
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1270,7 +1389,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                       ),
                     )
                   : Text(
-                      price > 0 ? 'Thêm vào giỏ hàng' : 'Tham gia miễn phí',
+                      isEnrolled == true 
+                        ? 'Vào học' 
+                        : (price > 0 ? 'Thêm vào giỏ hàng' : 'Tham gia miễn phí'),
                       style: AppTextStyles.bodyLarge.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
@@ -1285,15 +1406,54 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
   void _handleEnrollButtonTap(bool isEnrolled, CartViewModel cartViewModel) async {
     if (isEnrolled) {
-      // Navigate to learning screen
-      Navigator.pushNamed(
-        context,
-        AppConstants.routeLearning,
-        arguments: {
-          'lessonId': '',
-          'categoryId': widget.course.category,
-        },
-      );
+      // Navigate to first lesson of the course
+      final courseDetailViewModel = Provider.of<CourseDetailViewModel>(context, listen: false);
+      final courseDetail = courseDetailViewModel.courseDetail;
+      
+      if (courseDetail != null && courseDetail.parts.isNotEmpty) {
+        final firstPart = courseDetail.parts.first;
+        if (firstPart.lessons.isNotEmpty) {
+          final firstLesson = firstPart.lessons.first;
+          
+          // Navigate to video page
+          Navigator.pushNamed(
+            context,
+            AppConstants.routeCourseVideo,
+            arguments: {
+              'lessonId': firstLesson.id,
+              'lessonTitle': firstLesson.title,
+              'courseTitle': courseDetail.title,
+              'videoUrl': firstLesson.video,
+              'courseId': courseDetail.id,
+              'type': firstLesson.type,
+            },
+          );
+        } else {
+          // No lessons available
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không có bài học nào'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+              ),
+            ),
+          );
+        }
+      } else {
+        // No parts available
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Khóa học chưa có nội dung'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+          ),
+        );
+      }
     } else {
       final apiCourse = Provider.of<CourseDetailViewModel>(context, listen: false).courseDetail;
       final apiPrice = apiCourse?.totalPrice ?? 0.0;
