@@ -1,5 +1,5 @@
-import '../models/blog_model.dart';
-import '../models/blog_category_model.dart';
+import 'package:ftes/features/blog/data/models/blog_model.dart';
+import 'package:ftes/features/blog/data/models/blog_category_model.dart';
 
 /// Top-level function for parsing blog list JSON in compute isolate
 /// This function must be top-level or static to work with compute()
@@ -40,6 +40,5 @@ class BlogCategoryParseParams {
 List<BlogCategoryModel> parseBlogCategoryListWithParams(BlogCategoryParseParams params) {
   return parseBlogCategoryListJson(params.jsonList);
 }
-
 
 

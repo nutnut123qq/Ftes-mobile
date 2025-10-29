@@ -5,7 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../models/blog_model.dart';
 import '../models/blog_category_model.dart';
 import '../models/paginated_blog_response_model.dart';
-import '../helpers/json_parser_helper.dart';
+import '../../../../core/utils/json_parser_helper.dart';
 import '../../domain/constants/blog_constants.dart';
 import 'blog_remote_datasource.dart';
 
