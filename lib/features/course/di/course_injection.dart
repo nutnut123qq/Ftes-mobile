@@ -1,8 +1,11 @@
 import 'package:get_it/get_it.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/network_info.dart';
+import '../../../../core/database/app_database.dart';
 import '../data/datasources/course_remote_datasource.dart';
 import '../data/datasources/course_remote_datasource_impl.dart';
+import '../data/datasources/course_local_datasource.dart';
+import '../data/datasources/course_local_datasource_impl.dart';
 import '../data/repositories/course_repository_impl.dart';
 import 'package:ftes/features/course/domain/repositories/course_repository.dart';
 import 'package:ftes/features/course/domain/usecases/get_course_detail_usecase.dart';
@@ -17,15 +20,23 @@ import '../presentation/viewmodels/course_video_viewmodel.dart';
 /// Dependency injection setup for Course feature
 class CourseInjection {
   static void init(GetIt sl) {
+    // Database
+    sl.registerLazySingleton<AppDatabase>(() => AppDatabase());
+
     // Data sources
     sl.registerLazySingleton<CourseRemoteDataSource>(
       () => CourseRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+    );
+
+    sl.registerLazySingleton<CourseLocalDataSource>(
+      () => CourseLocalDataSourceImpl(database: sl<AppDatabase>()),
     );
 
     // Repositories
     sl.registerLazySingleton<CourseRepository>(
       () => CourseRepositoryImpl(
         remoteDataSource: sl<CourseRemoteDataSource>(),
+        localDataSource: sl<CourseLocalDataSource>(),
         networkInfo: sl<NetworkInfo>(),
       ),
     );
