@@ -11,13 +11,10 @@ import 'features/blog/presentation/viewmodels/blog_viewmodel.dart';
 import 'features/profile/presentation/viewmodels/profile_viewmodel.dart';
 // import 'legacy/providers/auth_provider.dart'; // Deprecated - use auth feature instead
 import 'providers/app_data_provider.dart';
-import 'providers/course_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/point_provider.dart';
-import 'providers/enrollment_provider.dart';
 import 'providers/feedback_provider.dart';
 import 'providers/exercise_provider.dart';
-import 'providers/video_provider.dart';
 // import 'providers/ai_chat_provider.dart'; // Unused import
 
 void main() async {
@@ -42,13 +39,10 @@ class MyApp extends StatelessWidget {
         // Legacy providers (temporary for backward compatibility) - DEPRECATED
         // ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => AppDataProvider()),
-        ChangeNotifierProvider(create: (context) => CourseProvider()),
         ChangeNotifierProvider(create: (context) => CartProvider()..initializeCart()),
         ChangeNotifierProvider(create: (context) => PointProvider()),
-        ChangeNotifierProvider(create: (context) => EnrollmentProvider()),
         ChangeNotifierProvider(create: (context) => FeedbackProvider()),
         ChangeNotifierProvider(create: (context) => ExerciseProvider()),
-        ChangeNotifierProvider(create: (context) => VideoProvider()),
         // ChangeNotifierProxyProvider<AuthProvider, AIChatProvider>(
         //   create: (context) => AIChatProvider(Provider.of<AuthProvider>(context, listen: false)),
         //   update: (context, auth, previous) => previous ?? AIChatProvider(auth),

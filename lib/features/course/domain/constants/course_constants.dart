@@ -7,6 +7,7 @@ class CourseConstants {
   static const String errorLoadCourseFailed = 'Không thể tải thông tin khóa học';
   static const String errorLoadProfileFailed = 'Không thể tải thông tin giảng viên';
   static const String errorCheckEnrollmentFailed = 'Không thể kiểm tra trạng thái đăng ký';
+  static const String errorEnrollFailed = 'Không thể đăng ký khóa học';
   static const String errorNetworkConnection = 'Không có kết nối internet';
   static const String errorUnexpected = 'Đã xảy ra lỗi không mong muốn';
   static const String errorInvalidResponse = 'Dữ liệu trả về không hợp lệ';

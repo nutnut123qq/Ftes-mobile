@@ -19,6 +19,9 @@ abstract class CourseRepository {
   /// Check enrollment status for a user and course
   Future<Either<Failure, bool>> checkEnrollment(String userId, String courseId);
 
+  /// Enroll user in a course
+  Future<Either<Failure, void>> enrollCourse(String userId, String courseId);
+
   /// Get video playlist for HLS streaming
   Future<Either<Failure, VideoPlaylist>> getVideoPlaylist(String videoId, bool presign);
 

@@ -20,14 +20,11 @@ import '../features/home/presentation/viewmodels/home_viewmodel.dart';
 import '../features/my_courses/presentation/pages/my_courses_page.dart';
 import '../features/my_courses/presentation/viewmodels/my_courses_viewmodel.dart';
 import '../features/my_courses/di/my_courses_injection.dart';
-import '../screens/popular_courses_screen.dart';
 import '../screens/top_mentors_screen.dart';
-import '../screens/courses_list_screen.dart';
 import '../screens/mentors_list_screen.dart';
 import '../screens/single_mentor_details_screen.dart';
 import '../features/course/presentation/pages/course_detail_page.dart';
 import '../features/course/presentation/pages/course_video_page.dart';
-import '../screens/learning_screen.dart';
 import '../screens/quiz_screen.dart';
 import '../screens/profile_screen.dart';
 import '../features/profile/presentation/pages/instructor_profile_page.dart';
@@ -35,14 +32,11 @@ import '../screens/notifications_screen.dart';
 import '../screens/chat_messages_screen.dart';
 import '../features/ai/presentation/pages/ai_chat_page.dart';
 import '../features/ai/presentation/viewmodels/ai_chat_viewmodel.dart';
-import '../screens/curriculum_screen.dart';
 import '../screens/reviews_screen.dart';
 import '../screens/write_review_screen.dart';
 import '../features/cart/presentation/pages/payment_page.dart';
 import '../features/cart/presentation/viewmodels/payment_viewmodel.dart';
 import '../screens/enroll_success_screen.dart';
-import '../screens/my_course_ongoing_lessons_screen.dart';
-import '../screens/my_course_ongoing_video_screen.dart';
 import '../screens/invite_friends_screen.dart';
 import '../screens/cart_screen.dart';
 import '../features/cart/presentation/pages/cart_page.dart';
@@ -50,12 +44,12 @@ import '../features/cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../features/blog/presentation/pages/blog_detail_page.dart';
 import '../features/blog/presentation/pages/blog_list_page.dart';
 import '../features/blog/presentation/viewmodels/blog_viewmodel.dart';
-import '../models/course_item.dart';
 import '../models/chat_item.dart';
 import 'package:provider/provider.dart';
 import '../core/di/injection_container.dart' as di;
 import '../features/course/presentation/viewmodels/course_video_viewmodel.dart';
 import '../models/mentor_item.dart';
+import '../features/home/domain/entities/course.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
@@ -113,14 +107,15 @@ class AppRoutes {
       create: (context) => di.sl<HomeViewModel>(),
       child: const CourseSearchPage(),
     ),
-    core_constants.AppConstants.routePopularCourses: (context) => const PopularCoursesScreen(),
+    core_constants.AppConstants.routePopularCourses: (context) => ChangeNotifierProvider(
+      create: (context) => di.sl<HomeViewModel>(),
+      child: const CourseSearchPage(),
+    ),
     core_constants.AppConstants.routeTopMentors: (context) => const TopMentorsScreen(),
-    core_constants.AppConstants.routeCoursesList: (context) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      return CoursesListScreen(
-        initialSearchQuery: args?['searchQuery'],
-      );
-    },
+    core_constants.AppConstants.routeCoursesList: (context) => ChangeNotifierProvider(
+      create: (context) => di.sl<HomeViewModel>(),
+      child: const CourseSearchPage(),
+    ),
     core_constants.AppConstants.routeMentorsList: (context) => const MentorsListScreen(),
     core_constants.AppConstants.routeSingleMentorDetails: (context) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
@@ -134,20 +129,23 @@ class AppRoutes {
     },
     core_constants.AppConstants.routeCourseDetail: (context) {
       final arguments = ModalRoute.of(context)?.settings.arguments;
-      CourseItem? course;
+      Course? course;
       
       if (arguments is Map<String, dynamic>) {
-        course = arguments['course'] as CourseItem?;
+        course = arguments['course'] as Course?;
       } else if (arguments is String) {
-        // If slug is passed, create a CourseItem with just the id
-        course = CourseItem(
+        // If slug is passed, create a Course with just the id/slugName
+        course = Course(
           id: arguments,
-          category: '',
+          slugName: arguments,
           title: '',
-          price: '0',
-          rating: '0',
-          students: '0',
-          imageUrl: '',
+          description: '',
+          image: '',
+          imageHeader: '',
+          price: 0,
+          salePrice: 0,
+          categoryId: '',
+          categoryName: '',
         );
       }
       
@@ -198,7 +196,6 @@ class AppRoutes {
         lessonTitle: lessonTitle,
       );
     },
-    core_constants.AppConstants.routeCurriculum: (context) => const CurriculumScreen(),
     core_constants.AppConstants.routeReviews: (context) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       return ReviewsScreen(
@@ -230,25 +227,6 @@ class AppRoutes {
       create: (context) => sl<MyCoursesViewModel>(),
       child: const MyCoursesPage(),
     ),
-    core_constants.AppConstants.routeMyCourseOngoingLessons: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-      return MyCourseOngoingLessonsScreen(
-        courseId: args?['courseId'] ?? '',
-        courseTitle: args?['courseTitle'] ?? 'Course Title',
-        courseImage: args?['courseImage'] ?? '',
-      );
-    },
-    core_constants.AppConstants.routeMyCourseOngoingVideo: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-      return MyCourseOngoingVideoScreen(
-        lessonId: args?['lessonId'] ?? '',
-        lessonTitle: args?['lessonTitle'] ?? 'Lesson Title',
-        courseTitle: args?['courseTitle'] ?? 'Course Title',
-        videoUrl: args?['videoUrl'] ?? '',
-        currentTime: args?['currentTime'] ?? 0,
-        totalTime: args?['totalTime'] ?? 0,
-      );
-    },
     core_constants.AppConstants.routeInviteFriends: (context) => const InviteFriendsScreen(),
     core_constants.AppConstants.routeCart: (context) => ChangeNotifierProvider(
       create: (context) => di.sl<CartViewModel>(),
@@ -306,7 +284,10 @@ class AppRoutes {
         );
       case core_constants.AppConstants.routePopularCourses:
         return MaterialPageRoute(
-          builder: (context) => const PopularCoursesScreen(),
+          builder: (context) => ChangeNotifierProvider(
+            create: (context) => di.sl<HomeViewModel>(),
+            child: const CourseSearchPage(),
+          ),
           settings: settings,
         );
       case core_constants.AppConstants.routeTopMentors:
@@ -315,10 +296,10 @@ class AppRoutes {
           settings: settings,
         );
       case core_constants.AppConstants.routeCoursesList:
-        final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-          builder: (context) => CoursesListScreen(
-            initialSearchQuery: args?['searchQuery'],
+          builder: (context) => ChangeNotifierProvider(
+            create: (context) => di.sl<HomeViewModel>(),
+            child: const CourseSearchPage(),
           ),
           settings: settings,
         );
@@ -341,22 +322,25 @@ class AppRoutes {
         );
       case core_constants.AppConstants.routeCourseDetail:
         // Handle both Map (from navigation) and String (from deep linking/web)
-        CourseItem? course;
+        Course? course;
         if (settings.arguments is Map<String, dynamic>) {
           final args = settings.arguments as Map<String, dynamic>;
-          course = args['course'] as CourseItem?;
+          course = args['course'] as Course?;
         } else if (settings.arguments is String) {
-          // If slug is passed, create a CourseItem with just the id (slug)
+          // If slug is passed, create a Course with just the id (slug)
           // The CourseDetailScreen will fetch full details from API using this id
           final slug = settings.arguments as String;
-          course = CourseItem(
+          course = Course(
             id: slug,
-            category: '',
+            slugName: slug,
             title: '',
-            price: '0',
-            rating: '0',
-            students: '0',
-            imageUrl: '',
+            description: '',
+            image: '',
+            imageHeader: '',
+            price: 0,
+            salePrice: 0,
+            categoryId: '',
+            categoryName: '',
           );
         }
         
@@ -395,15 +379,6 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case core_constants.AppConstants.routeLearning:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (context) => LearningScreen(
-            lessonId: args?['lessonId'] ?? '',
-            categoryId: args?['categoryId'] ?? '',
-          ),
-          settings: settings,
-        );
       case core_constants.AppConstants.routeQuiz:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
@@ -432,11 +407,6 @@ class AppRoutes {
             lessonId: args?['lessonId'],
             lessonTitle: args?['lessonTitle'],
           ),
-          settings: settings,
-        );
-      case core_constants.AppConstants.routeCurriculum:
-        return MaterialPageRoute(
-          builder: (context) => const CurriculumScreen(),
           settings: settings,
         );
       case core_constants.AppConstants.routeReviews:
@@ -481,29 +451,6 @@ class AppRoutes {
           builder: (context) => ChangeNotifierProvider(
             create: (context) => sl<MyCoursesViewModel>(),
             child: const MyCoursesPage(),
-          ),
-          settings: settings,
-        );
-      case core_constants.AppConstants.routeMyCourseOngoingLessons:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (context) => MyCourseOngoingLessonsScreen(
-            courseId: args?['courseId'] ?? '',
-            courseTitle: args?['courseTitle'] ?? 'Course Title',
-            courseImage: args?['courseImage'] ?? '',
-          ),
-          settings: settings,
-        );
-      case core_constants.AppConstants.routeMyCourseOngoingVideo:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (context) => MyCourseOngoingVideoScreen(
-            lessonId: args?['lessonId'] ?? '',
-            lessonTitle: args?['lessonTitle'] ?? 'Lesson Title',
-            courseTitle: args?['courseTitle'] ?? 'Course Title',
-            videoUrl: args?['videoUrl'] ?? '',
-            currentTime: args?['currentTime'] ?? 0,
-            totalTime: args?['totalTime'] ?? 0,
           ),
           settings: settings,
         );
@@ -584,7 +531,7 @@ class AppRoutes {
     );
   }
 
-  static void navigateToCourseDetail(BuildContext context, {required CourseItem course}) {
+  static void navigateToCourseDetail(BuildContext context, {required Course course}) {
     Navigator.pushNamed(
       context,
       core_constants.AppConstants.routeCourseDetail,

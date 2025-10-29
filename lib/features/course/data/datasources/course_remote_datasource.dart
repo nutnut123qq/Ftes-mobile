@@ -14,6 +14,9 @@ abstract class CourseRemoteDataSource {
   /// Check enrollment status for a user and course
   Future<bool> checkEnrollment(String userId, String courseId);
 
+  /// Enroll user in a course
+  Future<void> enrollCourse(String userId, String courseId);
+
   /// Get video playlist for HLS streaming
   Future<VideoPlaylistModel> getVideoPlaylist(String videoId, {bool presign = false});
 

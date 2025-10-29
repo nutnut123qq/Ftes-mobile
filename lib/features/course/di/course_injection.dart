@@ -8,6 +8,7 @@ import 'package:ftes/features/course/domain/repositories/course_repository.dart'
 import 'package:ftes/features/course/domain/usecases/get_course_detail_usecase.dart';
 import 'package:ftes/features/course/domain/usecases/get_profile_usecase.dart';
 import 'package:ftes/features/course/domain/usecases/check_enrollment_usecase.dart';
+import 'package:ftes/features/course/domain/usecases/enroll_course_usecase.dart';
 import 'package:ftes/features/course/domain/usecases/get_video_playlist_usecase.dart';
 import 'package:ftes/features/course/domain/usecases/get_video_status_usecase.dart';
 import '../presentation/viewmodels/course_detail_viewmodel.dart';
@@ -40,6 +41,10 @@ class CourseInjection {
     
     sl.registerLazySingleton<CheckEnrollmentUseCase>(
       () => CheckEnrollmentUseCase(sl<CourseRepository>()),
+    );
+
+    sl.registerLazySingleton<EnrollCourseUseCase>(
+      () => EnrollCourseUseCase(sl<CourseRepository>()),
     );
 
     // Video use cases

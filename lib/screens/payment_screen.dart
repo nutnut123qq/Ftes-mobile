@@ -3,8 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/services/order_service.dart';
 import 'package:ftes/models/order_response.dart';
-import 'package:ftes/providers/enrollment_provider.dart';
-import 'package:ftes/providers/course_provider.dart';
 import 'package:ftes/core/di/injection_container.dart' as di;
 import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
@@ -94,9 +92,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _refreshUserCoursesAfterPayment() async {
+    // TODO: Implement with clean architecture - use MyCoursesViewModel
+    // CourseProvider has been removed and replaced with clean architecture
     try {
-      final courseProvider = Provider.of<CourseProvider>(context, listen: false);
-      
       // Lấy userId từ AuthViewModel
       final authVm = di.sl<AuthViewModel>();
       String? userId = authVm.currentUser?.id;
@@ -106,8 +104,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
         userId = await _getUserIdFromToken();
       }
       
+      // TODO: Fetch user courses using MyCoursesViewModel or repository
       if (userId != null && userId.isNotEmpty) {
-        await courseProvider.fetchUserCourses(userId);
+        // await myCoursesViewModel.fetchUserCourses();
       }
     } catch (e) {
       // Handle error silently
@@ -151,22 +150,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
     
     if (status == 'success') {
       // Payment successful - refresh enrollment status for all courses in order
-      final enrollmentProvider = Provider.of<EnrollmentProvider>(context, listen: false);
-      
-      // Try courses first (new backend format), fallback to items (old format)
-      if (_order?.courses != null && _order!.courses!.isNotEmpty) {
-        for (final course in _order!.courses!) {
-          if (course.courseId != null && course.courseId!.isNotEmpty) {
-            enrollmentProvider.refreshEnrollmentStatus(course.courseId!);
-          }
-        }
-      } else if (_order?.items != null && _order!.items!.isNotEmpty) {
-        for (final item in _order!.items!) {
-          if (item.courseId != null && item.courseId!.isNotEmpty) {
-            enrollmentProvider.refreshEnrollmentStatus(item.courseId!);
-          }
-        }
-      }
+      // TODO: Implement with clean architecture - EnrollmentProvider removed
+      // Use CheckEnrollmentUseCase or refresh course detail viewmodel
       
       // Refresh user courses list for My Courses screen
       _refreshUserCoursesAfterPayment();

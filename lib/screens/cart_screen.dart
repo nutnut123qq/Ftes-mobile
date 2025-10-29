@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/providers/cart_provider.dart';
-import 'package:ftes/providers/enrollment_provider.dart';
 import 'package:ftes/models/cart_response.dart';
 import 'package:ftes/services/order_service.dart';
 import 'package:ftes/routes/app_routes.dart';
@@ -642,7 +641,7 @@ class _CartScreenState extends State<CartScreen> {
 
   Future<void> _proceedToCheckout() async {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    final enrollmentProvider = Provider.of<EnrollmentProvider>(context, listen: false);
+    // TODO: EnrollmentProvider removed - use CheckEnrollmentUseCase if needed
     final cartItems = cartProvider.cartItems;
     
     if (cartItems.isEmpty) {
@@ -671,10 +670,11 @@ class _CartScreenState extends State<CartScreen> {
           .cast<String>()
           .toList();
       
-      // Clear enrollment cache for courses in cart to ensure fresh check
-      for (final courseId in courseIds) {
-        await enrollmentProvider.refreshEnrollmentStatus(courseId);
-      }
+      // TODO: Clear enrollment cache for courses in cart to ensure fresh check
+      // EnrollmentProvider removed - will refresh on course detail page
+      // for (final courseId in courseIds) {
+      //   await checkEnrollmentUseCase(courseId);
+      // }
       
       // Get coupon code if entered
       final couponCode = _couponController.text.trim().isNotEmpty

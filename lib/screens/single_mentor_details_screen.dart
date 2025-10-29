@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
-import 'package:ftes/models/course_item.dart';
 import 'package:ftes/models/mentor_item.dart';
 import 'package:ftes/routes/app_routes.dart';
 
@@ -17,39 +16,10 @@ class SingleMentorDetailsScreen extends StatefulWidget {
 class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
   int _selectedTabIndex = 0; // 0: Courses, 1: Blog
 
-  // Sample courses data for this mentor
-  final List<CourseItem> _courses = [
-    CourseItem(
-      id: 'mentor_course_1',
-      category: 'Thiết kế đồ họa',
-      title: 'Thiết kế đồ họa nâng cao',
-      price: '799/-',
-      originalPrice: '\$42',
-      rating: '4.2',
-      students: '7830 HV',
-      imageUrl: 'https://via.placeholder.com/80x80/000000/FFFFFF?text=Course',
-    ),
-    CourseItem(
-      id: 'mentor_course_2',
-      category: 'Thiết kế UI/UX',
-      title: 'Cơ bản về Thiết kế UI/UX',
-      price: '599/-',
-      originalPrice: '\$35',
-      rating: '4.5',
-      students: '990 HV',
-      imageUrl: 'https://via.placeholder.com/80x80/000000/FFFFFF?text=Course',
-    ),
-    CourseItem(
-      id: 'mentor_course_3',
-      category: 'Thiết kế Web',
-      title: 'Cơ bản về Thiết kế Web',
-      price: '899/-',
-      originalPrice: '\$50',
-      rating: '4.8',
-      students: '1200 HV',
-      imageUrl: 'https://via.placeholder.com/80x80/000000/FFFFFF?text=Course',
-    ),
-  ];
+  // TODO: Replace with actual API data from instructor profile
+  // Sample courses data for this mentor - commented out due to CourseItem removal
+  // Use home feature Course entity or fetch from API
+  final List<Map<String, dynamic>> _courses = [];
 
   // Sample ratings data for this mentor
   late final List<Map<String, dynamic>> _ratings;
@@ -430,10 +400,11 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
     );
   }
 
-  Widget _buildCourseCard(CourseItem course, int index) {
+  Widget _buildCourseCard(Map<String, dynamic> course, int index) {
     return GestureDetector(
       onTap: () {
-        AppRoutes.navigateToCurriculum(context);
+        // TODO: Navigate to course detail with actual course data
+        // AppRoutes.navigateToCourseDetail(context, course: Course(...));
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -460,7 +431,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Image.network(
-              course.imageUrl,
+              course['imageUrl'] ?? '',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return const Icon(
@@ -481,7 +452,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
               children: [
                 // Category
                 Text(
-                  course.category,
+                  course['category'] ?? '',
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFFFF6B35),
                     fontSize: 12,
@@ -493,7 +464,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
                 
                 // Title
                 Text(
-                  course.title,
+                  course['title'] ?? '',
                   style: AppTextStyles.body1.copyWith(
                     color: const Color(0xFF202244),
                     fontSize: 16,
@@ -510,7 +481,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
                   children: [
                     // Price
                     Text(
-                      course.price,
+                      course['price'] ?? '',
                       style: AppTextStyles.body1.copyWith(
                         color: const Color(0xFF0961F5),
                         fontSize: 16,
@@ -518,10 +489,10 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
                       ),
                     ),
                     
-                    if (course.originalPrice != null) ...[
+                    if (course['originalPrice'] != null) ...[
                       const SizedBox(width: 8),
                       Text(
-                        course.originalPrice!,
+                        course['originalPrice']!,
                         style: AppTextStyles.body1.copyWith(
                           color: const Color(0xFFB4BDC4),
                           fontSize: 12,
@@ -535,7 +506,7 @@ class _SingleMentorDetailsScreenState extends State<SingleMentorDetailsScreen> {
                     
                     // Students
                     Text(
-                      course.students,
+                      course['students'] ?? '',
                       style: AppTextStyles.body1.copyWith(
                         color: const Color(0xFF202244),
                         fontSize: 12,

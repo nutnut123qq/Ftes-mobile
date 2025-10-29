@@ -3,9 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../../../../utils/text_styles.dart';
-import '../../../../models/course_item.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../providers/enrollment_provider.dart';
+import '../../../../features/home/domain/entities/course.dart';
 import '../viewmodels/course_detail_viewmodel.dart';
 import '../../domain/entities/course_detail.dart';
 import '../../domain/entities/part.dart';
@@ -16,7 +15,7 @@ import '../../../../core/di/injection_container.dart' as di;
 import '../../../../routes/app_routes.dart';
 
 class CourseDetailPage extends StatefulWidget {
-  final CourseItem course;
+  final Course course;
 
   const CourseDetailPage({
     super.key,
@@ -45,33 +44,21 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
   /// Optimized async initialization without blocking main thread
   Future<void> _initializeAsync() async {
-    if (widget.course.id == null || widget.course.id!.isEmpty) return;
-
-    // Skip API for hardcoded test IDs
-    if (widget.course.id!.startsWith('list_course_') ||
-        widget.course.id!.startsWith('featured_course_') ||
-        widget.course.id!.startsWith('home_course_') ||
-        widget.course.id!.startsWith('default_course')) {
-      return;
-    }
+    // Use slugName if available, otherwise id
+    final courseIdentifier = widget.course.slugName ?? widget.course.id ?? '';
+    if (courseIdentifier.isEmpty) return;
 
     try {
-      // Load userId and check enrollment in parallel
+      // Load userId
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString(AppConstants.keyUserId);
 
       if (!mounted) return;
 
       final viewModel = Provider.of<CourseDetailViewModel>(context, listen: false);
-      final enrollmentProvider = Provider.of<EnrollmentProvider>(context, listen: false);
 
-      // Parallel operations
-      await Future.wait([
-        // Check enrollment status
-        Future(() => enrollmentProvider.checkEnrollment(widget.course.id!)),
-        // Initialize course detail (fetches course, profile, enrollment in one go)
-        viewModel.initialize(widget.course.id!, userId),
-      ]);
+      // Initialize course detail (fetches course, profile, enrollment in one go)
+      await viewModel.initialize(courseIdentifier, userId);
 
       print('✅ Course detail initialized successfully');
     } catch (e) {
@@ -155,7 +142,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   }
 
   Widget _buildHeroSection(CourseDetail? apiCourse) {
-    final imageUrl = apiCourse?.imageHeader ?? widget.course.imageUrl;
+    final imageUrl = apiCourse?.imageHeader ?? widget.course.image ?? widget.course.imageHeader ?? '';
     
     return SliverAppBar(
       expandedHeight: 400,
@@ -273,7 +260,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                         final cartViewModel = Provider.of<CartViewModel>(context, listen: false);
                         final courseDetail = viewModel.courseDetail;
                         final apiPrice = courseDetail?.totalPrice ?? 0.0;
-                        final coursePrice = double.tryParse(widget.course.price.replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
+                        final coursePrice = widget.course.price ?? widget.course.salePrice ?? 0.0;
                         final price = apiPrice > 0 ? apiPrice : coursePrice;
                         
                         if (price > 0) {
@@ -359,8 +346,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
   Widget _buildCourseInfoCard(CourseDetail? apiCourse) {
     // Use API data if available
-    final title = apiCourse?.title ?? widget.course.title;
-    final category = apiCourse?.categoryName ?? widget.course.category;
+    final title = apiCourse?.title ?? widget.course.title ?? '';
+    final category = apiCourse?.categoryName ?? widget.course.categoryName ?? '';
     final totalLessons = apiCourse?.parts.fold<int>(0, (sum, p) => sum + p.lessons.length) ?? 0;
     final price = apiCourse?.salePrice ?? apiCourse?.totalPrice;
     
@@ -414,7 +401,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    apiCourse?.avgStar.toStringAsFixed(1) ?? widget.course.rating,
+                    apiCourse?.avgStar.toStringAsFixed(1) ?? widget.course.rating?.toString() ?? '0',
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
@@ -433,7 +420,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${apiCourse?.totalUser ?? widget.course.students} học viên',
+                    '${apiCourse?.totalUser ?? widget.course.totalStudents ?? 0} học viên',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: const Color(0xFF666666),
                     ),
@@ -1373,7 +1360,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         final isCheckingEnrollment = viewModel.isCheckingEnrollment;
         final isAddingToCart = cartViewModel.isAddingToCart;
         final apiPrice = apiCourse?.totalPrice ?? 0.0;
-        final coursePrice = double.tryParse(widget.course.price.replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
+        final coursePrice = widget.course.price ?? widget.course.salePrice ?? 0.0;
         final price = apiPrice > 0 ? apiPrice : coursePrice;
         
         return GestureDetector(
@@ -1471,7 +1458,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     } else {
       final apiCourse = Provider.of<CourseDetailViewModel>(context, listen: false).courseDetail;
       final apiPrice = apiCourse?.totalPrice ?? 0.0;
-      final coursePrice = double.tryParse(widget.course.price.replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
+      final coursePrice = widget.course.price ?? widget.course.salePrice ?? 0.0;
       final price = apiPrice > 0 ? apiPrice : coursePrice;
       
       if (price > 0) {

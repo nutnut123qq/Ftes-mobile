@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/models/course_item.dart';
+import 'package:ftes/features/home/domain/entities/course.dart';
 
 class RemoveBookmarkDialog extends StatelessWidget {
-  final CourseItem course;
+  final Course course;
   final VoidCallback? onRemove;
   final VoidCallback? onCancel;
 
@@ -176,7 +176,7 @@ class RemoveBookmarkDialog extends StatelessWidget {
                 bottomLeft: Radius.circular(16),
               ),
               child: Image.network(
-                course.imageUrl,
+                course.image ?? course.imageHeader ?? '',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
@@ -201,7 +201,7 @@ class RemoveBookmarkDialog extends StatelessWidget {
                 children: [
                   // Category
                   Text(
-                    course.category,
+                    course.categoryName ?? '',
                     style: AppTextStyles.body1.copyWith(
                       color: const Color(0xFFFF6B00),
                       fontSize: 12,
@@ -213,7 +213,7 @@ class RemoveBookmarkDialog extends StatelessWidget {
                   
                   // Title
                   Text(
-                    course.title,
+                    course.title ?? '',
                     style: AppTextStyles.heading1.copyWith(
                       color: const Color(0xFF202244),
                       fontSize: 16,
@@ -230,7 +230,7 @@ class RemoveBookmarkDialog extends StatelessWidget {
                     children: [
                       // Price
                       Text(
-                        course.price,
+                        '\$${course.salePrice ?? course.price ?? 0}',
                         style: AppTextStyles.body1.copyWith(
                           color: const Color(0xFF0961F5),
                           fontSize: 17,
@@ -252,7 +252,7 @@ class RemoveBookmarkDialog extends StatelessWidget {
                             const SizedBox(width: 1),
                             Flexible(
                               child: Text(
-                                course.rating,
+                                '${course.rating ?? 0}',
                                 style: AppTextStyles.body1.copyWith(
                                   color: const Color(0xFF202244),
                                   fontSize: 8,
@@ -273,7 +273,7 @@ class RemoveBookmarkDialog extends StatelessWidget {
                             const SizedBox(width: 2),
                             Expanded(
                               child: Text(
-                                course.students,
+                                '${course.totalStudents ?? 0} HV',
                                 style: AppTextStyles.body1.copyWith(
                                   color: const Color(0xFF202244),
                                   fontSize: 8,
@@ -315,7 +315,7 @@ class RemoveBookmarkDialog extends StatelessWidget {
   }
 
   static void show(BuildContext context, {
-    required CourseItem course,
+    required Course course,
     VoidCallback? onRemove,
     VoidCallback? onCancel,
   }) {

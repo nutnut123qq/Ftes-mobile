@@ -136,6 +136,38 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
   }
 
   @override
+  Future<void> enrollCourse(String userId, String courseId) async {
+    try {
+      print('✅ Enrolling in course: ${AppConstants.baseUrl}${AppConstants.enrollCourseEndpoint}');
+      print('👤 User ID: $userId, 📚 Course ID: $courseId');
+      
+      final response = await _apiClient.post(
+        AppConstants.enrollCourseEndpoint,
+        data: {
+          'userId': userId,
+          'courseId': courseId,
+        },
+      );
+      
+      print('📥 Enroll response status: ${response.statusCode}');
+      print('📥 Enroll response data: ${response.data}');
+      
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Successfully enrolled in course');
+        return;
+      } else {
+        throw ServerException(response.data['messageDTO']?['message'] ?? CourseConstants.errorEnrollFailed);
+      }
+    } catch (e) {
+      print('❌ Enroll course error: $e');
+      if (e is AppException) {
+        rethrow;
+      }
+      throw ServerException('${CourseConstants.errorEnrollFailed}: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<VideoPlaylistModel> getVideoPlaylist(String videoId, {bool presign = false}) async {
     try {
       // Video ID format: "video_81f4308f-25d" (giữ nguyên prefix "video_")

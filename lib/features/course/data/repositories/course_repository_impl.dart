@@ -83,6 +83,26 @@ class CourseRepositoryImpl implements CourseRepository {
   }
 
   @override
+  Future<Either<Failure, void>> enrollCourse(String userId, String courseId) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.enrollCourse(userId, courseId);
+        return const Right(null);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(e.message));
+      } on ValidationException catch (e) {
+        return Left(ValidationFailure(e.message));
+      } catch (e) {
+        return Left(ServerFailure('Unexpected error: $e'));
+      }
+    } else {
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
+
+  @override
   Future<Either<Failure, VideoPlaylist>> getVideoPlaylist(String videoId, bool presign) async {
     if (await networkInfo.isConnected) {
       try {
