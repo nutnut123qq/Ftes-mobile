@@ -9,6 +9,7 @@ class Lesson {
   final int duration;
   final bool isCompleted;
   final String? type; // VIDEO, DOCUMENT, EXERCISE
+  final Map<String, dynamic>? exerciseMeta; // Optional exercise data embedded in lesson
 
   const Lesson({
     required this.id,
@@ -20,6 +21,7 @@ class Lesson {
     required this.duration,
     required this.isCompleted,
     this.type,
+    this.exerciseMeta,
   });
 
   @override
@@ -34,7 +36,8 @@ class Lesson {
         other.partOrder == partOrder &&
         other.duration == duration &&
         other.isCompleted == isCompleted &&
-        other.type == type;
+        other.type == type &&
+        other.exerciseMeta == exerciseMeta;
   }
 
   @override
@@ -47,7 +50,8 @@ class Lesson {
         partOrder.hashCode ^
         duration.hashCode ^
         isCompleted.hashCode ^
-        (type?.hashCode ?? 0);
+        (type?.hashCode ?? 0) ^
+        (exerciseMeta?.hashCode ?? 0);
   }
 
   @override

@@ -18,6 +18,8 @@ class LessonModel {
   final int? duration;
   final bool? isCompleted;
   final String? type; // VIDEO, DOCUMENT, EXERCISE
+  @JsonKey(name: 'exercise')
+  final Map<String, dynamic>? exercise;
 
   const LessonModel({
     required this.id,
@@ -29,6 +31,7 @@ class LessonModel {
     this.duration,
     this.isCompleted,
     this.type,
+    this.exercise,
   });
 
   factory LessonModel.fromJson(Map<String, dynamic> json) {
@@ -52,6 +55,7 @@ class LessonModel {
       duration: duration ?? 0,
       isCompleted: isCompleted ?? false,
       type: type,
+      exerciseMeta: exercise,
     );
   }
 
@@ -66,6 +70,7 @@ class LessonModel {
       duration: lesson.duration == 0 ? null : lesson.duration,
       isCompleted: lesson.isCompleted ? true : null,
       type: lesson.type,
+      exercise: lesson.exerciseMeta,
     );
   }
 }

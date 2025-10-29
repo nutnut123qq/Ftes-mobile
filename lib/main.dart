@@ -11,7 +11,6 @@ import 'features/blog/presentation/viewmodels/blog_viewmodel.dart';
 import 'features/profile/presentation/viewmodels/profile_viewmodel.dart';
 // import 'legacy/providers/auth_provider.dart'; // Deprecated - use auth feature instead
 import 'providers/app_data_provider.dart';
-import 'providers/cart_provider.dart';
 import 'providers/point_provider.dart';
 import 'providers/feedback_provider.dart';
 import 'providers/exercise_provider.dart';
@@ -39,7 +38,6 @@ class MyApp extends StatelessWidget {
         // Legacy providers (temporary for backward compatibility) - DEPRECATED
         // ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => AppDataProvider()),
-        ChangeNotifierProvider(create: (context) => CartProvider()..initializeCart()),
         ChangeNotifierProvider(create: (context) => PointProvider()),
         ChangeNotifierProvider(create: (context) => FeedbackProvider()),
         ChangeNotifierProvider(create: (context) => ExerciseProvider()),

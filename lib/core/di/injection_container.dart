@@ -12,6 +12,7 @@ import '../../features/blog/di/blog_injection.dart';
 import '../../features/profile/di/profile_injection.dart';
 import '../../features/ai/di/ai_injection.dart';
 import '../../features/roadmap/di/roadmap_injection.dart';
+import '../db/app_database.dart';
 
 /// Service Locator instance
 final sl = GetIt.instance;
@@ -26,6 +27,9 @@ Future<void> init() async {
   // Core dependencies
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl());
   sl.registerLazySingleton(() => ApiClient(dio: sl(), sharedPreferences: sl()));
+  // Database
+  await AppDatabase().database; // ensure DB open
+  sl.registerLazySingleton<AppDatabase>(() => AppDatabase());
   
   // Feature dependencies
   await initAuthDependencies();

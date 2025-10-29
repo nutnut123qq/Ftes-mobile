@@ -80,10 +80,8 @@ dependencies:
   
   # Cached network image for better performance
   cached_network_image: ^3.3.1
-  
-  # Local database for caching
-  sqflite: ^2.3.0
-  path_provider: ^2.1.1
+  sqflite: ^2.3.3
+  path: ^1.9.0
   
   # WebSocket STOMP client for real-time notifications
   stomp_dart_client: ^2.0.0

@@ -9,16 +9,18 @@ import '../../domain/entities/video_status.dart';
 import '../../domain/repositories/course_repository.dart';
 import '../datasources/course_remote_datasource.dart';
 import '../datasources/course_local_datasource.dart';
+import '../models/course_detail_model.dart';
+import '../../domain/constants/course_constants.dart';
 
 /// Repository implementation for Course feature
 class CourseRepositoryImpl implements CourseRepository {
   final CourseRemoteDataSource remoteDataSource;
-  final CourseLocalDataSource localDataSource;
+  final CourseLocalDataSource? localDataSource;
   final NetworkInfo networkInfo;
 
   CourseRepositoryImpl({
     required this.remoteDataSource,
-    required this.localDataSource,
+    this.localDataSource,
     required this.networkInfo,
   });
 
@@ -27,47 +29,29 @@ class CourseRepositoryImpl implements CourseRepository {
     String slugName, 
     String? userId,
   ) async {
-    // Strategy: Stale-while-revalidate
-    // 1. Try to get from cache first
-    // 2. If cache exists and valid, return it immediately
-    // 3. If online, fetch fresh data in background and update cache
-    // 4. If cache invalid or not exists, fetch from network
-    
-    try {
-      // Check cache first
-      final cachedModel = await localDataSource.getCachedCourseDetail(slugName);
-      
-      if (cachedModel != null) {
-        print('📦 Returning cached course detail for: $slugName');
-        
-        // Return cached data immediately
-        final cachedEntity = cachedModel.toEntity();
-        
-        // If online, refresh in background (fire and forget)
-        if (await networkInfo.isConnected) {
-          _refreshCacheInBackground(slugName, userId);
-        }
-        
-        return Right(cachedEntity);
+    final cacheKey = '${CourseConstants.cacheKeyPrefixCourseDetail}${slugName}_${userId ?? 'guest'}';
+
+    // Try cache first if available
+    if (localDataSource != null) {
+      final cached = await localDataSource!
+          .getCachedCourseDetail(cacheKey, CourseConstants.cacheDurationCourseDetail);
+      if (cached != null) {
+        return Right(cached.toEntity());
       }
-    } catch (e) {
-      print('⚠️ Cache read error: $e');
-      // Continue to network fetch if cache fails
     }
 
-    // No cache or cache error - fetch from network
     if (await networkInfo.isConnected) {
       try {
         final model = await remoteDataSource.getCourseDetailBySlug(slugName, userId);
-        
-        // Cache the fresh data
-        try {
-          await localDataSource.cacheCourseDetail(slugName, model);
-        } catch (e) {
-          print('⚠️ Failed to cache course: $e');
-          // Don't fail the whole operation if caching fails
+        // cache result asynchronously (fire-and-forget)
+        if (localDataSource != null) {
+          // ignore: unawaited_futures
+          localDataSource!.cacheCourseDetail(
+            cacheKey,
+            model,
+            CourseConstants.cacheDurationCourseDetail,
+          );
         }
-        
         return Right(model.toEntity());
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message));
@@ -80,19 +64,6 @@ class CourseRepositoryImpl implements CourseRepository {
       }
     } else {
       return const Left(NetworkFailure('No internet connection'));
-    }
-  }
-
-  /// Background refresh cache (fire and forget)
-  Future<void> _refreshCacheInBackground(String slugName, String? userId) async {
-    try {
-      print('🔄 Refreshing cache in background for: $slugName');
-      final model = await remoteDataSource.getCourseDetailBySlug(slugName, userId);
-      await localDataSource.cacheCourseDetail(slugName, model);
-      print('✅ Cache refreshed for: $slugName');
-    } catch (e) {
-      print('⚠️ Background cache refresh failed: $e');
-      // Silently fail - don't affect user experience
     }
   }
 
@@ -158,9 +129,28 @@ class CourseRepositoryImpl implements CourseRepository {
 
   @override
   Future<Either<Failure, VideoPlaylist>> getVideoPlaylist(String videoId, bool presign) async {
+    final cacheKey = '${CourseConstants.cacheKeyPrefixVideoPlaylist}$videoId';
+
+    // Only cache non-presigned URLs to avoid expiry issues
+    if (!presign && localDataSource != null) {
+      final cached = await localDataSource!
+          .getCachedVideoPlaylist(cacheKey, CourseConstants.cacheDurationCourseDetail);
+      if (cached != null) {
+        return Right(cached.toEntity());
+      }
+    }
+
     if (await networkInfo.isConnected) {
       try {
         final model = await remoteDataSource.getVideoPlaylist(videoId, presign: presign);
+        if (!presign && localDataSource != null) {
+          // ignore: unawaited_futures
+          localDataSource!.cacheVideoPlaylist(
+            cacheKey,
+            model,
+            CourseConstants.cacheDurationCourseDetail,
+          );
+        }
         return Right(model.toEntity());
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message));

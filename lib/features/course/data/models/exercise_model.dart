@@ -6,7 +6,11 @@ part 'exercise_model.g.dart';
 // Helper functions to convert between String and bool
 bool _boolFromString(dynamic value) {
   if (value is bool) return value;
-  if (value is String) return value.toLowerCase() == 'true';
+  if (value is num) return value != 0;
+  if (value is String) {
+    final v = value.toLowerCase().trim();
+    return v == 'true' || v == '1' || v == 'yes';
+  }
   return false;
 }
 

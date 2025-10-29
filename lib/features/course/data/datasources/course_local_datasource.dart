@@ -1,20 +1,16 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/course_detail_model.dart';
+import '../models/video_playlist_model.dart';
 
-/// Abstract local data source for Course operations
+/// Local cache for Course feature
 abstract class CourseLocalDataSource {
-  /// Cache course detail
-  Future<void> cacheCourseDetail(String courseId, CourseDetailModel courseDetail);
+  Future<void> cacheCourseDetail(String key, CourseDetailModel model, Duration ttl);
+  Future<CourseDetailModel?> getCachedCourseDetail(String key, Duration ttl);
+  Future<void> invalidateCourseDetail(String key);
 
-  /// Get cached course detail
-  Future<CourseDetailModel?> getCachedCourseDetail(String courseId);
-
-  /// Check if cache is valid (not expired)
-  Future<bool> isCacheValid(String courseId);
-
-  /// Clear cache for specific course
-  Future<void> clearCourseCache(String courseId);
-
-  /// Clear all course cache
-  Future<void> clearAllCache();
+  // Video playlist cache
+  Future<void> cacheVideoPlaylist(String key, VideoPlaylistModel model, Duration ttl);
+  Future<VideoPlaylistModel?> getCachedVideoPlaylist(String key, Duration ttl);
 }
+
 

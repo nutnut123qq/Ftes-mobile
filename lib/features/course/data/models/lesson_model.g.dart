@@ -14,8 +14,9 @@ LessonModel _$LessonModelFromJson(Map<String, dynamic> json) => LessonModel(
   order: (json['order'] as num?)?.toInt(),
   partOrder: (json['partOrder'] as num?)?.toInt(),
   duration: (json['duration'] as num?)?.toInt(),
-  isCompleted: json['isCompleted'] as bool?,
+      isCompleted: json['isCompleted'] as bool?,
   type: json['type'] as String?,
+      exercise: json['exercise'] as Map<String, dynamic>?,
 );
 
 Map<String, dynamic> _$LessonModelToJson(LessonModel instance) =>
@@ -29,4 +30,5 @@ Map<String, dynamic> _$LessonModelToJson(LessonModel instance) =>
       'duration': instance.duration,
       'isCompleted': instance.isCompleted,
       'type': instance.type,
+      'exercise': instance.exercise,
     };

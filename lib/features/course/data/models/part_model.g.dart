@@ -8,7 +8,7 @@ part of 'part_model.dart';
 
 PartModel _$PartModelFromJson(Map<String, dynamic> json) => PartModel(
   id: json['id'] as String,
-  name: json['name'] as String,
+  name: (json['name'] ?? json['title']) as String,
   description: json['description'] as String,
   order: (json['order'] as num?)?.toInt(),
   lessons: (json['lessons'] as List<dynamic>?)

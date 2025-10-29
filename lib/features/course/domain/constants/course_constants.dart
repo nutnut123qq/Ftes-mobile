@@ -59,5 +59,10 @@ class CourseConstants {
     'Thực hành với các bài tập thực tế',
     'Kỹ năng giải quyết vấn đề',
   ];
+
+  // ========== Cache Configurations ==========
+  static const String cacheKeyPrefixCourseDetail = 'cache_course_detail_';
+  static const String cacheKeyPrefixVideoPlaylist = 'cache_video_playlist_';
+  static const Duration cacheDurationCourseDetail = Duration(minutes: 5);
 }
 

@@ -74,8 +74,24 @@ class CourseDetailModel {
     this.exercises,
   });
 
-  factory CourseDetailModel.fromJson(Map<String, dynamic> json) =>
-      _$CourseDetailModelFromJson(json);
+  factory CourseDetailModel.fromJson(Map<String, dynamic> json) {
+    // Normalize possible alternate keys from legacy API
+    final normalized = Map<String, dynamic>.from(json);
+    if (!normalized.containsKey('infoCourse') && normalized.containsKey('info_course')) {
+      normalized['infoCourse'] = normalized['info_course'];
+    }
+    if (!normalized.containsKey('exercises')) {
+      if (normalized.containsKey('exercise')) {
+        normalized['exercises'] = normalized['exercise'];
+      } else if (normalized.containsKey('exerciseList')) {
+        normalized['exercises'] = normalized['exerciseList'];
+      }
+    }
+    if (!normalized.containsKey('parts') && normalized.containsKey('sections')) {
+      normalized['parts'] = normalized['sections'];
+    }
+    return _$CourseDetailModelFromJson(normalized);
+  }
 
   Map<String, dynamic> toJson() => _$CourseDetailModelToJson(this);
 

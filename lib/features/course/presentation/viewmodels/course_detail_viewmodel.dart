@@ -4,20 +4,24 @@ import '../../domain/entities/profile.dart';
 import '../../domain/usecases/get_course_detail_usecase.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
 import '../../domain/usecases/check_enrollment_usecase.dart';
+import '../../domain/usecases/get_video_playlist_usecase.dart';
 
 /// ViewModel for Course Detail feature
 class CourseDetailViewModel extends ChangeNotifier {
   final GetCourseDetailUseCase _getCourseDetailUseCase;
   final GetProfileUseCase _getProfileUseCase;
   final CheckEnrollmentUseCase _checkEnrollmentUseCase;
+  final GetVideoPlaylistUseCase _getVideoPlaylistUseCase;
 
   CourseDetailViewModel({
     required GetCourseDetailUseCase getCourseDetailUseCase,
     required GetProfileUseCase getProfileUseCase,
     required CheckEnrollmentUseCase checkEnrollmentUseCase,
+    required GetVideoPlaylistUseCase getVideoPlaylistUseCase,
   }) : _getCourseDetailUseCase = getCourseDetailUseCase,
        _getProfileUseCase = getProfileUseCase,
-       _checkEnrollmentUseCase = checkEnrollmentUseCase;
+       _checkEnrollmentUseCase = checkEnrollmentUseCase,
+       _getVideoPlaylistUseCase = getVideoPlaylistUseCase;
 
   CourseDetail? _courseDetail;
   Profile? _mentorProfile;
@@ -26,6 +30,9 @@ class CourseDetailViewModel extends ChangeNotifier {
   bool _isLoadingProfile = false;
   bool _isCheckingEnrollment = false;
   String? _errorMessage;
+  DateTime? _lastInitializeAt;
+  String? _lastSlug;
+  final Set<String> _prefetchedVideoIds = {};
 
   // Getters
   CourseDetail? get courseDetail => _courseDetail;
@@ -39,6 +46,14 @@ class CourseDetailViewModel extends ChangeNotifier {
   /// Initialize - fetch all data with optimized batch updates
   /// Minimizes notifyListeners() calls for better performance
   Future<void> initialize(String slugName, String? userId) async {
+    // Debounce rapid initialize calls for the same slug
+    final now = DateTime.now();
+    if (_lastSlug == slugName && _lastInitializeAt != null &&
+        now.difference(_lastInitializeAt!).inMilliseconds < 300) {
+      return;
+    }
+    _lastSlug = slugName;
+    _lastInitializeAt = now;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners(); // Only once at start
@@ -53,6 +68,9 @@ class CourseDetailViewModel extends ChangeNotifier {
         _checkEnrollmentInternal(userId, _courseDetail!.id),
       ]);
     }
+
+    // Prefetch first video playlist to warm cache (non-blocking)
+    _prefetchFirstVideo();
 
     _isLoading = false;
     notifyListeners(); // Only once at end
@@ -71,6 +89,23 @@ class CourseDetailViewModel extends ChangeNotifier {
         _courseDetail = courseDetail;
       },
     );
+  }
+
+  void _prefetchFirstVideo() {
+    final course = _courseDetail;
+    if (course == null) return;
+    if (course.parts.isEmpty) return;
+    final firstPart = course.parts.first;
+    if (firstPart.lessons.isEmpty) return;
+    final firstVideoLesson = firstPart.lessons.firstWhere(
+      (l) => (l.type == null || l.type == 'VIDEO') && l.video.isNotEmpty,
+      orElse: () => firstPart.lessons.first,
+    );
+    final videoId = firstVideoLesson.video;
+    if (videoId.isEmpty || _prefetchedVideoIds.contains(videoId)) return;
+    _prefetchedVideoIds.add(videoId);
+    // Fire-and-forget; presign=false to allow caching
+    _getVideoPlaylistUseCase(GetVideoPlaylistParams(videoId: videoId, presign: false));
   }
 
   /// Internal method to fetch mentor profile without notifying listeners

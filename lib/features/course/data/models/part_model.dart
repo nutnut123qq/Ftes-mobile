@@ -28,8 +28,14 @@ class PartModel {
     this.exercises,
   });
 
-  factory PartModel.fromJson(Map<String, dynamic> json) =>
-      _$PartModelFromJson(json);
+  factory PartModel.fromJson(Map<String, dynamic> json) {
+    // Normalize possible alternate keys from legacy API
+    final normalized = Map<String, dynamic>.from(json);
+    if (!normalized.containsKey('exercises') && normalized.containsKey('exercise')) {
+      normalized['exercises'] = normalized['exercise'];
+    }
+    return _$PartModelFromJson(normalized);
+  }
 
   Map<String, dynamic> toJson() => _$PartModelToJson(this);
 
