@@ -293,14 +293,6 @@ class _CreateNewPasswordPageState extends State<CreateNewPasswordPage> {
     return Column(
       children: [
         Text(
-          'Mật khẩu phải có ít nhất 6 ký tự',
-          style: AppTextStyles.body1.copyWith(
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
           'Mật khẩu xác nhận phải khớp với mật khẩu mới',
           style: AppTextStyles.body1.copyWith(
             color: AppColors.textSecondary,

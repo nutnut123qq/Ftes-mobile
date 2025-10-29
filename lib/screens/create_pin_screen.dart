@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:ftes/utils/colors.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/constants.dart';
-import '../providers/auth_provider.dart';
+import 'package:ftes/core/di/injection_container.dart' as di;
+import 'package:ftes/features/auth/presentation/viewmodels/register_viewmodel.dart';
 
 class CreatePinScreen extends StatefulWidget {
   const CreatePinScreen({super.key}); // Force rebuild
@@ -317,8 +317,8 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
     
     if (contactInfo != null && method == 'email') {
       try {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.resendVerificationCode(contactInfo);
+        final vm = di.sl<RegisterViewModel>();
+        await vm.resendCode(contactInfo);
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -364,9 +364,10 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
       final method = args?['method'] as String?;
       
       if (contactInfo != null && method == 'email') {
-        // Verify email code
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        final success = await authProvider.verifyEmailOTP(contactInfo, pin);
+        // Verify email code via RegisterViewModel
+        final vm = di.sl<RegisterViewModel>();
+        final otp = int.tryParse(pin) ?? -1;
+        final success = otp >= 0 ? await vm.verifyOTP(contactInfo, otp) : false;
         
         if (success) {
           if (mounted) {

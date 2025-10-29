@@ -19,7 +19,6 @@ import '../domain/usecases/reset_password_usecase.dart';
 import '../presentation/viewmodels/auth_viewmodel.dart';
 import '../presentation/viewmodels/register_viewmodel.dart';
 import '../presentation/viewmodels/forgot_password_viewmodel.dart';
-import '../../profile/domain/usecases/profile_usecases.dart';
 
 /// Initialize auth feature dependencies
 Future<void> initAuthDependencies() async {

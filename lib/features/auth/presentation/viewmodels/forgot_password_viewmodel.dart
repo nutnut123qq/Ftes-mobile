@@ -118,4 +118,9 @@ class ForgotPasswordViewModel extends ChangeNotifier {
     _currentStep = ForgotPasswordStep.email;
     notifyListeners();
   }
+
+  void setAccessToken(String token) {
+    _accessToken = token;
+    notifyListeners();
+  }
 }

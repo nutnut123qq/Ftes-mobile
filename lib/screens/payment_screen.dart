@@ -5,7 +5,8 @@ import 'package:ftes/services/order_service.dart';
 import 'package:ftes/models/order_response.dart';
 import 'package:ftes/providers/enrollment_provider.dart';
 import 'package:ftes/providers/course_provider.dart';
-import 'package:ftes/providers/auth_provider.dart';
+import 'package:ftes/core/di/injection_container.dart' as di;
+import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 import 'package:ftes/core/constants/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -96,9 +97,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
     try {
       final courseProvider = Provider.of<CourseProvider>(context, listen: false);
       
-      // Thử lấy userId từ authProvider trước
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      String? userId = authProvider.currentUser?.id;
+      // Lấy userId từ AuthViewModel
+      final authVm = di.sl<AuthViewModel>();
+      String? userId = authVm.currentUser?.id;
       
       // Nếu không có, thử lấy từ JWT token
       if (userId == null || userId.isEmpty) {

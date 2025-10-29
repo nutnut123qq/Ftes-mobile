@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../utils/constants.dart';
-import '../legacy/screens/login_screen.dart';
-import '../providers/auth_provider.dart';
+import 'package:ftes/core/di/injection_container.dart' as di;
+import 'package:ftes/features/auth/presentation/pages/login_page.dart';
+import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 
 class LetsYouInScreen extends StatelessWidget {
   const LetsYouInScreen({super.key});
@@ -92,7 +92,7 @@ class LetsYouInScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
+                              builder: (context) => const LoginPage(),
                             ),
                           );
                         },
@@ -243,10 +243,9 @@ class LetsYouInScreen extends StatelessWidget {
   }
 
   Future<void> _signInWithGoogle(BuildContext context) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
+    final vm = di.sl<AuthViewModel>();
     try {
-      final success = await authProvider.loginWithGoogle();
+      final success = await vm.loginWithGoogle();
       if (success && context.mounted) {
         Navigator.pushReplacementNamed(context, AppConstants.routeHome);
       }

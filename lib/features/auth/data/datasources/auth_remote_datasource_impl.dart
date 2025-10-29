@@ -120,12 +120,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await _apiClient.post(AppConstants.verifyEmailCodeEndpoint, data: requestBody);
 
       if (response.statusCode == 200) {
-        return VerifyOTPResponseModel.fromJson(response.data);
+        try {
+          final model = VerifyOTPResponseModel.fromJson(response.data);
+          // Validate that we have the required data
+          if (!model.success || model.result == null || model.result!.accessToken.isEmpty) {
+            throw ServerException(AuthConstants.errorInvalidResponse);
+          }
+          return model;
+        } catch (e) {
+          // Re-throw if it's already a ServerException
+          if (e is ServerException) {
+            rethrow;
+          }
+          // Otherwise, it's a parsing error
+          throw ServerException('${AuthConstants.errorInvalidResponse}: ${e.toString()}');
+        }
       } else {
-        throw ServerException(response.data['message'] ?? AuthConstants.errorVerifyOTPFailed);
+        final message = response.data['messageDTO']?['message'] ?? 
+                        response.data['message'] ?? 
+                        AuthConstants.errorVerifyOTPFailed;
+        throw ServerException(message);
       }
+    } on ServerException {
+      rethrow;
     } catch (e) {
-      throw const ServerException(AuthConstants.errorServer);
+      throw ServerException('${AuthConstants.errorServer}: ${e.toString()}');
     }
   }
 

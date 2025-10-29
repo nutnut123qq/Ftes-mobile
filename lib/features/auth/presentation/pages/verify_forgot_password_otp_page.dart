@@ -80,10 +80,14 @@ class _VerifyForgotPasswordOTPPageState extends State<VerifyForgotPasswordOTPPag
     final success = await viewModel.verifyOTP(widget.email, otp);
     
     if (success && mounted) {
+      final accessToken = viewModel.accessToken;
       Navigator.pushNamed(
         context,
         AppConstants.routeCreateNewPassword,
-        arguments: widget.email,
+        arguments: {
+          'email': widget.email,
+          'accessToken': accessToken,
+        },
       );
     }
   }
@@ -131,7 +135,7 @@ class _VerifyForgotPasswordOTPPageState extends State<VerifyForgotPasswordOTPPag
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),

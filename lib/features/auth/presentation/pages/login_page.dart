@@ -280,7 +280,7 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         SocialButtonWidget(
           icon: Icons.g_mobiledata,
-          onTap: () => _signInWithGoogle(context),
+          onTap: _signInWithGoogle,
         ),
         const SizedBox(width: 20),
       ],
@@ -326,10 +326,10 @@ class _LoginPageState extends State<LoginPage> {
         _emailController.text,
         _passwordController.text,
       );
-      
-      if (success && mounted) {
+      if (!mounted) return;
+      if (success) {
         Navigator.pushReplacementNamed(context, AppConstants.routeHome);
-      } else if (mounted && authViewModel.errorMessage != null) {
+      } else if (authViewModel.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(authViewModel.errorMessage!),
@@ -344,11 +344,11 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _signInWithGoogle(BuildContext context) async {
+  Future<void> _signInWithGoogle() async {
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-    
     final success = await authViewModel.loginWithGoogle();
-    if (success && mounted) {
+    if (!mounted) return;
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Đăng nhập Google thành công!'),
@@ -356,7 +356,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
       Navigator.pushReplacementNamed(context, AppConstants.routeHome);
-    } else if (mounted && authViewModel.errorMessage != null) {
+    } else if (authViewModel.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authViewModel.errorMessage!),

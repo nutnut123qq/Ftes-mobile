@@ -3,7 +3,6 @@ import 'package:dartz/dartz.dart';
 import 'package:ftes/core/error/exceptions.dart';
 import 'package:ftes/core/error/failures.dart';
 import 'package:ftes/core/network/network_info.dart';
-import 'package:ftes/core/config/env_config.dart';
 import 'package:ftes/features/auth/domain/constants/auth_constants.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -85,13 +84,13 @@ class AuthRepositoryImpl implements AuthRepository {
 
   Future<String?> _getGoogleAuthCode() async {
     try {
-      final googleAuthUrl = Uri.https('accounts.google.com', '/o/oauth2/auth', {
-        'client_id': EnvConfig.googleClientId,
-        'redirect_uri': EnvConfig.redirectUri,
-        'response_type': 'code',
-        'scope': 'openid email profile',
-      });
-      
+      // final googleAuthUrl = Uri.https('accounts.google.com', '/o/oauth2/auth', {
+      //   'client_id': EnvConfig.googleClientId,
+      //   'redirect_uri': EnvConfig.redirectUri,
+      //   'response_type': 'code',
+      //   'scope': 'openid email profile',
+      // });
+
       // TODO: Fix flutter_web_auth namespace issue for mobile
       // final result = await FlutterWebAuth.authenticate(
       //   url: googleAuthUrl.toString(),
@@ -234,7 +233,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(NetworkFailure(e.message));
       }
     } else {
-      return const Left(NetworkFailure('No internet connection'));
+      return const Left(NetworkFailure(AuthConstants.errorNoInternet));
     }
   }
 
@@ -254,7 +253,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(NetworkFailure(e.message));
       }
     } else {
-      return const Left(NetworkFailure('No internet connection'));
+      return const Left(NetworkFailure(AuthConstants.errorNoInternet));
     }
   }
 
@@ -274,7 +273,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(NetworkFailure(e.message));
       }
     } else {
-      return const Left(NetworkFailure('No internet connection'));
+      return const Left(NetworkFailure(AuthConstants.errorNoInternet));
     }
   }
 }

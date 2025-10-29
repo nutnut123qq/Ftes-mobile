@@ -3,7 +3,8 @@ import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/routes/app_routes.dart';
 import 'package:provider/provider.dart';
 import '../providers/feedback_provider.dart';
-import '../providers/auth_provider.dart';
+import 'package:ftes/core/di/injection_container.dart' as di;
+import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../models/feedback_response.dart';
 
 class ReviewsScreen extends StatefulWidget {
@@ -513,8 +514,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            final authProvider = context.read<AuthProvider>();
-            final userId = authProvider.currentUser?.id ?? '';
+            final authVm = di.sl<AuthViewModel>();
+            final userId = authVm.currentUser?.id ?? '';
             AppRoutes.navigateToWriteReview(
               context,
               courseId: widget.courseId,

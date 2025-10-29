@@ -329,7 +329,7 @@ class _RegisterPageState extends State<RegisterPage> {
         Expanded(
           child: Container(
             height: 1,
-            color: AppColors.textSecondary.withOpacity(0.3),
+            color: AppColors.textSecondary.withValues(alpha: 0.3),
           ),
         ),
         Padding(
@@ -345,7 +345,7 @@ class _RegisterPageState extends State<RegisterPage> {
         Expanded(
           child: Container(
             height: 1,
-            color: AppColors.textSecondary.withOpacity(0.3),
+            color: AppColors.textSecondary.withValues(alpha: 0.3),
           ),
         ),
       ],

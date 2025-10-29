@@ -4,7 +4,8 @@ import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../models/message_item.dart';
 import '../models/chat_item.dart';
-import '../legacy/providers/ai_chat_provider.dart';
+import 'package:ftes/core/di/injection_container.dart' as di;
+import 'package:ftes/features/ai/presentation/viewmodels/ai_chat_viewmodel.dart';
 
 class ChatMessagesScreen extends StatefulWidget {
   final ChatItem? chat;
@@ -25,6 +26,7 @@ class ChatMessagesScreen extends StatefulWidget {
 class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  AiChatViewModel? _aiVm;
 
   @override
   void initState() {
@@ -33,8 +35,8 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     // Initialize AI chat if lessonId is provided
     if (widget.lessonId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final aiChatProvider = Provider.of<AIChatProvider>(context, listen: false);
-        aiChatProvider.initializeLessonChat(
+        _aiVm = di.sl<AiChatViewModel>();
+        _aiVm!.initializeLessonChat(
           widget.lessonId!,
           widget.lessonTitle ?? 'Lesson',
         );
@@ -182,28 +184,52 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   }
 
   Widget _buildMessagesList() {
-    return Consumer<AIChatProvider>(
-      builder: (context, aiChatProvider, child) {
-        // Use AI messages if lessonId is provided, otherwise use mock data
-        final messages = widget.lessonId != null 
-            ? aiChatProvider.messages 
-            : _getMessages();
-        
-        return ListView.builder(
-          controller: _scrollController,
-          padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 8),
-          itemCount: messages.length + (aiChatProvider.isLoading ? 1 : 0),
-          itemBuilder: (context, index) {
-            // Show loading indicator at the end
-            if (index == messages.length && aiChatProvider.isLoading) {
-              return _buildLoadingIndicator();
-            }
-            
-            final message = messages[index];
-            return _buildMessageBubble(message, index);
-          },
-        );
-      },
+    if (widget.lessonId == null) {
+      final messages = _getMessages();
+      return ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 8),
+        itemCount: messages.length,
+        itemBuilder: (context, index) => _buildMessageBubble(messages[index], index),
+      );
+    }
+
+    if (_aiVm == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return ChangeNotifierProvider<AiChatViewModel>.value(
+      value: _aiVm!,
+      child: Consumer<AiChatViewModel>(
+        builder: (context, vm, child) {
+          final messages = vm.messages
+              .map((m) {
+                final t = m.timestamp;
+                final hh = t.hour.toString();
+                final mm = t.minute.toString().padLeft(2, '0');
+                return MessageItem(
+                  id: m.id,
+                  content: m.content,
+                  time: '$hh:$mm',
+                  isFromUser: m.isFromUser,
+                );
+              })
+              .toList();
+
+          return ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 8),
+            itemCount: messages.length + (vm.isLoading ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == messages.length && vm.isLoading) {
+                return _buildLoadingIndicator();
+              }
+              final message = messages[index];
+              return _buildMessageBubble(message, index);
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -503,8 +529,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     
     // If using AI chat
     if (widget.lessonId != null) {
-      final aiChatProvider = Provider.of<AIChatProvider>(context, listen: false);
-      await aiChatProvider.sendMessage(content);
+      if (_aiVm != null) {
+        await _aiVm!.sendMessage(content);
+      }
       
       // Scroll to bottom after sending
       WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -11,6 +11,7 @@ import '../features/auth/presentation/pages/verify_email_page.dart';
 import '../features/auth/presentation/pages/forgot_password_page.dart';
 import '../features/auth/presentation/pages/verify_forgot_password_otp_page.dart';
 import '../features/auth/presentation/pages/create_new_password_page.dart';
+import '../features/auth/presentation/viewmodels/forgot_password_viewmodel.dart';
 import '../screens/congratulations_screen.dart';
 import '../screens/create_pin_screen.dart';
 import '../features/home/presentation/pages/home_page.dart';
@@ -68,15 +69,38 @@ class AppRoutes {
       final email = ModalRoute.of(context)?.settings.arguments as String?;
       return VerifyEmailPage(email: email ?? '');
     }, // Add verify email route
-    core_constants.AppConstants.routeForgotPassword: (context) => const ForgotPasswordPage(), // Add forgot password route
+    core_constants.AppConstants.routeForgotPassword: (context) => ChangeNotifierProvider(
+      create: (context) => di.sl<ForgotPasswordViewModel>(),
+      child: const ForgotPasswordPage(),
+    ), // Provide ForgotPasswordViewModel
     core_constants.AppConstants.routeVerifyForgotPassword: (context) {
       final email = ModalRoute.of(context)?.settings.arguments as String?;
-      return VerifyForgotPasswordOTPPage(email: email ?? '');
-    }, // Add verify forgot password route
+      return ChangeNotifierProvider(
+        create: (context) => di.sl<ForgotPasswordViewModel>(),
+        child: VerifyForgotPasswordOTPPage(email: email ?? ''),
+      );
+    }, // Provide ForgotPasswordViewModel for OTP verify
     core_constants.AppConstants.routeCreateNewPassword: (context) {
-      final email = ModalRoute.of(context)?.settings.arguments as String?;
-      return CreateNewPasswordPage(email: email ?? '');
-    }, // Add create new password route
+      final args = ModalRoute.of(context)?.settings.arguments;
+      String email = '';
+      String? accessToken;
+      if (args is Map<String, dynamic>) {
+        email = args['email'] as String? ?? '';
+        accessToken = args['accessToken'] as String?;
+      } else if (args is String) {
+        email = args;
+      }
+      return ChangeNotifierProvider(
+        create: (context) {
+          final vm = di.sl<ForgotPasswordViewModel>();
+          if (accessToken != null && accessToken.isNotEmpty) {
+            vm.setAccessToken(accessToken);
+          }
+          return vm;
+        },
+        child: CreateNewPasswordPage(email: email),
+      );
+    }, // Provide ForgotPasswordViewModel for creating new password with token
     // Auth routes
     ...AuthRoutes.getRoutes(),
     core_constants.AppConstants.routeCongratulations: (context) => const CongratulationsScreen(),
