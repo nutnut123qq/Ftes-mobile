@@ -25,8 +25,8 @@ class AiJsonParserHelper {
       } else {
         final errorMsg = (response.error?.isNotEmpty == true)
             ? response.error!
-            : ((response.message?.isNotEmpty == true)
-                ? response.message!
+            : (response.message.isNotEmpty
+                ? response.message
                 : AiConstants.errorSendMessageFailed);
         throw Exception(errorMsg);
       }
@@ -82,8 +82,8 @@ AiChatMessage _parseAiChatResponseInIsolate(Map<String, dynamic> json) {
     } else {
       final errorMsg = (response.error?.isNotEmpty == true)
           ? response.error!
-          : ((response.message?.isNotEmpty == true)
-              ? response.message!
+          : (response.message.isNotEmpty
+              ? response.message
               : AiConstants.errorSendMessageFailed);
       throw Exception(errorMsg);
     }

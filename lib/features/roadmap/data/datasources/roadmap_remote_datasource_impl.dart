@@ -20,25 +20,18 @@ class RoadmapRemoteDataSourceImpl implements RoadmapRemoteDataSource {
     required GenerateRoadmapRequestModel request,
   }) async {
     try {
-      print('🗺️ Generating roadmap: ${AppConstants.aiBaseUrl}${AppConstants.generateRoadmapEndpoint}');
-      print('📊 Request: specialization=${request.specialization}, skills=${request.currentSkills.length}, term=${request.term}');
-      
       final response = await _aiApiClient.post(
         AppConstants.generateRoadmapEndpoint,
         data: request.toJson(),
       );
-      
-      print('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final success = response.data['success'];
         if (success == true) {
           // Use compute() isolate for parsing if response is large
           if (response.data.toString().length > RoadmapConstants.computeThreshold * 100) {
-            print('🔄 Using compute() isolate for parsing large response');
             return await compute<Map<String, dynamic>, RoadmapResponseModel>(parseRoadmapResponseJson, response.data);
           } else {
-            print('⚡ Parsing JSON on main thread (simple data)');
             return parseRoadmapResponseJson(response.data);
           }
         } else {
@@ -48,7 +41,6 @@ class RoadmapRemoteDataSourceImpl implements RoadmapRemoteDataSource {
         throw ServerException(response.data['message'] ?? RoadmapConstants.errorGeneratingRoadmap);
       }
     } catch (e) {
-      print('❌ Generate roadmap error: $e');
       if (e is AppException) {
         rethrow;
       }

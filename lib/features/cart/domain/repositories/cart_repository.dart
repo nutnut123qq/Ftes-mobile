@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../entities/cart_item.dart';
 import '../entities/cart_summary.dart';
 
 /// Abstract repository interface for Cart feature

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../core/constants/app_constants.dart' as core_constants;
-import '../screens/loading_screen.dart';
-import '../screens/launching_screen.dart';
-import '../screens/intro_screen.dart';
-import '../screens/lets_you_in_screen.dart';
-import '../screens/onboarding_screen.dart';
+import '../features/auth/presentation/pages/loading_screen.dart';
+import '../features/auth/presentation/pages/launching_screen.dart';
+import '../features/auth/presentation/pages/intro_screen.dart';
+import '../features/auth/presentation/pages/lets_you_in_screen.dart';
+import '../features/auth/presentation/pages/onboarding_screen.dart';
 import '../features/auth/routes/auth_routes.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/register_page.dart';
@@ -13,31 +13,28 @@ import '../features/auth/presentation/pages/forgot_password_page.dart';
 import '../features/auth/presentation/pages/verify_forgot_password_otp_page.dart';
 import '../features/auth/presentation/pages/create_new_password_page.dart';
 import '../features/auth/presentation/viewmodels/forgot_password_viewmodel.dart';
-import '../screens/congratulations_screen.dart';
-import '../screens/create_pin_screen.dart';
+import '../features/auth/presentation/pages/congratulations_screen.dart';
+import '../features/auth/presentation/pages/create_pin_screen.dart';
 import '../features/home/presentation/pages/home_page.dart';
 import '../features/home/presentation/pages/course_search_page.dart';
 import '../features/home/presentation/viewmodels/home_viewmodel.dart';
 import '../features/my_courses/presentation/pages/my_courses_page.dart';
 import '../features/my_courses/presentation/viewmodels/my_courses_viewmodel.dart';
 import '../features/my_courses/di/my_courses_injection.dart';
-import '../screens/top_mentors_screen.dart';
-import '../screens/mentors_list_screen.dart';
-import '../screens/single_mentor_details_screen.dart';
 import '../features/course/presentation/pages/course_detail_page.dart';
 import '../features/course/presentation/pages/course_video_page.dart';
-import '../screens/profile_screen.dart';
+import '../features/profile/presentation/pages/profile_screen.dart';
 import '../features/profile/presentation/pages/instructor_profile_page.dart';
-import '../screens/notifications_screen.dart';
-import '../screens/chat_messages_screen.dart';
+import '../features/profile/presentation/pages/notifications_screen.dart';
+import '../features/ai/presentation/pages/chat_messages_screen.dart';
 import '../features/ai/presentation/pages/ai_chat_page.dart';
 import '../features/ai/presentation/viewmodels/ai_chat_viewmodel.dart';
-import '../screens/reviews_screen.dart';
-import '../screens/write_review_screen.dart';
+import '../features/feedback/presentation/pages/reviews_screen.dart';
+import '../features/feedback/presentation/pages/write_review_screen.dart';
 import '../features/cart/presentation/pages/payment_page.dart';
 import '../features/cart/presentation/viewmodels/payment_viewmodel.dart';
-import '../screens/enroll_success_screen.dart';
-import '../screens/invite_friends_screen.dart';
+import '../features/course/presentation/pages/enroll_success_screen.dart';
+import '../features/points/presentation/pages/invite_friends_screen.dart';
 // Removed legacy CartScreen - use CartPage
 import '../features/cart/presentation/pages/cart_page.dart';
 import '../features/cart/presentation/viewmodels/cart_viewmodel.dart';
@@ -46,11 +43,9 @@ import '../features/blog/presentation/pages/blog_list_page.dart';
 import '../features/blog/presentation/viewmodels/blog_viewmodel.dart';
 import '../features/feedback/presentation/viewmodels/feedback_viewmodel.dart';
 import '../features/points/presentation/viewmodels/points_viewmodel.dart';
-import '../models/chat_item.dart';
 import 'package:provider/provider.dart';
 import '../core/di/injection_container.dart' as di;
 import '../features/course/presentation/viewmodels/course_video_viewmodel.dart';
-import '../models/mentor_item.dart';
 import '../features/home/domain/entities/course.dart';
 
 class AppRoutes {
@@ -123,29 +118,11 @@ class AppRoutes {
           create: (context) => di.sl<HomeViewModel>(),
           child: const CourseSearchPage(),
         ),
-    core_constants.AppConstants.routeTopMentors: (context) =>
-        const TopMentorsScreen(),
     core_constants.AppConstants.routeCoursesList: (context) =>
         ChangeNotifierProvider(
           create: (context) => di.sl<HomeViewModel>(),
           child: const CourseSearchPage(),
         ),
-    core_constants.AppConstants.routeMentorsList: (context) =>
-        const MentorsListScreen(),
-    core_constants.AppConstants.routeSingleMentorDetails: (context) {
-      final args =
-          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      return SingleMentorDetailsScreen(
-        mentor:
-            args?['mentor'] ??
-            MentorItem(
-              name: 'Default Mentor',
-              specialization: 'Design',
-              avatarUrl:
-                  'https://via.placeholder.com/66x66/000000/FFFFFF?text=M',
-            ),
-      );
-    },
     core_constants.AppConstants.routeCourseDetail: (context) {
       final arguments = ModalRoute.of(context)?.settings.arguments;
       Course? course;
@@ -206,11 +183,7 @@ class AppRoutes {
       }
 
       // Fallback to old screen for non-lesson chats
-      return ChatMessagesScreen(
-        chat: args?['chat'],
-        lessonId: lessonId,
-        lessonTitle: lessonTitle,
-      );
+      return const ChatMessagesScreen();
     },
     core_constants.AppConstants.routeReviews: (context) {
       final args =
@@ -322,36 +295,11 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case core_constants.AppConstants.routeTopMentors:
-        return MaterialPageRoute(
-          builder: (context) => const TopMentorsScreen(),
-          settings: settings,
-        );
       case core_constants.AppConstants.routeCoursesList:
         return MaterialPageRoute(
           builder: (context) => ChangeNotifierProvider(
             create: (context) => di.sl<HomeViewModel>(),
             child: const CourseSearchPage(),
-          ),
-          settings: settings,
-        );
-      case core_constants.AppConstants.routeMentorsList:
-        return MaterialPageRoute(
-          builder: (context) => const MentorsListScreen(),
-          settings: settings,
-        );
-      case core_constants.AppConstants.routeSingleMentorDetails:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (context) => SingleMentorDetailsScreen(
-            mentor:
-                args?['mentor'] ??
-                MentorItem(
-                  name: 'Default Mentor',
-                  specialization: 'Design',
-                  avatarUrl:
-                      'https://via.placeholder.com/66x66/000000/FFFFFF?text=M',
-                ),
           ),
           settings: settings,
         );
@@ -431,7 +379,6 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => ChatMessagesScreen(
-            chat: args?['chat'],
             lessonId: args?['lessonId'],
             lessonTitle: args?['lessonTitle'],
           ),
@@ -552,10 +499,6 @@ class AppRoutes {
     );
   }
 
-  static void navigateToTopMentors(BuildContext context) {
-    Navigator.pushNamed(context, core_constants.AppConstants.routeTopMentors);
-  }
-
   static void navigateToCoursesList(
     BuildContext context, {
     String? searchQuery,
@@ -564,21 +507,6 @@ class AppRoutes {
       context,
       core_constants.AppConstants.routeCoursesList,
       arguments: searchQuery != null ? {'searchQuery': searchQuery} : null,
-    );
-  }
-
-  static void navigateToMentorsList(BuildContext context) {
-    Navigator.pushNamed(context, core_constants.AppConstants.routeMentorsList);
-  }
-
-  static void navigateToSingleMentorDetails(
-    BuildContext context, {
-    required MentorItem mentor,
-  }) {
-    Navigator.pushNamed(
-      context,
-      core_constants.AppConstants.routeSingleMentorDetails,
-      arguments: {'mentor': mentor},
     );
   }
 
@@ -635,12 +563,16 @@ class AppRoutes {
 
   static void navigateToChatMessages(
     BuildContext context, {
-    required ChatItem chat,
+    String? lessonId,
+    String? lessonTitle,
   }) {
     Navigator.pushNamed(
       context,
       core_constants.AppConstants.routeChatMessages,
-      arguments: {'chat': chat},
+      arguments: {
+        if (lessonId != null) 'lessonId': lessonId,
+        if (lessonTitle != null) 'lessonTitle': lessonTitle,
+      },
     );
   }
 

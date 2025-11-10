@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../utils/colors.dart';
-import '../utils/text_styles.dart';
-import '../models/message_item.dart';
-import '../models/chat_item.dart';
+import 'package:ftes/core/utils/colors.dart';
+import 'package:ftes/core/utils/text_styles.dart';
 import 'package:ftes/core/di/injection_container.dart' as di;
 import 'package:ftes/features/ai/presentation/viewmodels/ai_chat_viewmodel.dart';
+import 'package:ftes/features/ai/domain/entities/ai_chat_message.dart';
 
 class ChatMessagesScreen extends StatefulWidget {
-  final ChatItem? chat;
   final String? lessonId;
   final String? lessonTitle;
 
   const ChatMessagesScreen({
     super.key,
-    this.chat,
     this.lessonId,
     this.lessonTitle,
   });
@@ -185,12 +182,12 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
 
   Widget _buildMessagesList() {
     if (widget.lessonId == null) {
-      final messages = _getMessages();
+      final messages = _getLegacyMessages();
       return ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 8),
         itemCount: messages.length,
-        itemBuilder: (context, index) => _buildMessageBubble(messages[index], index),
+        itemBuilder: (context, index) => _buildMessageBubble(messages[index]),
       );
     }
 
@@ -202,19 +199,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       value: _aiVm!,
       child: Consumer<AiChatViewModel>(
         builder: (context, vm, child) {
-          final messages = vm.messages
-              .map((m) {
-                final t = m.timestamp;
-                final hh = t.hour.toString();
-                final mm = t.minute.toString().padLeft(2, '0');
-                return MessageItem(
-                  id: m.id,
-                  content: m.content,
-                  time: '$hh:$mm',
-                  isFromUser: m.isFromUser,
-                );
-              })
-              .toList();
+          final messages = vm.messages.map(_ChatBubbleData.fromAiMessage).toList();
 
           return ListView.builder(
             controller: _scrollController,
@@ -225,7 +210,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                 return _buildLoadingIndicator();
               }
               final message = messages[index];
-              return _buildMessageBubble(message, index);
+              return _buildMessageBubble(message);
             },
           );
         },
@@ -298,7 +283,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     );
   }
 
-  Widget _buildMessageBubble(MessageItem message, int index) {
+  Widget _buildMessageBubble(_ChatBubbleData message) {
     final isFromUser = message.isFromUser;
     
     return Container(
@@ -318,7 +303,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                 color: AppColors.lightBlue,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.smart_toy, // Robot icon for AI
                 color: AppColors.primary,
                 size: 16,
@@ -350,7 +335,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (message.type == MessageType.text) ...[
+                  if (message.type == _ChatBubbleType.text) ...[
                     Text(
                       message.content,
                       style: AppTextStyles.bodyText.copyWith(
@@ -359,9 +344,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                         fontSize: 14,
                       ),
                     ),
-                  ] else if (message.type == MessageType.image) ...[
+                  ] else if (message.type == _ChatBubbleType.image) ...[
                     _buildImageMessage(),
-                  ] else if (message.type == MessageType.rating) ...[
+                  ] else if (message.type == _ChatBubbleType.rating) ...[
                     _buildRatingMessage(message),
                   ],
                   const SizedBox(height: 4),
@@ -389,7 +374,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                 color: AppColors.lightBlue,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.person,
                 color: AppColors.primary,
                 size: 16,
@@ -419,7 +404,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     );
   }
 
-  Widget _buildRatingMessage(MessageItem message) {
+  Widget _buildRatingMessage(_ChatBubbleData message) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -505,7 +490,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             child: Container(
               width: 48,
               height: 48,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
@@ -548,47 +533,97 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     }
   }
 
-  List<MessageItem> _getMessages() {
-    return [
-      const MessageItem(
+  List<_ChatBubbleData> _getLegacyMessages() {
+    return const [
+      _ChatBubbleData(
         id: '1',
         content: 'Hi, Nicholas Good Evening',
         time: '10:45',
         isFromUser: false,
       ),
-      const MessageItem(
+      _ChatBubbleData(
         id: '2',
         content: 'How was your UI/UX Design Course Like.?',
         time: '12:45',
         isFromUser: false,
       ),
-      const MessageItem(
+      _ChatBubbleData(
         id: '3',
         content: 'Hi, Morning too Ronald',
         time: '15:29',
         isFromUser: true,
       ),
-      const MessageItem(
+      _ChatBubbleData(
         id: '4',
         content: '',
         time: '15:52',
         isFromUser: true,
-        type: MessageType.image,
+        type: _ChatBubbleType.image,
       ),
-      const MessageItem(
+      _ChatBubbleData(
         id: '5',
         content: 'Hello, i also just finished the Sketch Basic',
         time: '15:29',
         isFromUser: true,
-        type: MessageType.rating,
+        type: _ChatBubbleType.rating,
         rating: 5,
       ),
-      const MessageItem(
+      _ChatBubbleData(
         id: '6',
         content: 'OMG, This is Amazing..',
         time: '13:59',
         isFromUser: false,
       ),
     ];
+  }
+}
+
+enum _ChatBubbleType {
+  text,
+  image,
+  rating,
+}
+
+class _ChatBubbleData {
+  final String id;
+  final String content;
+  final String time;
+  final bool isFromUser;
+  final _ChatBubbleType type;
+  final String? imageUrl;
+  final int? rating;
+
+  const _ChatBubbleData({
+    required this.id,
+    required this.content,
+    required this.time,
+    required this.isFromUser,
+    this.type = _ChatBubbleType.text,
+    this.imageUrl,
+    this.rating,
+  });
+
+  factory _ChatBubbleData.fromAiMessage(AiChatMessage message) {
+    final timestamp = message.timestamp;
+    final formattedTime =
+        '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+
+    return _ChatBubbleData(
+      id: message.id,
+      content: message.content,
+      time: formattedTime,
+      isFromUser: message.isFromUser,
+      type: _mapAiType(message.type),
+      imageUrl: message.imageUrl,
+    );
+  }
+
+  static _ChatBubbleType _mapAiType(AiMessageType type) {
+    switch (type) {
+      case AiMessageType.image:
+        return _ChatBubbleType.image;
+      default:
+        return _ChatBubbleType.text;
+    }
   }
 }

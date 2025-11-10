@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:ftes/core/constants/app_constants.dart';
 import 'package:ftes/core/error/exceptions.dart';
 import 'package:ftes/core/network/api_client.dart';

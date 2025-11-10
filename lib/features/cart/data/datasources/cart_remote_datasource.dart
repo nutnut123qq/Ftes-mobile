@@ -1,4 +1,3 @@
-import '../models/cart_item_model.dart';
 import '../models/cart_summary_model.dart';
 
 /// Abstract remote data source interface for Cart feature

@@ -1,4 +1,3 @@
-import 'package:ftes/core/di/injection_container.dart' as core;
 import 'package:get_it/get_it.dart';
 import 'package:ftes/core/network/api_client.dart';
 import '../data/datasources/points_remote_datasource.dart';

@@ -1,7 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/order_summary.dart';
-import '../../domain/entities/order_item.dart';
-import '../../domain/entities/course_order.dart';
 import 'order_item_model.dart';
 import 'course_order_model.dart';
 
@@ -61,29 +59,7 @@ class OrderSummaryModel {
     this.courses,
   });
 
-  factory OrderSummaryModel.fromJson(Map<String, dynamic> json) {
-    // Handle nested JSON parsing
-    final itemsData = json['items'] as List<dynamic>?;
-    final items = itemsData?.map((item) => OrderItemModel.fromJson(item)).toList();
-
-    final coursesData = json['courses'] as List<dynamic>?;
-    final courses = coursesData?.map((course) => CourseOrderModel.fromJson(course)).toList();
-
-    return OrderSummaryModel(
-      id: json['id'] as String?,
-      orderId: json['orderId'] as String?,
-      total: (json['total'] as num?)?.toDouble(),
-      totalPrice: (json['totalPrice'] as num?)?.toDouble(),
-      status: json['status'] as String?,
-      couponCode: json['couponCode'] as String?,
-      couponName: json['couponName'] as String?,
-      qrCodeUrl: json['qrCodeUrl'] as String?,
-      description: json['description'] as String?,
-      createdAt: json['createdAt'] == null ? null : DateTime.parse(json['createdAt'] as String),
-      items: items,
-      courses: courses,
-    );
-  }
+  factory OrderSummaryModel.fromJson(Map<String, dynamic> json) => _$OrderSummaryModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$OrderSummaryModelToJson(this);
 

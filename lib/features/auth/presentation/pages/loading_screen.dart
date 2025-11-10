@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/constants/app_constants.dart';
-import '../utils/text_styles.dart';
+import 'package:ftes/core/constants/app_constants.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -16,7 +15,6 @@ class _LoadingScreenState extends State<LoadingScreen>
   late AnimationController _textController;
   late Animation<double> _logoScaleAnimation;
   late Animation<double> _logoOpacityAnimation;
-  late Animation<double> _textOpacityAnimation;
   late Animation<double> _loadingAnimation;
 
   @override
@@ -42,10 +40,6 @@ class _LoadingScreenState extends State<LoadingScreen>
         parent: _logoController,
         curve: const Interval(0.0, 0.7, curve: Curves.easeInOut),
       ),
-    );
-
-    _textOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeInOut),
     );
 
     _loadingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(

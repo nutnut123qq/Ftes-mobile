@@ -82,7 +82,6 @@ class InstructorProfileViewModel extends ChangeNotifier {
     final result = await _getInstructorCoursesUseCase(userId);
     result.fold(
       (failure) {
-        print('❌ Failed to load instructor courses: ${failure.message}');
         _courses = [];
         _isLoadingCourses = false;
       },
@@ -100,7 +99,6 @@ class InstructorProfileViewModel extends ChangeNotifier {
     final result = await _getParticipantsCountUseCase(instructorId);
     result.fold(
       (failure) {
-        print('❌ Failed to load participants count: ${failure.message}');
         _participantsCount = 0;
         _isLoadingStats = false;
       },

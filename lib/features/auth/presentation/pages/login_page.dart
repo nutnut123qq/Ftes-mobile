@@ -6,7 +6,6 @@ import 'package:ftes/core/constants/app_constants.dart';
 // import 'package:ftes/routes/app_routes.dart'; // Unused import
 import '../viewmodels/auth_viewmodel.dart';
 import '../widgets/input_field_widget.dart';
-import '../widgets/social_button_widget.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -227,68 +226,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildLogoSection() {
-    return Center(
-      child: Column(
-        children: [
-          // App icon
-          Image.asset(
-            'assets/app_icon.png',
-            width: 70,
-            height: 70,
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(height: 8),
-          // App name
-          Text(
-            'Học tốt với FTES',
-            style: AppTextStyles.heading1.copyWith(
-              color: AppColors.primary,
-              fontSize: 30,
-              fontWeight: FontWeight.w400,
-              letterSpacing: 2.2,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'AI đồng hành, Mentor dẫn lối',
-            style: AppTextStyles.body1.copyWith(
-              color: AppColors.textPrimary,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTitleSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Đăng Nhập!',
-          style: AppTextStyles.heading1.copyWith(
-            color: AppColors.textPrimary,
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'Đăng nhập vào tài khoản để tiếp tục khóa học',
-          style: AppTextStyles.body1.copyWith(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildRememberMeAndForgotPasswordRow() {
     return Align(
       alignment: Alignment.centerRight,
@@ -354,29 +291,6 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildOrContinueWithText() {
-    return Center(
-      child: Text(
-        'Hoặc tiếp tục với',
-        style: AppTextStyles.body1.copyWith(
-          color: AppColors.textSecondary,
-          fontSize: 14,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSocialButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SocialButtonWidget(icon: Icons.g_mobiledata, onTap: _signInWithGoogle),
-        const SizedBox(width: 20),
-      ],
     );
   }
 

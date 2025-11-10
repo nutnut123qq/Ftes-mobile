@@ -48,7 +48,7 @@ class CourseCardWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -69,7 +69,7 @@ class CourseCardWidget extends StatelessWidget {
                         imageUrl: imageUrl,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           child: const Center(
                             child: SizedBox(
                               width: 24,
@@ -82,7 +82,7 @@ class CourseCardWidget extends StatelessWidget {
                           ),
                         ),
                         errorWidget: (context, url, error) => Container(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           child: const Icon(
                             Icons.school,
                             size: 40,
@@ -97,7 +97,7 @@ class CourseCardWidget extends StatelessWidget {
                       )
                     : Container(
                         clipBehavior: Clip.antiAlias,
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         child: const Icon(
                           Icons.school,
                           size: 40,
@@ -118,7 +118,7 @@ class CourseCardWidget extends StatelessWidget {
               //       fit: BoxFit.cover,
               //       alignment: Alignment.center, // crop chính giữa
               //       placeholder: (context, url) => Container(
-              //         color: AppColors.primary.withOpacity(0.1),
+              //         color: AppColors.primary.withValues(alpha: 0.1),
               //         alignment: Alignment.center,
               //         child: const CircularProgressIndicator(
               //           strokeWidth: 2,
@@ -126,13 +126,13 @@ class CourseCardWidget extends StatelessWidget {
               //         ),
               //       ),
               //       errorWidget: (context, url, error) => Container(
-              //         color: AppColors.primary.withOpacity(0.1),
+              //         color: AppColors.primary.withValues(alpha: 0.1),
               //         alignment: Alignment.center,
               //         child: const Icon(Icons.school, color: AppColors.primary, size: 40),
               //       ),
               //     )
               //         : Container(
-              //       color: AppColors.primary.withOpacity(0.1),
+              //       color: AppColors.primary.withValues(alpha: 0.1),
               //       alignment: Alignment.center,
               //       child: const Icon(Icons.school, color: AppColors.primary, size: 40),
               //     ),
@@ -151,7 +151,7 @@ class CourseCardWidget extends StatelessWidget {
                       clipBehavior: Clip.antiAlias,
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(

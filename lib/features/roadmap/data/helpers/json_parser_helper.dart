@@ -5,7 +5,6 @@ RoadmapResponseModel parseRoadmapResponseJson(Map<String, dynamic> json) {
   try {
     return RoadmapResponseModel.fromJson(json);
   } catch (e) {
-    print('❌ Error parsing roadmap response JSON: $e');
     rethrow;
   }
 }

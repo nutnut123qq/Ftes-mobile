@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:ftes/features/points/domain/entities/invited_user.dart';
 import 'package:ftes/features/points/presentation/viewmodels/points_viewmodel.dart';
-import '../utils/colors.dart';
-import '../utils/format_utils.dart' as FormatUtils;
+import 'package:ftes/core/utils/colors.dart';
+import 'package:ftes/core/utils/format_utils.dart' as format_utils;
 
 class InviteFriendsScreen extends StatefulWidget {
   const InviteFriendsScreen({super.key});
@@ -56,21 +56,20 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
         backgroundColor: const Color(0xFFF5F9FF),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios,
             color: AppColors.textPrimary,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Mời bạn bè & Kiếm điểm',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 21,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
             fontFamily: 'Jost',
-          ),
+          ).copyWith(color: AppColors.textPrimary),
         ),
         centerTitle: false,
       ),
@@ -151,14 +150,14 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             offset: const Offset(0, 8),
             blurRadius: 20,
           ),
@@ -177,7 +176,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            FormatUtils.NumberUtils.formatPoints(userPoints?.totalPoints),
+            format_utils.NumberUtils.formatPoints(userPoints?.totalPoints),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 32,
@@ -190,7 +189,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
               Expanded(
                 child: _buildPointDetail(
                   'Khả dụng',
-                  FormatUtils.NumberUtils.formatNumber(
+                  format_utils.NumberUtils.formatNumber(
                     userPoints?.availablePoints,
                   ),
                   Icons.account_balance_wallet,
@@ -200,7 +199,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
               Expanded(
                 child: _buildPointDetail(
                   'Đã rút',
-                  FormatUtils.NumberUtils.formatNumber(
+                  format_utils.NumberUtils.formatNumber(
                     userPoints?.withdrawnPoints,
                   ),
                   Icons.money_off,
@@ -217,7 +216,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -259,7 +258,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             offset: const Offset(0, 2),
             blurRadius: 10,
           ),
@@ -268,21 +267,20 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Mã giới thiệu của bạn',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+            ).copyWith(color: AppColors.textPrimary),
           ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -292,21 +290,20 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
                       letterSpacing: 2,
-                    ),
+                    ).copyWith(color: AppColors.textPrimary),
                   ),
                 ),
                 Row(
                   children: [
                     IconButton(
                       onPressed: () => _copyReferralCode(referralCode),
-                      icon: const Icon(Icons.copy, color: AppColors.primary),
+                      icon: Icon(Icons.copy, color: AppColors.primary),
                       tooltip: 'Sao chép',
                     ),
                     IconButton(
                       onPressed: () => _shareReferralCode(referralCode),
-                      icon: const Icon(Icons.share, color: AppColors.primary),
+                      icon: Icon(Icons.share, color: AppColors.primary),
                       tooltip: 'Chia sẻ',
                     ),
                   ],
@@ -315,9 +312,11 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Chia sẻ mã này để bạn bè đăng ký và nhận điểm thưởng!',
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            style: const TextStyle(fontSize: 14).copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),
@@ -332,7 +331,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
         Expanded(
           child: _buildStatCard(
             'Tổng mời',
-            FormatUtils.NumberUtils.formatNumber(referralCount?.totalInvited),
+            format_utils.NumberUtils.formatNumber(referralCount?.totalInvited),
             Icons.people,
             Colors.blue,
           ),
@@ -341,7 +340,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
         Expanded(
           child: _buildStatCard(
             'Đã kích hoạt',
-            FormatUtils.NumberUtils.formatNumber(referralCount?.totalActive),
+            format_utils.NumberUtils.formatNumber(referralCount?.totalActive),
             Icons.check_circle,
             Colors.green,
           ),
@@ -350,7 +349,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
         Expanded(
           child: _buildStatCard(
             'Tổng thu nhập',
-            FormatUtils.NumberUtils.formatPoints(referralCount?.totalEarnings),
+            format_utils.NumberUtils.formatPoints(referralCount?.totalEarnings),
             Icons.monetization_on,
             Colors.orange,
           ),
@@ -372,7 +371,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             offset: const Offset(0, 2),
             blurRadius: 8,
           ),
@@ -383,7 +382,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -394,15 +393,13 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
+            ).copyWith(color: AppColors.textPrimary),
           ),
           Text(
             title,
             style: const TextStyle(
               fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
+            ).copyWith(color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),
         ],
@@ -420,7 +417,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             offset: const Offset(0, 2),
             blurRadius: 10,
           ),
@@ -432,13 +429,12 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Người đã mời',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
+                ).copyWith(color: AppColors.textPrimary),
               ),
               if (pointProvider.isLoadingInvitedUsers)
                 const SizedBox(
@@ -451,33 +447,31 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
           const SizedBox(height: 16),
 
           if (invitedUsers.isEmpty)
-            const Center(
+            Center(
               child: Column(
                 children: [
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Icon(
                     Icons.people_outline,
                     size: 48,
                     color: AppColors.textSecondary,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     'Chưa có ai được mời',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
-                      color: AppColors.textSecondary,
-                    ),
+                    ).copyWith(color: AppColors.textSecondary),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     'Hãy chia sẻ mã giới thiệu để bắt đầu kiếm điểm!',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
+                    ).copyWith(color: AppColors.textSecondary),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                 ],
               ),
             )
@@ -509,8 +503,8 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isActive
-                  ? Colors.green.withOpacity(0.1)
-                  : Colors.grey.withOpacity(0.1),
+                  ? Colors.green.withValues(alpha: 0.1)
+                  : Colors.grey.withValues(alpha: 0.1),
             ),
             child: Icon(
               Icons.person,
@@ -543,7 +537,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                   ),
                 if (user.invitedAt != null)
                   Text(
-                    'Tham gia: ${FormatUtils.DateUtils.formatDate(user.invitedAt!.toIso8601String())}',
+                    'Tham gia: ${format_utils.DateUtils.formatDate(user.invitedAt!.toIso8601String())}',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -559,8 +553,8 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: isActive
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.grey.withOpacity(0.1),
+                      ? Colors.green.withValues(alpha: 0.1)
+                      : Colors.grey.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -574,7 +568,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
               ),
               if (user.earnedPoints > 0)
                 Text(
-                  '+${FormatUtils.NumberUtils.formatNumber(user.earnedPoints)} điểm',
+                  '+${format_utils.NumberUtils.formatNumber(user.earnedPoints)} điểm',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,

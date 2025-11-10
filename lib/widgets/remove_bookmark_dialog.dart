@@ -19,7 +19,7 @@ class RemoveBookmarkDialog extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: Container(
-        color: const Color(0xFF202244).withOpacity(0.88),
+        color: const Color(0xFF202244).withValues(alpha: 0.88),
         child: Center(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 0),
@@ -72,7 +72,7 @@ class RemoveBookmarkDialog extends StatelessWidget {
                                     color: const Color(0xFFE8F1FF),
                                     borderRadius: BorderRadius.circular(30),
                                     border: Border.all(
-                                      color: const Color(0xFFB4BDC4).withOpacity(0.2),
+                                      color: const Color(0xFFB4BDC4).withValues(alpha: 0.2),
                                       width: 2,
                                     ),
                                   ),
@@ -110,7 +110,7 @@ class RemoveBookmarkDialog extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(30),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: const Color(0xFF0961F5).withOpacity(0.3),
+                                        color: const Color(0xFF0961F5).withValues(alpha: 0.3),
                                         blurRadius: 10,
                                         offset: const Offset(0, 4),
                                       ),
@@ -151,7 +151,7 @@ class RemoveBookmarkDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

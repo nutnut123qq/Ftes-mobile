@@ -62,7 +62,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -239,7 +239,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           color: const Color(0xFFE8F1FF),
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: const Color(0xFFB4BDC4).withOpacity(0.5),
+            color: const Color(0xFFB4BDC4).withValues(alpha: 0.5),
             width: 2,
           ),
         ),

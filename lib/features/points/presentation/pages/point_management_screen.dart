@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ftes/features/points/presentation/viewmodels/points_viewmodel.dart';
-import '../utils/colors.dart';
-import '../utils/format_utils.dart' as FormatUtils;
+import 'package:ftes/core/utils/colors.dart';
+import 'package:ftes/core/utils/format_utils.dart' as format_utils;
 
 class PointManagementScreen extends StatefulWidget {
   const PointManagementScreen({super.key});
@@ -86,7 +86,6 @@ class _PointManagementScreenState extends State<PointManagementScreen>
     }
 
     final userPoints = pointProvider.userPoints;
-    final chartData = pointProvider.pointsChart;
 
     return RefreshIndicator(
       onRefresh: () => pointProvider.refreshAllData(),
@@ -103,7 +102,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 gradient: LinearGradient(
                   colors: [
                     AppColors.primary,
-                    AppColors.primary.withOpacity(0.7),
+                    AppColors.primary.withValues(alpha: 0.7),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -119,7 +118,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    FormatUtils.NumberUtils.formatPoints(
+                    format_utils.NumberUtils.formatPoints(
                       userPoints?.totalPoints,
                     ),
                     style: const TextStyle(
@@ -140,7 +139,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 Expanded(
                   child: _buildStatCard(
                     'Khả dụng',
-                    FormatUtils.NumberUtils.formatNumber(
+                    format_utils.NumberUtils.formatNumber(
                       userPoints?.availablePoints,
                     ),
                     Colors.green,
@@ -151,7 +150,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 Expanded(
                   child: _buildStatCard(
                     'Bị khóa',
-                    FormatUtils.NumberUtils.formatNumber(
+                    format_utils.NumberUtils.formatNumber(
                       userPoints?.lockedPoints,
                     ),
                     Colors.orange,
@@ -162,7 +161,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 Expanded(
                   child: _buildStatCard(
                     'Đã rút',
-                    FormatUtils.NumberUtils.formatNumber(
+                    format_utils.NumberUtils.formatNumber(
                       userPoints?.withdrawnPoints,
                     ),
                     Colors.blue,
@@ -187,7 +186,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                     const Icon(Icons.update, color: AppColors.textSecondary),
                     const SizedBox(width: 8),
                     Text(
-                      'Cập nhật lần cuối: ${FormatUtils.DateUtils.formatDateTime(userPoints!.lastUpdated!)}',
+                      'Cập nhật lần cuối: ${format_utils.DateUtils.formatDateTimeFromDate(userPoints!.lastUpdated)}',
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 14,
@@ -227,7 +226,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
               itemCount: transactions.length,
               itemBuilder: (context, index) {
                 final transaction = transactions[index];
-                final isPositive = (transaction.amount ?? 0) > 0;
+                final isPositive = transaction.amount > 0;
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -237,7 +236,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -249,7 +248,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: (isPositive ? Colors.green : Colors.red)
-                              .withOpacity(0.1),
+                              .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -263,7 +262,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              transaction.description ?? 'Giao dịch',
+                              transaction.description,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16,
@@ -271,7 +270,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              FormatUtils.DateUtils.formatDateTime(
+                              format_utils.DateUtils.formatDateTimeFromDate(
                                 transaction.createdAt,
                               ),
                               style: const TextStyle(
@@ -286,14 +285,14 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '${isPositive ? '+' : ''}${FormatUtils.NumberUtils.formatNumber(transaction.amount)}',
+                            '${isPositive ? '+' : ''}${format_utils.NumberUtils.formatNumber(transaction.amount)}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                               color: isPositive ? Colors.green : Colors.red,
                             ),
                           ),
-                          if (transaction.status != null)
+                          if (transaction.status.isNotEmpty)
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
@@ -301,16 +300,16 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                               ),
                               decoration: BoxDecoration(
                                 color: _getStatusColor(
-                                  transaction.status!,
-                                ).withOpacity(0.1),
+                                  transaction.status,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                transaction.status!.toUpperCase(),
+                                transaction.status.toUpperCase(),
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: _getStatusColor(transaction.status!),
+                                  color: _getStatusColor(transaction.status),
                                 ),
                               ),
                             ),
@@ -358,10 +357,10 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColors.primary.withOpacity(0.3),
+                        color: AppColors.primary.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -399,7 +398,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 Expanded(
                   child: _buildStatCard(
                     'Tổng mời',
-                    FormatUtils.NumberUtils.formatNumber(
+                    format_utils.NumberUtils.formatNumber(
                       referralCount?.totalInvited,
                     ),
                     Colors.blue,
@@ -410,7 +409,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 Expanded(
                   child: _buildStatCard(
                     'Đã kích hoạt',
-                    FormatUtils.NumberUtils.formatNumber(
+                    format_utils.NumberUtils.formatNumber(
                       referralCount?.totalActive,
                     ),
                     Colors.green,
@@ -421,7 +420,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 Expanded(
                   child: _buildStatCard(
                     'Thu nhập',
-                    FormatUtils.NumberUtils.formatPoints(
+                    format_utils.NumberUtils.formatPoints(
                       referralCount?.totalEarnings,
                     ),
                     Colors.orange,
@@ -476,60 +475,59 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 16),
-              ...invitedUsers
-                  .map(
-                    (user) => Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+              ...invitedUsers.map(
+                (user) => Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                        child: const Icon(
+                          Icons.person,
+                          color: AppColors.primary,
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: AppColors.primary.withOpacity(0.1),
-                            child: const Icon(
-                              Icons.person,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  user.fullName ?? user.username ?? 'Ẩn danh',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                if (user.email != null)
-                                  Text(
-                                    user.email!,
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          if (user.earnedPoints != null &&
-                              user.earnedPoints! > 0)
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
-                              '+${FormatUtils.NumberUtils.formatNumber(user.earnedPoints)}',
+                              user.fullName.isNotEmpty 
+                                  ? user.fullName 
+                                  : (user.username.isNotEmpty ? user.username : 'Ẩn danh'),
                               style: const TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                        ],
+                            if (user.email.isNotEmpty)
+                              Text(
+                                user.email,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 14,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                  )
-                  .toList(),
+                      if (user.earnedPoints > 0)
+                        Text(
+                          '+${format_utils.NumberUtils.formatNumber(user.earnedPoints)}',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ],
         ),
@@ -566,7 +564,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  FormatUtils.NumberUtils.formatPoints(availablePoints),
+                  format_utils.NumberUtils.formatPoints(availablePoints),
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -664,7 +662,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -675,7 +673,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 24),

@@ -22,8 +22,6 @@ class _MentorCarouselState extends State<MentorCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
