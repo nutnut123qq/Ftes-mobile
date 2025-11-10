@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/core/constants/app_constants.dart';
-import 'package:ftes/features/blog/presentation/pages/blog_list_page.dart';
-import 'package:ftes/features/roadmap/presentation/pages/roadmap_page.dart';
+import '../utils/text_styles.dart';
+import '../constants/app_constants.dart' as core_constants;
+import '../../features/blog/presentation/pages/blog_list_page.dart';
+import '../../features/roadmap/presentation/pages/roadmap_page.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
@@ -134,10 +134,10 @@ class AppBottomNavigationBar extends StatelessWidget {
 
     switch (index) {
       case 0: // Home
-        Navigator.pushNamedAndRemoveUntil(context, AppConstants.routeHome, (route) => false);
+        Navigator.pushNamedAndRemoveUntil(context, core_constants.AppConstants.routeHome, (route) => false);
         break;
       case 1: // My Courses
-        Navigator.pushNamed(context, AppConstants.routeMyCourses);
+        Navigator.pushNamed(context, core_constants.AppConstants.routeMyCourses);
         break;
       case 2: // AI Roadmap
         Navigator.push(
@@ -153,7 +153,7 @@ class AppBottomNavigationBar extends StatelessWidget {
         );
         break;
       case 4: // Cart
-        Navigator.pushNamed(context, AppConstants.routeCart);
+        Navigator.pushNamed(context, core_constants.AppConstants.routeCart);
         break;
     }
   }
@@ -190,3 +190,4 @@ class AppBottomNavigationBar extends StatelessWidget {
     );
   }
 }
+

@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../../../../core/constants/app_constants.dart' as app_constants;
-import '../../../../widgets/youtube_player_widget.dart';
+import '../../../../core/widgets/youtube_player_widget.dart';
 import '../viewmodels/course_video_viewmodel.dart';
 import '../../domain/constants/video_constants.dart';
 import 'web_hls_helper.dart';
@@ -199,14 +199,23 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
           print('🔑 Is presigned URL: $isPresigned');
           print('🔑 Is proxy URL: $isProxy');
           
-          // Note: BunnyCDN requires Referer header to bypass Hotlink Protection
-          // Headers are forwarded to all segment requests by ExoPlayer
+          // Build headers based on URL type
           final Map<String, String> headers = {
             'Referer': 'https://ftes.vn',
             'User-Agent': 'Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0 Mobile Safari/537.36',
           };
           
-          print('🔑 Using headers: Referer + User-Agent for BunnyCDN Hotlink Protection bypass');
+          // Proxy URL cần Authorization header để backend có thể fetch từ S3
+          if (isProxy && accessToken != null && accessToken.isNotEmpty) {
+            headers['Authorization'] = 'Bearer $accessToken';
+            print('🔑 Using headers: Authorization + Referer + User-Agent for proxy URL');
+          } else if (isPresigned) {
+            // Presigned URL không cần Authorization header (auth trong query params)
+            print('🔑 Using headers: Referer + User-Agent for presigned URL');
+          } else {
+            // CDN URL cần Referer để bypass Hotlink Protection
+            print('🔑 Using headers: Referer + User-Agent for BunnyCDN Hotlink Protection bypass');
+          }
           
           _controller = VideoPlayerController.networkUrl(
             Uri.parse(videoUrl!),

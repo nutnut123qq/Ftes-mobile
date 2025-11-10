@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../utils/text_styles.dart';
+import '../../../../../core/utils/text_styles.dart';
 import '../../../domain/entities/exercise.dart';
 
 class ExerciseItem extends StatelessWidget {
@@ -52,6 +52,7 @@ class ExerciseItem extends StatelessWidget {
     );
   }
 }
+
 
 
 

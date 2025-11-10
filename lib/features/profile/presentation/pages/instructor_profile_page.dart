@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:ftes/utils/text_styles.dart';
+import 'package:ftes/core/utils/text_styles.dart';
 import 'package:ftes/core/constants/app_constants.dart';
 import '../viewmodels/instructor_profile_viewmodel.dart';
 import '../widgets/instructor_stats_widget.dart';

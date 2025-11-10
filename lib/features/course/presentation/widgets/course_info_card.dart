@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../utils/text_styles.dart';
+import '../../../../core/utils/text_styles.dart';
 import '../constants/course_ui_constants.dart';
 import '../../domain/entities/course_detail.dart';
 

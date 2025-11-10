@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/text_styles.dart';
+import 'package:ftes/core/utils/text_styles.dart';
 
 /// Widget for displaying instructor statistics
 class InstructorStatsWidget extends StatelessWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../utils/text_styles.dart';
+import '../../../../core/utils/text_styles.dart';
 import '../constants/course_ui_constants.dart';
 
 class ReviewsSection extends StatelessWidget {
@@ -33,6 +33,7 @@ class ReviewsSection extends StatelessWidget {
     );
   }
 }
+
 
 
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/banner.dart' as home_banner;
-import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/utils/colors.dart';
+import 'package:ftes/core/utils/text_styles.dart';
+import 'package:ftes/core/utils/colors.dart';
 
 /// Widget for displaying banner
 /// Optimized with CachedNetworkImage for better performance

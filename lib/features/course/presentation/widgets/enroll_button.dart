@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../utils/text_styles.dart';
+import '../../../../core/utils/text_styles.dart';
 import '../constants/course_ui_constants.dart';
 
 class EnrollButton extends StatelessWidget {
@@ -58,6 +58,7 @@ class EnrollButton extends StatelessWidget {
     );
   }
 }
+
 
 
 

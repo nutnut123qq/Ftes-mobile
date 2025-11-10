@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../utils/text_styles.dart';
+import '../../../../core/utils/text_styles.dart';
 import '../../domain/constants/order_constants.dart';
 import '../viewmodels/payment_viewmodel.dart';
 

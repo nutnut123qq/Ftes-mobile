@@ -52,3 +52,4 @@ Widget buildWebExternalPlayer(String embedUrl) {
     child: HtmlElementView(viewType: uniqueId),
   );
 }
+

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/text_styles.dart';
+import 'package:ftes/core/utils/text_styles.dart';
 import 'mentor_card.dart';
 import 'mentor_data.dart';
 

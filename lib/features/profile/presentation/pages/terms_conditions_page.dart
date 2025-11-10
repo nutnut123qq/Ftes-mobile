@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/text_styles.dart';
+import 'package:ftes/core/utils/text_styles.dart';
 
 class TermsConditionsPage extends StatelessWidget {
   const TermsConditionsPage({super.key});
