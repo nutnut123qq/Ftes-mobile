@@ -5,7 +5,6 @@ import 'package:ftes/core/utils/text_styles.dart';
 import 'package:ftes/core/constants/app_constants.dart';
 import '../viewmodels/register_viewmodel.dart';
 import '../widgets/input_field_widget.dart';
-import '../widgets/social_button_widget.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -35,80 +34,108 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(AppConstants.spacingL),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: Colors.transparent,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment(0, -0.8),
+            radius: 1.25,
+            colors: [Colors.white, Color(0xFF6366F1)],
+            stops: [0.4, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
             children: [
-              const SizedBox(height: 40),
-              // Logo section
-              _buildLogoSection(),
-              const SizedBox(height: 60),
-              // Back button
-              _buildBackButton(),
-              const SizedBox(height: 30),
-              // Title section
-              _buildTitleSection(),
-              const SizedBox(height: 40),
-              // Username input field
-              InputFieldWidget(
-                controller: _usernameController,
-                hintText: 'Tên đăng nhập',
-                icon: Icons.person_outline,
+              Center(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppConstants.spacingL,
+                    vertical: AppConstants.spacingXL,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildHeader(),
+                      const SizedBox(height: 12),
+                      Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _buildInputCard(
+                                child: InputFieldWidget(
+                                  controller: _usernameController,
+                                  hintText: 'Tên đăng nhập',
+                                  icon: Icons.person_outline,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              _buildInputCard(
+                                child: InputFieldWidget(
+                                  controller: _emailController,
+                                  hintText: 'Email',
+                                  icon: Icons.email_outlined,
+                                  keyboardType: TextInputType.emailAddress,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              _buildInputCard(
+                                child: InputFieldWidget(
+                                  controller: _passwordController,
+                                  hintText: 'Mật khẩu',
+                                  icon: Icons.lock_outline,
+                                  isPassword: true,
+                                  isPasswordVisible: _isPasswordVisible,
+                                  onTogglePassword: () {
+                                    setState(() {
+                                      _isPasswordVisible = !_isPasswordVisible;
+                                    });
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              _buildInputCard(
+                                child: InputFieldWidget(
+                                  controller: _confirmPasswordController,
+                                  hintText: 'Xác nhận mật khẩu',
+                                  icon: Icons.lock_outline,
+                                  isPassword: true,
+                                  isPasswordVisible: _isConfirmPasswordVisible,
+                                  onTogglePassword: () {
+                                    setState(() {
+                                      _isConfirmPasswordVisible =
+                                          !_isConfirmPasswordVisible;
+                                    });
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 18),
+                              _buildTermsAndConditions(),
+                              const SizedBox(height: 22),
+                              _buildSignUpButton(),
+                              const SizedBox(height: 18),
+                              _buildDivider(),
+                              const SizedBox(height: 14),
+                              _buildGoogleButton(),
+                              const SizedBox(height: 24),
+                              _buildSignInLink(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 20),
-              // Email input field
-              InputFieldWidget(
-                controller: _emailController,
-                hintText: 'Email',
-                icon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
+              Positioned(
+                top: AppConstants.spacingL,
+                left: AppConstants.spacingL,
+                child: _buildBackButton(),
               ),
-              const SizedBox(height: 20),
-              // Password input field
-              InputFieldWidget(
-                controller: _passwordController,
-                hintText: 'Mật khẩu',
-                icon: Icons.lock_outline,
-                isPassword: true,
-                isPasswordVisible: _isPasswordVisible,
-                onTogglePassword: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-              // Confirm password input field
-              InputFieldWidget(
-                controller: _confirmPasswordController,
-                hintText: 'Xác nhận mật khẩu',
-                icon: Icons.lock_outline,
-                isPassword: true,
-                isPasswordVisible: _isConfirmPasswordVisible,
-                onTogglePassword: () {
-                  setState(() {
-                    _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-              // Terms and conditions
-              _buildTermsAndConditions(),
-              const SizedBox(height: 30),
-              // Sign Up button
-              _buildSignUpButton(),
-              const SizedBox(height: 25),
-              // Or Continue With text
-              _buildOrContinueWithText(),
-              const SizedBox(height: 20),
-              // Social buttons
-              _buildSocialButtons(),
-              const SizedBox(height: 30),
-              // Sign In link
-              _buildSignInLink(),
             ],
           ),
         ),
@@ -116,39 +143,13 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildLogoSection() {
+  Widget _buildHeader() {
     return Center(
-      child: Column(
-        children: [
-          // App icon
-          Image.asset(
-            'assets/app_icon.png',
-            width: 70,
-            height: 70,
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(height: 8),
-          // App name
-          Text(
-            'Học tốt với FTES',
-            style: AppTextStyles.heading1.copyWith(
-              color: AppColors.primary,
-              fontSize: 30,
-              fontWeight: FontWeight.w400,
-              letterSpacing: 2.2,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'AI đồng hành, Mentor dẫn lối',
-            style: AppTextStyles.body1.copyWith(
-              color: AppColors.textPrimary,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
+      child: Image.asset(
+        'assets/app_icon.png',
+        width: 180,
+        height: 180,
+        fit: BoxFit.contain,
       ),
     );
   }
@@ -156,47 +157,34 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildBackButton() {
     return GestureDetector(
       onTap: () {
-        // Navigate to login page instead of pop
-        Navigator.pushReplacementNamed(context, AppConstants.routeSignIn);
+        Navigator.pop(context);
       },
       child: Container(
-        width: 26,
-        height: 26,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
-          color: AppColors.textWhite,
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.white.withOpacity(0.8),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: const Icon(
           Icons.arrow_back_ios_new,
-          color: AppColors.textPrimary,
-          size: 16,
+          color: AppColors.primary,
+          size: 20,
         ),
       ),
     );
   }
 
-  Widget _buildTitleSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Bắt đầu!',
-          style: AppTextStyles.heading1.copyWith(
-            color: AppColors.textPrimary,
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'Tạo tài khoản để tiếp tục tất cả khóa học',
-          style: AppTextStyles.body1.copyWith(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
+  Widget _buildInputCard({required Widget child}) {
+    return Material(
+      color: Colors.white,
+      elevation: 1.5,
+      shadowColor: Colors.black12,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: child,
+      ),
     );
   }
 
@@ -216,16 +204,12 @@ class _RegisterPageState extends State<RegisterPage> {
               color: _agreeToTerms ? AppColors.primary : AppColors.textWhite,
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                color: _agreeToTerms ? AppColors.primary : AppColors.textSecondary,
+                color: _agreeToTerms ? AppColors.primary : Colors.white,
                 width: 1,
               ),
             ),
             child: _agreeToTerms
-                ? const Icon(
-                    Icons.check,
-                    color: AppColors.textWhite,
-                    size: 14,
-                  )
+                ? const Icon(Icons.check, color: AppColors.textWhite, size: 14)
                 : null,
           ),
         ),
@@ -234,7 +218,7 @@ class _RegisterPageState extends State<RegisterPage> {
           child: RichText(
             text: TextSpan(
               style: AppTextStyles.body1.copyWith(
-                color: AppColors.textSecondary,
+                color: Colors.white,
                 fontWeight: FontWeight.w400,
               ),
               children: [
@@ -242,7 +226,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 TextSpan(
                   text: 'Điều khoản sử dụng',
                   style: AppTextStyles.body1.copyWith(
-                    color: AppColors.primary,
+                    color: Colors.white,
                     fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),
@@ -251,7 +235,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 TextSpan(
                   text: 'Chính sách bảo mật',
                   style: AppTextStyles.body1.copyWith(
-                    color: AppColors.primary,
+                    color: Colors.white,
                     fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),
@@ -275,11 +259,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 ? () => _handleSignUp(viewModel)
                 : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: _agreeToTerms ? AppColors.primary : AppColors.textSecondary,
+              backgroundColor: _agreeToTerms
+                  ? AppColors.primary
+                  : Colors.white30,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
               elevation: 0,
+              foregroundColor: Colors.white,
             ),
             child: viewModel.isLoading
                 ? const SizedBox(
@@ -323,42 +310,55 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildOrContinueWithText() {
+  Widget _buildDivider() {
     return Row(
       children: [
-        Expanded(
-          child: Container(
-            height: 1,
-            color: AppColors.textSecondary.withValues(alpha: 0.3),
-          ),
-        ),
+        Expanded(child: Container(height: 1, color: Colors.white24)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: AppConstants.spacingS),
           child: Text(
-            'Hoặc tiếp tục với',
+            'Hoặc',
             style: AppTextStyles.body1.copyWith(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w400,
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
-        Expanded(
-          child: Container(
-            height: 1,
-            color: AppColors.textSecondary.withValues(alpha: 0.3),
-          ),
-        ),
+        Expanded(child: Container(height: 1, color: Colors.white24)),
       ],
     );
   }
 
-  Widget _buildSocialButtons() {
-    return Center(
-      child: SocialButtonWidget(
-        onTap: () {
-          // Handle Google sign up
+  Widget _buildGoogleButton() {
+    return SizedBox(
+      height: 56,
+      child: OutlinedButton(
+        onPressed: () {
+          // TODO: Handle Google sign up
         },
-        icon: Icons.g_mobiledata,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.textPrimary,
+          side: const BorderSide(color: Colors.white54),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset('assets/google-icon.png', width: 22, height: 22),
+            const SizedBox(width: 10),
+            Text(
+              'Đăng ký bằng Google',
+              style: AppTextStyles.button.copyWith(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -370,17 +370,19 @@ class _RegisterPageState extends State<RegisterPage> {
         Text(
           'Đã có tài khoản? ',
           style: AppTextStyles.body1.copyWith(
-            color: AppColors.textSecondary,
+            color: Colors.white,
             fontWeight: FontWeight.w400,
           ),
         ),
         GestureDetector(
-          onTap: () => Navigator.pop(context),
+          onTap: () {
+            Navigator.pop(context);
+          },
           child: Text(
             'Đăng nhập',
             style: AppTextStyles.body1.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),

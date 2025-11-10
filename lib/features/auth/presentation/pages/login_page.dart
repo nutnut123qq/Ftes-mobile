@@ -309,7 +309,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           GestureDetector(
             onTap: () {
-              Navigator.pushReplacementNamed(context, AppConstants.routeSignUp);
+              Navigator.pushNamed(context, AppConstants.routeSignUp);
             },
             child: Text(
               'ĐĂNG KÝ',
