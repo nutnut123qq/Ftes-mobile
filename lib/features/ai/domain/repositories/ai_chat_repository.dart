@@ -11,7 +11,7 @@ abstract class AiChatRepository {
   ///   - videoId: ID of the video/lesson
   /// 
   /// Returns:
-  ///   - Either<Failure, VideoKnowledge> containing knowledge status
+  ///   - Either&lt;Failure, VideoKnowledge&gt; containing knowledge status
   Future<Either<Failure, VideoKnowledge>> checkVideoKnowledge(String videoId);
 
   /// Send a message to AI and get response
@@ -24,7 +24,7 @@ abstract class AiChatRepository {
   ///   - userId: User ID for session tracking
   /// 
   /// Returns:
-  ///   - Either<Failure, AiChatMessage> containing AI response
+  ///   - Either&lt;Failure, AiChatMessage&gt; containing AI response
   Future<Either<Failure, AiChatMessage>> sendMessage({
     required String message,
     required String lessonId,

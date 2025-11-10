@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
@@ -64,7 +64,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
 
       // Check lesson type - if not VIDEO, skip video loading and show popup
       if (widget.type != null && widget.type != 'VIDEO') {
-        print('📄 Lesson type is ${widget.type}, not VIDEO. Showing content popup.');
+        debugPrint('📄 Lesson type is ${widget.type}, not VIDEO. Showing content popup.');
         if (mounted) {
           setState(() {
             _isLoadingVideo = false;
@@ -86,12 +86,14 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
       }
 
       // Initialize video via optimized ViewModel method
+      if (!mounted) return;
       final viewModel = Provider.of<CourseVideoViewModel>(context, listen: false);
       final canWatch = await viewModel.initializeVideo(
         userId,
         widget.courseId,
         widget.videoUrl,
       );
+      if (!mounted) return;
 
       if (!canWatch) {
         _showNotEnrolledError();
@@ -117,7 +119,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
         await _setupHlsVideo();
       }
     } catch (e) {
-      print('❌ Error initializing video: $e');
+      debugPrint('❌ Error initializing video: $e');
       if (mounted) {
         setState(() {
           _isLoadingVideo = false;
@@ -136,12 +138,14 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
         throw Exception('Access token not found');
       }
       
-      print('🎥 Setting up internal HLS video: ${widget.videoUrl}');
+      debugPrint('🎥 Setting up internal HLS video: ${widget.videoUrl}');
       
       // Load video playlist via ViewModel (calls API)
+      if (!mounted) return;
       final viewModel = Provider.of<CourseVideoViewModel>(context, listen: false);
       await viewModel.loadVideoPlaylist(widget.videoUrl);
       
+      if (!mounted) return;
       if (viewModel.errorMessage != null) {
         // Check if it's a 404 error (API not implemented or video not found)
         if (viewModel.errorMessage!.contains('404') || viewModel.errorMessage!.contains('Not Found')) {
@@ -161,13 +165,13 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
       // Tất cả platforms ưu tiên proxy URL (chỉ có proxy là dùng được)
       if (playlist.proxyPlaylistUrl != null && playlist.proxyPlaylistUrl!.isNotEmpty) {
         videoUrl = playlist.proxyPlaylistUrl;
-        print('✅ Using proxy URL (only proxy is available): $videoUrl');
+        debugPrint('✅ Using proxy URL (only proxy is available): $videoUrl');
       } else if (playlist.cdnPlaylistUrl.isNotEmpty) {
         videoUrl = playlist.cdnPlaylistUrl;
-        print('⚠️ Fallback to CDN URL: $videoUrl');
+        debugPrint('⚠️ Fallback to CDN URL: $videoUrl');
       } else if (playlist.presignedUrl != null && playlist.presignedUrl!.isNotEmpty) {
         videoUrl = playlist.presignedUrl;
-        print('⚠️ Fallback to presigned URL: $videoUrl');
+        debugPrint('⚠️ Fallback to presigned URL: $videoUrl');
       } else {
         throw Exception('Không tìm thấy URL video hợp lệ từ server');
       }
@@ -176,13 +180,13 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
       if (kIsWeb) {
         // Web doesn't support VideoPlayerController for HLS properly, use HLS URL directly
         _hlsVideoUrl = videoUrl!;
-        print('🌐 Web platform - Using HLS URL for HTML5 video player');
-        print('   $_hlsVideoUrl');
+        debugPrint('🌐 Web platform - Using HLS URL for HTML5 video player');
+        debugPrint('   $_hlsVideoUrl');
       } else {
         // Mobile: dùng VideoPlayerController.networkUrl (hỗ trợ HLS native)
-          print('📱 Mobile platform - Initializing VideoPlayerController with HLS');
-          print('   URL: $videoUrl');
-          print('⚠️ Note: If publicly available m3u8 fails, backend must transform m3u8 segments to proxy');
+          debugPrint('📱 Mobile platform - Initializing VideoPlayerController with HLS');
+          debugPrint('   URL: $videoUrl');
+          debugPrint('⚠️ Note: If publicly available m3u8 fails, backend must transform m3u8 segments to proxy');
           
           // Initialize VideoPlayerController với HLS URL
           // networkUrl() là API mới hỗ trợ HLS native trên Android/iOS
@@ -196,8 +200,8 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
                           playlist.proxyPlaylistUrl!.isNotEmpty && 
                           videoUrl == playlist.proxyPlaylistUrl;
           
-          print('🔑 Is presigned URL: $isPresigned');
-          print('🔑 Is proxy URL: $isProxy');
+          debugPrint('🔑 Is presigned URL: $isPresigned');
+          debugPrint('🔑 Is proxy URL: $isProxy');
           
           // Build headers based on URL type
           final Map<String, String> headers = {
@@ -206,15 +210,15 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
           };
           
           // Proxy URL cần Authorization header để backend có thể fetch từ S3
-          if (isProxy && accessToken != null && accessToken.isNotEmpty) {
+          if (isProxy && accessToken.isNotEmpty) {
             headers['Authorization'] = 'Bearer $accessToken';
-            print('🔑 Using headers: Authorization + Referer + User-Agent for proxy URL');
+            debugPrint('🔑 Using headers: Authorization + Referer + User-Agent for proxy URL');
           } else if (isPresigned) {
             // Presigned URL không cần Authorization header (auth trong query params)
-            print('🔑 Using headers: Referer + User-Agent for presigned URL');
+            debugPrint('🔑 Using headers: Referer + User-Agent for presigned URL');
           } else {
             // CDN URL cần Referer để bypass Hotlink Protection
-            print('🔑 Using headers: Referer + User-Agent for BunnyCDN Hotlink Protection bypass');
+            debugPrint('🔑 Using headers: Referer + User-Agent for BunnyCDN Hotlink Protection bypass');
           }
           
           _controller = VideoPlayerController.networkUrl(
@@ -235,7 +239,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
             }
           });
           
-          print('✅ Mobile video initialized and playing');
+          debugPrint('✅ Mobile video initialized and playing');
       }
       
       if (mounted) {
@@ -244,7 +248,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
         });
       }
     } catch (e) {
-      print('❌ Error setting up HLS video: $e');
+      debugPrint('❌ Error setting up HLS video: $e');
       if (mounted) {
         setState(() {
           _isLoadingVideo = false;
@@ -281,7 +285,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
         throw Exception('Access token not found');
       }
       
-      print('🎥 Setting up direct video URL: ${widget.videoUrl}');
+      debugPrint('🎥 Setting up direct video URL: ${widget.videoUrl}');
       
       // Initialize video player with auth header
       // ignore: deprecated_member_use
@@ -302,7 +306,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
       
       _controller!.play();
     } catch (e) {
-      print('❌ Error setting up direct video: $e');
+      debugPrint('❌ Error setting up direct video: $e');
       if (mounted) {
         setState(() {
           _isLoadingVideo = false;
@@ -447,7 +451,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
             Icon(
               Icons.description_outlined,
               size: 100,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 24),
             Text(
@@ -463,7 +467,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
             Text(
               'Tap to view content',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 16,
               ),
             ),
@@ -576,7 +580,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
                       padding: EdgeInsets.symmetric(vertical: 15),
                       child: Container(
                         height: 2,
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         child: Stack(
                           children: [
                             // Current position indicator
@@ -606,7 +610,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.7),
+                          Colors.black.withValues(alpha: 0.7),
                         ],
                       ),
                     ),
@@ -673,7 +677,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
     _initializeHlsPlayer(hlsUrl);
     // Return a container with low opacity to ensure Flutter widgets render on top
     return Container(
-      color: Colors.transparent.withOpacity(0.01),
+      color: Colors.transparent.withValues(alpha: 0.01),
       width: double.infinity,
       height: double.infinity,
     );
@@ -691,7 +695,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
             Icon(
               Icons.video_library_outlined,
               size: 64,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -706,7 +710,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
             Text(
               'Please try again later',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14,
               ),
             ),
@@ -748,18 +752,18 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
                 ignoring: false,
                 child: GestureDetector(
                   onTap: () {
-                    print('Back button tapped');
+                    debugPrint('Back button tapped');
                     Navigator.pop(context);
                   },
                   child: Container(
                     width: 45,
                     height: 45,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.6),
+                          color: Colors.black.withValues(alpha: 0.6),
                           blurRadius: 15,
                           spreadRadius: 2,
                           offset: const Offset(0, 3),

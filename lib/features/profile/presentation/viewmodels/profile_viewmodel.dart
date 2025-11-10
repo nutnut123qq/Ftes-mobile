@@ -310,16 +310,16 @@ class ProfileViewModel extends ChangeNotifier {
 
   /// Map failure to user-friendly message
   String _mapFailureToMessage(Failure failure) {
-    switch (failure.runtimeType) {
-      case ServerFailure:
+    switch (failure) {
+      case ServerFailure _:
         return 'Server error: ${failure.message}';
-      case NetworkFailure:
+      case NetworkFailure _:
         return 'Network error: ${failure.message}';
-      case CacheFailure:
+      case CacheFailure _:
         return 'Cache error: ${failure.message}';
-      case AuthFailure:
+      case AuthFailure _:
         return 'Authentication error: ${failure.message}';
-      case ValidationFailure:
+      case ValidationFailure _:
         return 'Validation error: ${failure.message}';
       default:
         return failure.message;

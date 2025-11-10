@@ -104,15 +104,15 @@ class PaymentViewModel extends ChangeNotifier {
         },
         onWebSocketError: (dynamic error) {
           // Handle WebSocket errors silently or log to monitoring service
-          print('WebSocket error: $error');
+          debugPrint('WebSocket error: $error');
         },
         onStompError: (StompFrame frame) {
           // Handle STOMP errors silently or log to monitoring service
-          print('STOMP error: ${frame.body}');
+          debugPrint('STOMP error: ${frame.body}');
         },
         onDisconnect: (StompFrame frame) {
           // Handle disconnection silently or log to monitoring service
-          print('WebSocket disconnected');
+          debugPrint('WebSocket disconnected');
         },
         // Enable SockJS for compatibility with Spring Boot backend
         useSockJS: true,
@@ -196,7 +196,7 @@ class PaymentViewModel extends ChangeNotifier {
 
       return userId?.toString();
     } catch (e) {
-      print('Error getting user ID from token: $e');
+      debugPrint('Error getting user ID from token: $e');
       return null;
     }
   }

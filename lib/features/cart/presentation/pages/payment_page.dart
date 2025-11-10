@@ -21,7 +21,7 @@ class PaymentPage extends StatefulWidget {
 }
 
 class _PaymentPageState extends State<PaymentPage> {
-  bool _hasShownSuccessDialog = false;
+  final bool _hasShownSuccessDialog = false;
 
   @override
   void initState() {
@@ -39,11 +39,8 @@ class _PaymentPageState extends State<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        // For development: don't cancel order when backing out
-        return true;
-      },
+    return PopScope(
+      canPop: true,
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F9FF),
         body: SafeArea(
@@ -83,7 +80,7 @@ class _PaymentPageState extends State<PaymentPage> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 30,
             offset: const Offset(2, 5),
           ),
@@ -225,7 +222,7 @@ class _PaymentPageState extends State<PaymentPage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),

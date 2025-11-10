@@ -243,7 +243,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         queryParameters: queryParams,
       );
 
-      print('📥 Response status: ${response.statusCode}');
+      debugPrint('📥 Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final result = response.data['result'];

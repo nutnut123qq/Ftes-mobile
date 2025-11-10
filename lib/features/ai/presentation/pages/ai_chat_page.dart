@@ -64,7 +64,7 @@ class _AiChatPageState extends State<AiChatPage> {
         _initializeChat();
       }
     } catch (e) {
-      print('❌ Check knowledge error: $e');
+      debugPrint('❌ Check knowledge error: $e');
       setState(() {
         _hasKnowledge = false;
         _isCheckingKnowledge = false;
@@ -255,7 +255,7 @@ class _AiChatPageState extends State<AiChatPage> {
         color: AppColors.lightBlue,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: AppColors.borderLight.withOpacity(0.5),
+          color: AppColors.borderLight.withValues(alpha: 0.5),
           width: 1.8,
         ),
       ),
@@ -320,7 +320,7 @@ class _AiChatPageState extends State<AiChatPage> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -400,7 +400,7 @@ class _AiChatPageState extends State<AiChatPage> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -422,7 +422,7 @@ class _AiChatPageState extends State<AiChatPage> {
                     _formatTime(message.timestamp),
                     style: AppTextStyles.caption.copyWith(
                       color: isFromUser
-                          ? Colors.white.withOpacity(0.8)
+                          ? Colors.white.withValues(alpha: 0.8)
                           : AppColors.textPrimary,
                       fontWeight: FontWeight.w800,
                       fontSize: 11,
@@ -462,7 +462,7 @@ class _AiChatPageState extends State<AiChatPage> {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4,
                 offset: const Offset(0, -2),
               ),

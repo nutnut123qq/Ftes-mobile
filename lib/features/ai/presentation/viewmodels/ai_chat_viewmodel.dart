@@ -39,7 +39,7 @@ class AiChatViewModel extends ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
     } catch (e) {
-      print('❌ Initialize lesson chat error: $e');
+      debugPrint('❌ Initialize lesson chat error: $e');
       _setError('Không thể khởi tạo chat');
     }
   }
@@ -84,7 +84,7 @@ class AiChatViewModel extends ChangeNotifier {
         },
       );
     } catch (e) {
-      print('❌ Send message error: $e');
+      debugPrint('❌ Send message error: $e');
       _setError('Không thể gửi tin nhắn: ${e.toString()}');
     } finally {
       _setLoading(false);

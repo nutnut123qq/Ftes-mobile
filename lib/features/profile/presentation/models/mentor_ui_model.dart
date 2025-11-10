@@ -10,11 +10,10 @@ class MentorUiModel {
   });
 
   const MentorUiModel.fromTopMentor({
-    required String name,
+    required this.name,
     required String specialty,
     required String imageUrl,
-  })  : name = name,
-        specialization = specialty,
+  })  : specialization = specialty,
         avatarUrl = imageUrl;
 }
 

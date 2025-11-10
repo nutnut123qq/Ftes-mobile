@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class HlsWebViewPlayer extends StatefulWidget {
@@ -71,7 +72,7 @@ class _HlsWebViewPlayerState extends State<HlsWebViewPlayer> {
   }
 
   String _jsString(String v) {
-    return "'" + v.replaceAll("'", "\\'") + "'";
+    return "'${v.replaceAll("'", "\\'")}'";
   }
 }
 

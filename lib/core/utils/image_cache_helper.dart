@@ -26,7 +26,7 @@ class ImageCacheHelper {
       height: height,
       fit: fit,
       placeholder: (context, _) => placeholder ?? _defaultSkeleton(width, height),
-      errorWidget: (context, _, __) => error ?? _defaultError(width, height),
+      errorWidget: (context, _, errorObject) => error ?? _defaultError(width, height),
       memCacheWidth: memCacheWidth,
       memCacheHeight: memCacheHeight,
       maxWidthDiskCache: maxWidthDiskCache,
@@ -58,6 +58,7 @@ class ImageCacheHelper {
     );
   }
 }
+
 
 
 

@@ -18,17 +18,17 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
   @override
   Future<bool> addToCart(String courseId) async {
     try {
-      print('🛒 Adding course to cart: $courseId');
+      debugPrint('🛒 Adding course to cart: $courseId');
       
       final request = AddToCartRequestModel(courseId: courseId);
       
       final response = await _apiClient.post(
-        '${AppConstants.cartEndpoint}',
+        AppConstants.cartEndpoint,
         data: request.toJson(),
       );
       
-      print('📥 Add to cart response status: ${response.statusCode}');
-      print('📥 Add to cart response data: ${response.data}');
+      debugPrint('📥 Add to cart response status: ${response.statusCode}');
+      debugPrint('📥 Add to cart response data: ${response.data}');
       
       if (response.statusCode == 200) {
         final data = response.data;
@@ -43,7 +43,7 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
         throw ServerException(response.data?['messageDTO']?['message'] ?? 'Failed to add to cart');
       }
     } catch (e) {
-      print('❌ Add to cart error: $e');
+      debugPrint('❌ Add to cart error: $e');
       if (e is AppException) {
         rethrow;
       }
@@ -59,7 +59,7 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
     String sortOrder = 'ASC',
   }) async {
     try {
-      print('🛒 Getting cart items: page=$pageNumber, size=$pageSize');
+      debugPrint('🛒 Getting cart items: page=$pageNumber, size=$pageSize');
       
       final queryParams = <String, dynamic>{
         'pageNumber': pageNumber.toString(),
@@ -72,12 +72,12 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
       }
       
       final response = await _apiClient.get(
-        '${AppConstants.cartEndpoint}',
+        AppConstants.cartEndpoint,
         queryParameters: queryParams,
       );
       
-      print('📥 Get cart items response status: ${response.statusCode}');
-      print('📥 Get cart items response data: ${response.data}');
+      debugPrint('📥 Get cart items response status: ${response.statusCode}');
+      debugPrint('📥 Get cart items response data: ${response.data}');
       
       if (response.statusCode == 200) {
         final data = response.data;
@@ -100,7 +100,7 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
             
             // Use compute() isolate for parsing if list is large
             if (itemsList.length > CartConstants.computeIsolateThreshold) {
-              print('🔄 Using compute() isolate for parsing ${itemsList.length} cart items');
+              debugPrint('🔄 Using compute() isolate for parsing ${itemsList.length} cart items');
               final items = await compute(parseCartItemListJson, itemsList);
               
               // Return CartSummaryModel with parsed items
@@ -128,7 +128,7 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
         throw ServerException(response.data?['messageDTO']?['message'] ?? 'Failed to get cart items');
       }
     } catch (e) {
-      print('❌ Get cart items error: $e');
+      debugPrint('❌ Get cart items error: $e');
       if (e is AppException) {
         rethrow;
       }
@@ -139,14 +139,14 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
   @override
   Future<int> getCartCount() async {
     try {
-      print('🛒 Getting cart count');
+      debugPrint('🛒 Getting cart count');
       
       final response = await _apiClient.get(
-        '${AppConstants.cartCountEndpoint}',
+        AppConstants.cartCountEndpoint,
       );
       
-      print('📥 Get cart count response status: ${response.statusCode}');
-      print('📥 Get cart count response data: ${response.data}');
+      debugPrint('📥 Get cart count response status: ${response.statusCode}');
+      debugPrint('📥 Get cart count response data: ${response.data}');
       
       if (response.statusCode == 200) {
         final data = response.data;
@@ -161,7 +161,7 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
         throw ServerException(response.data?['messageDTO']?['message'] ?? 'Failed to get cart count');
       }
     } catch (e) {
-      print('❌ Get cart count error: $e');
+      debugPrint('❌ Get cart count error: $e');
       if (e is AppException) {
         rethrow;
       }
@@ -172,14 +172,14 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
   @override
   Future<bool> removeFromCart(String cartItemId) async {
     try {
-      print('🛒 Removing cart item: $cartItemId');
+      debugPrint('🛒 Removing cart item: $cartItemId');
       
       final response = await _apiClient.delete(
         '${AppConstants.cartEndpoint}/$cartItemId',
       );
       
-      print('📥 Remove from cart response status: ${response.statusCode}');
-      print('📥 Remove from cart response data: ${response.data}');
+      debugPrint('📥 Remove from cart response status: ${response.statusCode}');
+      debugPrint('📥 Remove from cart response data: ${response.data}');
       
       if (response.statusCode == 200) {
         final data = response.data;
@@ -191,7 +191,7 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
         throw ServerException(response.data?['messageDTO']?['message'] ?? 'Failed to remove from cart');
       }
     } catch (e) {
-      print('❌ Remove from cart error: $e');
+      debugPrint('❌ Remove from cart error: $e');
       if (e is AppException) {
         rethrow;
       }

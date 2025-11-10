@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
@@ -22,11 +23,11 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
   @override
   Future<VideoKnowledge> checkVideoKnowledge(String videoId) async {
     try {
-      print('📚 Checking video knowledge: $videoId');
+      debugPrint('📚 Checking video knowledge: $videoId');
       
       final token = await _getAccessToken();
       final url = '${AppConstants.aiCheckVideoKnowledgeEndpoint}/$videoId';
-      print('🔗 Full URL: $url');
+      debugPrint('🔗 Full URL: $url');
       
       // Use http package for external API
       try {
@@ -35,8 +36,8 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
           headers: token != null ? {'Authorization': 'Bearer $token'} : null,
         );
 
-        print('📥 Check knowledge response status: ${response.statusCode}');
-        print('📥 Check knowledge response data: ${response.body}');
+        debugPrint('📥 Check knowledge response status: ${response.statusCode}');
+        debugPrint('📥 Check knowledge response data: ${response.body}');
 
         if (response.statusCode == 200) {
           final jsonData = json.decode(response.body) as Map<String, dynamic>;
@@ -44,7 +45,7 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
           return model.toEntity();
         } else {
           // If API fails, return true to allow chat
-          print('⚠️ API returned ${response.statusCode}, allowing chat by default');
+          debugPrint('⚠️ API returned ${response.statusCode}, allowing chat by default');
           return const VideoKnowledge(
             hasKnowledge: true,
             status: 'error',
@@ -53,8 +54,8 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
         }
       } on Exception catch (e) {
         // If network/CORS error, allow chat by default
-        print('⚠️ Network error checking knowledge: $e');
-        print('✅ Allowing chat by default due to network error');
+        debugPrint('⚠️ Network error checking knowledge: $e');
+        debugPrint('✅ Allowing chat by default due to network error');
         return const VideoKnowledge(
           hasKnowledge: true,
           status: 'network_error',
@@ -62,7 +63,7 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
         );
       }
     } catch (e) {
-      print('❌ Check video knowledge error: $e');
+      debugPrint('❌ Check video knowledge error: $e');
       // Return true as default to allow chat on error
       return const VideoKnowledge(
         hasKnowledge: true,
@@ -79,7 +80,7 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
       final prefs = _apiClient.sharedPreferences;
       return prefs.getString(AppConstants.keyAccessToken);
     } catch (e) {
-      print('⚠️ Failed to get access token: $e');
+      debugPrint('⚠️ Failed to get access token: $e');
       return null;
     }
   }
@@ -92,9 +93,9 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
     required String sessionId,
   }) async {
     try {
-      print('🤖 Sending message to AI: $message');
-      print('📚 Lesson: $lessonTitle');
-      print('🔗 Session: $sessionId');
+      debugPrint('🤖 Sending message to AI: $message');
+      debugPrint('📚 Lesson: $lessonTitle');
+      debugPrint('🔗 Session: $sessionId');
 
       // Create request model
       final request = AiChatRequestModel(
@@ -107,8 +108,8 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
 
       // Use full URL for AI API (external service)
       final url = '${AppConstants.aiChatBaseUrl}${AppConstants.aiChatEndpoint}';
-      print('🔗 Full AI URL: $url');
-      print('📤 Request body: ${request.toJson()}');
+      debugPrint('🔗 Full AI URL: $url');
+      debugPrint('📤 Request body: ${request.toJson()}');
 
       // Send POST request using Dio directly
       final dio = _apiClient.dio;
@@ -122,8 +123,8 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
         ),
       );
 
-      print('📥 AI response status: ${response.statusCode}');
-      print('📥 AI response data: ${response.data}');
+      debugPrint('📥 AI response status: ${response.statusCode}');
+      debugPrint('📥 AI response data: ${response.data}');
 
       if (response.statusCode == 200) {
         // Parse response off main thread if large
@@ -134,7 +135,7 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
           final answer = aiResponse.getAnswer();
 
           if (answer != null && answer.isNotEmpty) {
-            print('✅ AI response received: ${answer.substring(0, answer.length > 50 ? 50 : answer.length)}...');
+            debugPrint('✅ AI response received: ${answer.substring(0, answer.length > 50 ? 50 : answer.length)}...');
             
             // Create AI message from response
             return AiChatMessage.ai(answer);
@@ -156,7 +157,7 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
         );
       }
     } catch (e) {
-      print('❌ Send message error: $e');
+      debugPrint('❌ Send message error: $e');
       if (e is AppException) {
         rethrow;
       }

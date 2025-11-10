@@ -138,7 +138,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                             : null,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -168,7 +168,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.textSecondary.withOpacity(0.3),
+                    disabledBackgroundColor: AppColors.textSecondary.withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),

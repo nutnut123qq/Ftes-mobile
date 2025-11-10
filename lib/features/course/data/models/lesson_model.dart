@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/lesson.dart';
 
@@ -37,7 +38,7 @@ class LessonModel {
   factory LessonModel.fromJson(Map<String, dynamic> json) {
     // Debug log to check video field
     if (json['video'] != null) {
-      print('🎬 LessonModel.fromJson - video field: ${json['video']}');
+      debugPrint('🎬 LessonModel.fromJson - video field: ${json['video']}');
     }
     return _$LessonModelFromJson(json);
   }

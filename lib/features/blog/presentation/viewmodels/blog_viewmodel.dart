@@ -111,11 +111,11 @@ class BlogViewModel extends ChangeNotifier {
     result.fold(
       (failure) {
         _errorMessage = _mapFailureToMessage(failure);
-        print('❌ Failed to fetch blog categories: ${failure.message}');
+        debugPrint('❌ Failed to fetch blog categories: ${failure.message}');
       },
       (categories) {
         _categories = categories;
-        print('✅ Loaded ${categories.length} blog categories');
+        debugPrint('✅ Loaded ${categories.length} blog categories');
       },
     );
   }

@@ -21,10 +21,10 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
   @override
   Future<CourseDetailModel> getCourseDetailBySlug(String slugName, String? userId) async {
     try {
-      print('📚 Fetching course detail: ${AppConstants.baseUrl}${AppConstants.courseDetailEndpoint}/$slugName');
-      print('🔑 Slug: $slugName');
+      debugPrint('📚 Fetching course detail: ${AppConstants.baseUrl}${AppConstants.courseDetailEndpoint}/$slugName');
+      debugPrint('🔑 Slug: $slugName');
       if (userId != null) {
-        print('👤 User ID: $userId');
+        debugPrint('👤 User ID: $userId');
       }
       
       final queryParams = <String, dynamic>{};
@@ -37,7 +37,7 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
       
-      print('📥 Response status: ${response.statusCode}');
+      debugPrint('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final result = response.data['result'];
@@ -46,15 +46,15 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
           final partsCount = countParts(result);
           final totalLessons = calculateTotalLessons(result);
           
-          print('📊 Course complexity: $partsCount parts, $totalLessons lessons');
+          debugPrint('📊 Course complexity: $partsCount parts, $totalLessons lessons');
           
           // Use compute isolate for complex course data to avoid blocking main thread
           if (partsCount > CourseConstants.defaultCourseDetailThreshold || 
               totalLessons > CourseConstants.defaultLessonThreshold) {
-            print('⚡ Using compute isolate for JSON parsing');
+            debugPrint('⚡ Using compute isolate for JSON parsing');
             return await compute<Map<String, dynamic>, CourseDetailModel>(parseCourseDetailJson, result);
           } else {
-            print('⚡ Parsing JSON on main thread (simple data)');
+            debugPrint('⚡ Parsing JSON on main thread (simple data)');
             return parseCourseDetailJson(result);
           }
         } else {
@@ -64,7 +64,7 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
         throw ServerException(response.data['messageDTO']?['message'] ?? CourseConstants.errorLoadCourseFailed);
       }
     } catch (e) {
-      print('❌ Get course detail error: $e');
+      debugPrint('❌ Get course detail error: $e');
       if (e is AppException) {
         rethrow;
       }
@@ -75,13 +75,13 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
   @override
   Future<ProfileModel> getProfile(String userId) async {
     try {
-      print('👤 Fetching profile: ${AppConstants.baseUrl}${AppConstants.profileViewEndpoint}/$userId');
+      debugPrint('👤 Fetching profile: ${AppConstants.baseUrl}${AppConstants.profileViewEndpoint}/$userId');
       
       final response = await _apiClient.get(
         '${AppConstants.profileViewEndpoint}/$userId',
       );
       
-      print('📥 Profile response status: ${response.statusCode}');
+      debugPrint('📥 Profile response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final result = response.data['result'];
@@ -95,7 +95,7 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
         throw ServerException(response.data['messageDTO']?['message'] ?? CourseConstants.errorLoadProfileFailed);
       }
     } catch (e) {
-      print('❌ Get profile error: $e');
+      debugPrint('❌ Get profile error: $e');
       if (e is AppException) {
         rethrow;
       }
@@ -106,14 +106,14 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
   @override
   Future<bool> checkEnrollment(String userId, String courseId) async {
     try {
-      print('🔍 Checking enrollment: ${AppConstants.baseUrl}${AppConstants.checkEnrollmentByUserEndpoint}/$userId/apply-course/$courseId');
+      debugPrint('🔍 Checking enrollment: ${AppConstants.baseUrl}${AppConstants.checkEnrollmentByUserEndpoint}/$userId/apply-course/$courseId');
       
       final response = await _apiClient.get(
         '${AppConstants.checkEnrollmentByUserEndpoint}/$userId/apply-course/$courseId',
       );
       
-      print('📥 Enrollment response status: ${response.statusCode}');
-      print('📥 Enrollment response data: ${response.data}');
+      debugPrint('📥 Enrollment response status: ${response.statusCode}');
+      debugPrint('📥 Enrollment response data: ${response.data}');
       
       if (response.statusCode == 200) {
         final result = response.data['result'];
@@ -127,7 +127,7 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
         throw ServerException(response.data['messageDTO']?['message'] ?? CourseConstants.errorCheckEnrollmentFailed);
       }
     } catch (e) {
-      print('❌ Check enrollment error: $e');
+      debugPrint('❌ Check enrollment error: $e');
       if (e is AppException) {
         rethrow;
       }
@@ -138,8 +138,8 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
   @override
   Future<void> enrollCourse(String userId, String courseId) async {
     try {
-      print('✅ Enrolling in course: ${AppConstants.baseUrl}${AppConstants.enrollCourseEndpoint}');
-      print('👤 User ID: $userId, 📚 Course ID: $courseId');
+      debugPrint('✅ Enrolling in course: ${AppConstants.baseUrl}${AppConstants.enrollCourseEndpoint}');
+      debugPrint('👤 User ID: $userId, 📚 Course ID: $courseId');
       
       final response = await _apiClient.post(
         AppConstants.enrollCourseEndpoint,
@@ -149,17 +149,17 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
         },
       );
       
-      print('📥 Enroll response status: ${response.statusCode}');
-      print('📥 Enroll response data: ${response.data}');
+      debugPrint('📥 Enroll response status: ${response.statusCode}');
+      debugPrint('📥 Enroll response data: ${response.data}');
       
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('✅ Successfully enrolled in course');
+        debugPrint('✅ Successfully enrolled in course');
         return;
       } else {
         throw ServerException(response.data['messageDTO']?['message'] ?? CourseConstants.errorEnrollFailed);
       }
     } catch (e) {
-      print('❌ Enroll course error: $e');
+      debugPrint('❌ Enroll course error: $e');
       if (e is AppException) {
         rethrow;
       }
@@ -171,14 +171,14 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
   Future<VideoPlaylistModel> getVideoPlaylist(String videoId, {bool presign = false}) async {
     try {
       // Video ID format: "video_81f4308f-25d" (giữ nguyên prefix "video_")
-      print('🎬 Fetching video playlist for ID: $videoId');
-      print('🎬 Video stream base URL: ${AppConstants.videoStreamBaseUrl}');
+      debugPrint('🎬 Fetching video playlist for ID: $videoId');
+      debugPrint('🎬 Video stream base URL: ${AppConstants.videoStreamBaseUrl}');
       
       // Construct full URL for video API (dùng videoStreamBaseUrl)
       final playlistUrl = '${AppConstants.videoStreamBaseUrl}${AppConstants.videoPlaylistEndpoint}/$videoId/playlist';
       final queryParams = presign ? {'presign': 'true'} : null;
       
-      print('🔗 Full URL: $playlistUrl${queryParams != null ? '?presign=true' : ''}');
+      debugPrint('🔗 Full URL: $playlistUrl${queryParams != null ? '?presign=true' : ''}');
       
       // Try to call video API from stream.ftes.cloud
       try {
@@ -194,8 +194,8 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
           ),
         );
         
-        print('📥 Video playlist response status: ${response.statusCode}');
-        print('📥 Video playlist response data: ${response.data}');
+        debugPrint('📥 Video playlist response status: ${response.statusCode}');
+        debugPrint('📥 Video playlist response data: ${response.data}');
         
         if (response.statusCode == 200) {
           // Extract proxy URL - could be relative or absolute
@@ -216,13 +216,13 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
           );
         }
       } catch (apiError) {
-        print('⚠️ Video playlist API error: $apiError');
-        print('⚠️ Falling back to direct proxy URL');
+        debugPrint('⚠️ Video playlist API error: $apiError');
+        debugPrint('⚠️ Falling back to direct proxy URL');
       }
       
       // Fallback: Use direct proxy URL from streaming server
       final proxyUrl = '${AppConstants.videoStreamBaseUrl}${AppConstants.videoProxyEndpoint}/$videoId/master.m3u8';
-      print('✅ Using direct proxy URL: $proxyUrl');
+      debugPrint('✅ Using direct proxy URL: $proxyUrl');
       
       return VideoPlaylistModel(
         videoId: videoId,
@@ -231,7 +231,7 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
         proxyPlaylistUrl: proxyUrl,
       );
     } catch (e) {
-      print('❌ Get video playlist error: $e');
+      debugPrint('❌ Get video playlist error: $e');
       if (e is AppException) {
         rethrow;
       }
@@ -243,12 +243,12 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
   Future<VideoStatusModel> getVideoStatus(String videoId) async {
     try {
       // Video ID format: "video_81f4308f-25d" (giữ nguyên)
-      print('⏳ Fetching video status for ID: $videoId');
-      print('⏳ Video stream base URL: ${AppConstants.videoStreamBaseUrl}');
+      debugPrint('⏳ Fetching video status for ID: $videoId');
+      debugPrint('⏳ Video stream base URL: ${AppConstants.videoStreamBaseUrl}');
       
       // Construct full URL for video status API (dùng videoStreamBaseUrl)
       final statusUrl = '${AppConstants.videoStreamBaseUrl}${AppConstants.videoStatusEndpoint}/$videoId/status';
-      print('🔗 Full URL: $statusUrl');
+      debugPrint('🔗 Full URL: $statusUrl');
       
       try {
         // Tạo request trực tiếp tới video stream server
@@ -262,8 +262,8 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
           ),
         );
         
-        print('📥 Video status response status: ${response.statusCode}');
-        print('📥 Video status response data: ${response.data}');
+        debugPrint('📥 Video status response status: ${response.statusCode}');
+        debugPrint('📥 Video status response data: ${response.data}');
         
         if (response.statusCode == 200) {
           return VideoStatusModel.fromJson(response.data);
@@ -271,11 +271,11 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
           throw ServerException(response.data['message'] ?? AppConstants.videoFailedMessage);
         }
       } catch (apiError) {
-        print('❌ Video status API error: $apiError');
+        debugPrint('❌ Video status API error: $apiError');
         throw ServerException(AppConstants.videoFailedMessage);
       }
     } catch (e) {
-      print('❌ Get video status error: $e');
+      debugPrint('❌ Get video status error: $e');
       if (e is AppException) {
         rethrow;
       }

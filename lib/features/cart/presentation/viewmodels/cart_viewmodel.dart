@@ -385,7 +385,7 @@ class CartViewModel extends ChangeNotifier {
         _courseIdsInCart.addAll(courseIdsList.map((id) => id.toString()));
       }
     } catch (e) {
-      print('❌ Error loading from cache: $e');
+      debugPrint('❌ Error loading from cache: $e');
     }
   }
 
@@ -411,7 +411,7 @@ class CartViewModel extends ChangeNotifier {
       final courseIdsJson = jsonEncode(_courseIdsInCart.toList());
       _sharedPreferences.setString(CartConstants.cacheKeyCartCourseIds, courseIdsJson);
     } catch (e) {
-      print('❌ Error saving to cache: $e');
+      debugPrint('❌ Error saving to cache: $e');
     }
   }
 
@@ -513,7 +513,7 @@ class CartViewModel extends ChangeNotifier {
       await _cancelPendingOrdersUseCase(params);
     } catch (e) {
       // Ignore cancel errors, continue with order creation
-      print('Failed to cancel pending orders: $e');
+      debugPrint('Failed to cancel pending orders: $e');
     }
   }
 
