@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/text_styles.dart';
+import 'package:ftes/core/utils/text_styles.dart';
 import 'package:ftes/routes/app_routes.dart';
 import 'package:ftes/core/di/injection_container.dart' as di;
 import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';

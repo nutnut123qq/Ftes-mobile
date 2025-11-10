@@ -6,7 +6,7 @@ import '../viewmodels/roadmap_viewmodel.dart';
 import '../widgets/skill_chip.dart';
 import '../widgets/gradient_button.dart';
 import './roadmap_result_page.dart';
-import 'package:ftes/widgets/bottom_navigation_bar.dart';
+import 'package:ftes/core/widgets/bottom_navigation_bar.dart';
 import '../../../../core/di/injection_container.dart' as di;
 
 class RoadmapPage extends StatelessWidget {

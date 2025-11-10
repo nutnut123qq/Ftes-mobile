@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:ftes/utils/text_styles.dart';
+import 'package:ftes/core/utils/text_styles.dart';
 import 'package:ftes/features/profile/presentation/viewmodels/profile_viewmodel.dart';
 import 'package:ftes/features/profile/domain/entities/profile.dart';
 import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../domain/entities/roadmap.dart';
 import '../viewmodels/roadmap_result_viewmodel.dart';
 import '../widgets/roadmap_timeline.dart';
-import 'package:ftes/widgets/bottom_navigation_bar.dart';
+import 'package:ftes/core/widgets/bottom_navigation_bar.dart';
 
 class RoadmapResultPage extends StatelessWidget {
   final Roadmap roadmap;

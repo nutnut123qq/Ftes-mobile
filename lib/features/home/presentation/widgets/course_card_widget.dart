@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/course.dart';
-import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/utils/colors.dart';
+import 'package:ftes/core/utils/text_styles.dart';
+import 'package:ftes/core/utils/colors.dart';
 import 'package:intl/intl.dart';
 
 /// Widget for displaying course card

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_html/flutter_html.dart';
-import '../../../../utils/text_styles.dart';
+import '../../../../core/utils/text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../features/home/domain/entities/course.dart';
 import '../viewmodels/course_detail_viewmodel.dart';

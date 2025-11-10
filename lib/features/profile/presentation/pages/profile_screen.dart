@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/utils/constants.dart';
-import 'package:ftes/widgets/bottom_navigation_bar.dart';
+import 'package:ftes/core/utils/text_styles.dart';
+import 'package:ftes/core/constants/app_constants.dart';
+import 'package:ftes/core/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/features/profile/presentation/pages/edit_profile_screen.dart';
 import 'package:ftes/features/profile/presentation/pages/notifications_screen.dart';
 import 'package:ftes/features/points/presentation/pages/invite_friends_screen.dart';

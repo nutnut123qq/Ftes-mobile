@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../utils/colors.dart';
-import '../../../../utils/text_styles.dart';
+import '../../../../core/utils/colors.dart';
+import '../../../../core/utils/text_styles.dart';
 import '../../domain/entities/ai_chat_message.dart';
 import '../../domain/constants/ai_constants.dart';
 import '../viewmodels/ai_chat_viewmodel.dart';

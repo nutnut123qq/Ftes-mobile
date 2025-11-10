@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/utils/constants.dart';
+import 'package:ftes/core/utils/text_styles.dart';
+import 'package:ftes/core/constants/app_constants.dart';
 import 'package:ftes/routes/app_routes.dart';
 
 class EnrollSuccessScreen extends StatefulWidget {

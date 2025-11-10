@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/text_styles.dart';
+import 'package:ftes/core/utils/text_styles.dart';
 import 'package:ftes/features/feedback/domain/constants/feedback_constants.dart';
 import 'package:ftes/features/feedback/presentation/viewmodels/feedback_viewmodel.dart';
 import 'package:provider/provider.dart';

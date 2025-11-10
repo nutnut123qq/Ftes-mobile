@@ -44,3 +44,4 @@ Widget buildWebExternalPlayer(String embedUrl) {
     ),
   );
 }
+

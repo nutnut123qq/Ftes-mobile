@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../widgets/bottom_navigation_bar.dart';
+import '../../../../core/widgets/bottom_navigation_bar.dart';
 import '../../domain/entities/blog.dart';
 import '../../domain/constants/blog_constants.dart';
 import '../viewmodels/blog_viewmodel.dart';

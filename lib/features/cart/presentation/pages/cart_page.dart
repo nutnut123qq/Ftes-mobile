@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../utils/text_styles.dart';
-import '../../../../widgets/bottom_navigation_bar.dart';
+import '../../../../core/utils/text_styles.dart';
+import '../../../../core/widgets/bottom_navigation_bar.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/constants/cart_constants.dart';
 import '../viewmodels/cart_viewmodel.dart';

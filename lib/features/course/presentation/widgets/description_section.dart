@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../utils/text_styles.dart';
+import '../../../../core/utils/text_styles.dart';
 import '../constants/course_ui_constants.dart';
 
 class DescriptionSection extends StatelessWidget {
@@ -34,6 +34,7 @@ class DescriptionSection extends StatelessWidget {
     );
   }
 }
+
 
 
 

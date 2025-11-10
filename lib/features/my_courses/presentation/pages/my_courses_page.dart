@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../viewmodels/my_courses_viewmodel.dart';
 import '../widgets/my_course_card_widget.dart';
-import '../../../../widgets/bottom_navigation_bar.dart';
+import '../../../../core/widgets/bottom_navigation_bar.dart';
 import '../../domain/constants/my_courses_constants.dart';
 
 /// My Courses page using Clean Architecture
