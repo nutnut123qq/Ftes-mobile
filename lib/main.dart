@@ -10,10 +10,7 @@ import 'features/course/presentation/viewmodels/course_detail_viewmodel.dart';
 import 'features/blog/presentation/viewmodels/blog_viewmodel.dart';
 import 'features/profile/presentation/viewmodels/profile_viewmodel.dart';
 // import 'legacy/providers/auth_provider.dart'; // Deprecated - use auth feature instead
-import 'providers/app_data_provider.dart';
-import 'providers/point_provider.dart';
-import 'providers/feedback_provider.dart';
-import 'providers/exercise_provider.dart';
+import 'features/points/presentation/viewmodels/points_viewmodel.dart';
 // import 'providers/ai_chat_provider.dart'; // Unused import
 
 void main() async {
@@ -30,17 +27,20 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         // New Clean Architecture ViewModels
-        ChangeNotifierProvider(create: (context) => di.sl<AuthViewModel>()..initialize()),
+        ChangeNotifierProvider(
+          create: (context) => di.sl<AuthViewModel>()..initialize(),
+        ),
         ChangeNotifierProvider(create: (context) => di.sl<RegisterViewModel>()),
-        ChangeNotifierProvider(create: (context) => di.sl<CourseDetailViewModel>()),
-        ChangeNotifierProvider(create: (context) => di.sl<BlogViewModel>()..initialize()),
+        ChangeNotifierProvider(
+          create: (context) => di.sl<CourseDetailViewModel>(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => di.sl<BlogViewModel>()..initialize(),
+        ),
         ChangeNotifierProvider(create: (context) => di.sl<ProfileViewModel>()),
         // Legacy providers (temporary for backward compatibility) - DEPRECATED
         // ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
-        ChangeNotifierProvider(create: (context) => AppDataProvider()),
-        ChangeNotifierProvider(create: (context) => PointProvider()),
-        ChangeNotifierProvider(create: (context) => FeedbackProvider()),
-        ChangeNotifierProvider(create: (context) => ExerciseProvider()),
+        ChangeNotifierProvider(create: (context) => di.sl<PointsViewModel>()),
         // ChangeNotifierProxyProvider<AuthProvider, AIChatProvider>(
         //   create: (context) => AIChatProvider(Provider.of<AuthProvider>(context, listen: false)),
         //   update: (context, auth, previous) => previous ?? AIChatProvider(auth),

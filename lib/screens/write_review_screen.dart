@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
+import 'package:ftes/features/feedback/domain/constants/feedback_constants.dart';
+import 'package:ftes/features/feedback/presentation/viewmodels/feedback_viewmodel.dart';
 import 'package:provider/provider.dart';
-import '../providers/feedback_provider.dart';
-import '../models/create_feedback_request.dart';
 
 class WriteReviewScreen extends StatefulWidget {
   final String courseId;
   final String userId;
   final String? courseName;
-  
+
   const WriteReviewScreen({
     super.key,
     required this.courseId,
@@ -92,9 +92,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(width: 20),
-            
+
             // Title
             Expanded(
               child: Row(
@@ -156,9 +156,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
               size: 40,
             ),
           ),
-          
+
           const SizedBox(width: 16),
-          
+
           // Course Info
           Expanded(
             child: Column(
@@ -173,9 +173,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                
+
                 const SizedBox(height: 8),
-                
+
                 // Title
                 Text(
                   'Thiết lập Thiết kế đồ họa...',
@@ -208,9 +208,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          
+
           const SizedBox(height: 15),
-          
+
           // Star Rating
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -232,9 +232,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
               );
             }),
           ),
-          
+
           const SizedBox(height: 10),
-          
+
           // Rating Text
           Center(
             child: Text(
@@ -246,9 +246,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 30),
-          
+
           Text(
             'Viết đánh giá của bạn',
             style: AppTextStyles.body1.copyWith(
@@ -257,9 +257,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Review Text Area
           Container(
             height: 150,
@@ -288,9 +288,9 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 8),
-                  
+
                   // Text Field
                   Expanded(
                     child: TextField(
@@ -311,7 +311,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                       ),
                     ),
                   ),
-                  
+
                   // Character counter
                   Align(
                     alignment: Alignment.centerRight,
@@ -352,20 +352,22 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
 
   Widget _buildSubmitButton() {
     final isEnabled = _reviewController.text.trim().isNotEmpty;
-    
+
     return Container(
       margin: const EdgeInsets.fromLTRB(39, 30, 39, 0),
       height: 60,
       decoration: BoxDecoration(
         color: isEnabled ? const Color(0xFF0961F5) : const Color(0xFFB4BDC4),
         borderRadius: BorderRadius.circular(30),
-        boxShadow: isEnabled ? [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(1, 2),
-          ),
-        ] : null,
+        boxShadow: isEnabled
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(1, 2),
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
@@ -375,7 +377,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
           child: Row(
             children: [
               const SizedBox(width: 20),
-              
+
               // Play Icon
               Container(
                 width: 40,
@@ -386,13 +388,15 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                 ),
                 child: Icon(
                   Icons.send,
-                  color: isEnabled ? const Color(0xFF0961F5) : const Color(0xFFB4BDC4),
+                  color: isEnabled
+                      ? const Color(0xFF0961F5)
+                      : const Color(0xFFB4BDC4),
                   size: 20,
                 ),
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // Button Text
               Expanded(
                 child: Text(
@@ -405,7 +409,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              
+
               const SizedBox(width: 20),
             ],
           ),
@@ -416,50 +420,49 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
 
   void _submitReview() async {
     if (_reviewController.text.trim().isEmpty) return;
-    
-    final provider = context.read<FeedbackProvider>();
-    
+
+    final viewModel = context.read<FeedbackViewModel>();
+
     final userIdInt = int.tryParse(widget.userId) ?? 0;
     final courseIdInt = int.tryParse(widget.courseId) ?? 0;
-    
-    final request = CreateFeedbackRequest(
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final success = await viewModel.createFeedback(
       userId: userIdInt,
       courseId: courseIdInt,
       rating: _rating,
       comment: _reviewController.text.trim(),
     );
-    
-    // Show loading indicator
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-    
-    final success = await provider.createFeedback(request);
-    
+
     // Hide loading indicator
     if (mounted) {
       Navigator.pop(context);
-      
+
       if (success) {
+        await viewModel.loadAverageRating(courseIdInt);
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Đánh giá đã được gửi thành công!'),
+            content: Text(FeedbackConstants.successSubmitMessage),
             backgroundColor: Color(0xFF0961F5),
           ),
         );
-        
+
         // Navigate back
         Navigator.pop(context, true); // Return true to indicate success
       } else {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(provider.error ?? 'Có lỗi xảy ra khi gửi đánh giá'),
+            content: Text(
+              viewModel.errorMessage ?? FeedbackConstants.errorSubmitMessage,
+            ),
             backgroundColor: Colors.red,
           ),
         );

@@ -25,7 +25,6 @@ import '../screens/mentors_list_screen.dart';
 import '../screens/single_mentor_details_screen.dart';
 import '../features/course/presentation/pages/course_detail_page.dart';
 import '../features/course/presentation/pages/course_video_page.dart';
-import '../screens/quiz_screen.dart';
 import '../screens/profile_screen.dart';
 import '../features/profile/presentation/pages/instructor_profile_page.dart';
 import '../screens/notifications_screen.dart';
@@ -44,6 +43,8 @@ import '../features/cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../features/blog/presentation/pages/blog_detail_page.dart';
 import '../features/blog/presentation/pages/blog_list_page.dart';
 import '../features/blog/presentation/viewmodels/blog_viewmodel.dart';
+import '../features/feedback/presentation/viewmodels/feedback_viewmodel.dart';
+import '../features/points/presentation/viewmodels/points_viewmodel.dart';
 import '../models/chat_item.dart';
 import 'package:provider/provider.dart';
 import '../core/di/injection_container.dart' as di;
@@ -54,19 +55,24 @@ import '../features/home/domain/entities/course.dart';
 class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
     core_constants.AppConstants.routeSplash: (context) => const LoadingScreen(),
-    core_constants.AppConstants.routeLaunching: (context) => const LaunchingScreen(),
+    core_constants.AppConstants.routeLaunching: (context) =>
+        const LaunchingScreen(),
     core_constants.AppConstants.routeIntro: (context) => const IntroScreen(),
-    core_constants.AppConstants.routeLetsYouIn: (context) => const LetsYouInScreen(),
-    core_constants.AppConstants.routeSignIn: (context) => const LoginPage(), // Add signin route
-    core_constants.AppConstants.routeSignUp: (context) => const RegisterPage(), // Use new RegisterPage
+    core_constants.AppConstants.routeLetsYouIn: (context) =>
+        const LetsYouInScreen(),
+    core_constants.AppConstants.routeSignIn: (context) =>
+        const LoginPage(), // Add signin route
+    core_constants.AppConstants.routeSignUp: (context) =>
+        const RegisterPage(), // Use new RegisterPage
     core_constants.AppConstants.routeVerifyEmail: (context) {
       final email = ModalRoute.of(context)?.settings.arguments as String?;
       return VerifyEmailPage(email: email ?? '');
     }, // Add verify email route
-    core_constants.AppConstants.routeForgotPassword: (context) => ChangeNotifierProvider(
-      create: (context) => di.sl<ForgotPasswordViewModel>(),
-      child: const ForgotPasswordPage(),
-    ), // Provide ForgotPasswordViewModel
+    core_constants.AppConstants.routeForgotPassword: (context) =>
+        ChangeNotifierProvider(
+          create: (context) => di.sl<ForgotPasswordViewModel>(),
+          child: const ForgotPasswordPage(),
+        ), // Provide ForgotPasswordViewModel
     core_constants.AppConstants.routeVerifyForgotPassword: (context) {
       final email = ModalRoute.of(context)?.settings.arguments as String?;
       return ChangeNotifierProvider(
@@ -97,40 +103,51 @@ class AppRoutes {
     }, // Provide ForgotPasswordViewModel for creating new password with token
     // Auth routes
     ...AuthRoutes.getRoutes(),
-    core_constants.AppConstants.routeCongratulations: (context) => const CongratulationsScreen(),
-    core_constants.AppConstants.routeCreatePin: (context) => const CreatePinScreen(),
+    core_constants.AppConstants.routeCongratulations: (context) =>
+        const CongratulationsScreen(),
+    core_constants.AppConstants.routeCreatePin: (context) =>
+        const CreatePinScreen(),
     core_constants.AppConstants.routeHome: (context) => ChangeNotifierProvider(
       create: (context) => di.sl<HomeViewModel>(),
       child: const HomePage(),
     ),
-    core_constants.AppConstants.routeCourseSearch: (context) => ChangeNotifierProvider(
-      create: (context) => di.sl<HomeViewModel>(),
-      child: const CourseSearchPage(),
-    ),
-    core_constants.AppConstants.routePopularCourses: (context) => ChangeNotifierProvider(
-      create: (context) => di.sl<HomeViewModel>(),
-      child: const CourseSearchPage(),
-    ),
-    core_constants.AppConstants.routeTopMentors: (context) => const TopMentorsScreen(),
-    core_constants.AppConstants.routeCoursesList: (context) => ChangeNotifierProvider(
-      create: (context) => di.sl<HomeViewModel>(),
-      child: const CourseSearchPage(),
-    ),
-    core_constants.AppConstants.routeMentorsList: (context) => const MentorsListScreen(),
-    core_constants.AppConstants.routeSingleMentorDetails: (context) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      return SingleMentorDetailsScreen(
-        mentor: args?['mentor'] ?? MentorItem(
-          name: 'Default Mentor',
-          specialization: 'Design',
-          avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=M',
+    core_constants.AppConstants.routeCourseSearch: (context) =>
+        ChangeNotifierProvider(
+          create: (context) => di.sl<HomeViewModel>(),
+          child: const CourseSearchPage(),
         ),
+    core_constants.AppConstants.routePopularCourses: (context) =>
+        ChangeNotifierProvider(
+          create: (context) => di.sl<HomeViewModel>(),
+          child: const CourseSearchPage(),
+        ),
+    core_constants.AppConstants.routeTopMentors: (context) =>
+        const TopMentorsScreen(),
+    core_constants.AppConstants.routeCoursesList: (context) =>
+        ChangeNotifierProvider(
+          create: (context) => di.sl<HomeViewModel>(),
+          child: const CourseSearchPage(),
+        ),
+    core_constants.AppConstants.routeMentorsList: (context) =>
+        const MentorsListScreen(),
+    core_constants.AppConstants.routeSingleMentorDetails: (context) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      return SingleMentorDetailsScreen(
+        mentor:
+            args?['mentor'] ??
+            MentorItem(
+              name: 'Default Mentor',
+              specialization: 'Design',
+              avatarUrl:
+                  'https://via.placeholder.com/66x66/000000/FFFFFF?text=M',
+            ),
       );
     },
     core_constants.AppConstants.routeCourseDetail: (context) {
       final arguments = ModalRoute.of(context)?.settings.arguments;
       Course? course;
-      
+
       if (arguments is Map<String, dynamic>) {
         course = arguments['course'] as Course?;
       } else if (arguments is String) {
@@ -148,17 +165,17 @@ class AppRoutes {
           categoryName: '',
         );
       }
-      
+
       // If no valid course, navigate to home
       if (course == null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).pushReplacementNamed(core_constants.AppConstants.routeHome);
+          Navigator.of(
+            context,
+          ).pushReplacementNamed(core_constants.AppConstants.routeHome);
         });
-        return const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        );
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
       }
-      
+
       return CourseDetailPage(course: course);
     },
     core_constants.AppConstants.routeInstructorProfile: (context) {
@@ -167,28 +184,25 @@ class AppRoutes {
         return InstructorProfilePage(username: args);
       }
       return const Scaffold(
-        body: Center(
-          child: Text('Invalid instructor username'),
-        ),
+        body: Center(child: Text('Invalid instructor username')),
       );
     },
-    core_constants.AppConstants.routeNotifications: (context) => const NotificationsScreen(),
+    core_constants.AppConstants.routeNotifications: (context) =>
+        const NotificationsScreen(),
     core_constants.AppConstants.routeChatMessages: (context) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       final lessonId = args?['lessonId'] as String?;
       final lessonTitle = args?['lessonTitle'] as String?;
-      
+
       // Use AiChatPage if lessonId is provided, otherwise use old ChatMessagesScreen
       if (lessonId != null && lessonTitle != null) {
         return ChangeNotifierProvider(
           create: (context) => di.sl<AiChatViewModel>(),
-          child: AiChatPage(
-            lessonId: lessonId,
-            lessonTitle: lessonTitle,
-          ),
+          child: AiChatPage(lessonId: lessonId, lessonTitle: lessonTitle),
         );
       }
-      
+
       // Fallback to old screen for non-lesson chats
       return ChatMessagesScreen(
         chat: args?['chat'],
@@ -197,22 +211,31 @@ class AppRoutes {
       );
     },
     core_constants.AppConstants.routeReviews: (context) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      return ReviewsScreen(
-        courseId: args?['courseId'] ?? '',
-        courseName: args?['courseName'],
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      return ChangeNotifierProvider(
+        create: (_) => di.sl<FeedbackViewModel>(),
+        child: ReviewsScreen(
+          courseId: args?['courseId'] ?? '',
+          courseName: args?['courseName'],
+        ),
       );
     },
     core_constants.AppConstants.routeWriteReview: (context) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      return WriteReviewScreen(
-        courseId: args?['courseId'] ?? '',
-        userId: args?['userId'] ?? '',
-        courseName: args?['courseName'],
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      return ChangeNotifierProvider(
+        create: (_) => di.sl<FeedbackViewModel>(),
+        child: WriteReviewScreen(
+          courseId: args?['courseId'] ?? '',
+          userId: args?['userId'] ?? '',
+          courseName: args?['courseName'],
+        ),
       );
     },
     core_constants.AppConstants.routePayment: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
       return ChangeNotifierProvider(
         create: (context) => sl<PaymentViewModel>(),
         child: PaymentPage(
@@ -222,17 +245,24 @@ class AppRoutes {
         ),
       );
     },
-    core_constants.AppConstants.routeEnrollSuccess: (context) => const EnrollSuccessScreen(),
-    core_constants.AppConstants.routeMyCourses: (context) => ChangeNotifierProvider(
-      create: (context) => sl<MyCoursesViewModel>(),
-      child: const MyCoursesPage(),
-    ),
-    core_constants.AppConstants.routeInviteFriends: (context) => const InviteFriendsScreen(),
+    core_constants.AppConstants.routeEnrollSuccess: (context) =>
+        const EnrollSuccessScreen(),
+    core_constants.AppConstants.routeMyCourses: (context) =>
+        ChangeNotifierProvider(
+          create: (context) => sl<MyCoursesViewModel>(),
+          child: const MyCoursesPage(),
+        ),
+    core_constants.AppConstants.routeInviteFriends: (context) =>
+        ChangeNotifierProvider(
+          create: (context) => di.sl<PointsViewModel>(),
+          child: const InviteFriendsScreen(),
+        ),
     core_constants.AppConstants.routeCart: (context) => ChangeNotifierProvider(
       create: (context) => di.sl<CartViewModel>(),
       child: const CartPage(),
     ),
-    core_constants.AppConstants.routeBlogList: (context) => const BlogListPage(),
+    core_constants.AppConstants.routeBlogList: (context) =>
+        const BlogListPage(),
   };
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
@@ -312,11 +342,14 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => SingleMentorDetailsScreen(
-            mentor: args?['mentor'] ?? MentorItem(
-              name: 'Default Mentor',
-              specialization: 'Design',
-              avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=M',
-            ),
+            mentor:
+                args?['mentor'] ??
+                MentorItem(
+                  name: 'Default Mentor',
+                  specialization: 'Design',
+                  avatarUrl:
+                      'https://via.placeholder.com/66x66/000000/FFFFFF?text=M',
+                ),
           ),
           settings: settings,
         );
@@ -343,13 +376,15 @@ class AppRoutes {
             categoryName: '',
           );
         }
-        
+
         // If no valid course, redirect to home
         if (course == null) {
           return MaterialPageRoute(
             builder: (context) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                Navigator.of(context).pushReplacementNamed(core_constants.AppConstants.routeHome);
+                Navigator.of(
+                  context,
+                ).pushReplacementNamed(core_constants.AppConstants.routeHome);
               });
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
@@ -358,7 +393,7 @@ class AppRoutes {
             settings: settings,
           );
         }
-        
+
         return MaterialPageRoute(
           builder: (context) => CourseDetailPage(course: course!),
           settings: settings,
@@ -379,16 +414,7 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case core_constants.AppConstants.routeQuiz:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (context) => QuizScreen(
-            exerciseId: args?['exerciseId'] ?? 0,
-            userId: args?['userId'] ?? 0,
-            exerciseTitle: args?['exerciseTitle'],
-          ),
-          settings: settings,
-        );
+      // route_quiz removed (Exercise flow deprecated)
       case core_constants.AppConstants.routeProfile:
         return MaterialPageRoute(
           builder: (context) => const ProfileScreen(),
@@ -412,19 +438,25 @@ class AppRoutes {
       case core_constants.AppConstants.routeReviews:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-          builder: (context) => ReviewsScreen(
-            courseId: args?['courseId'] ?? '',
-            courseName: args?['courseName'],
+          builder: (context) => ChangeNotifierProvider(
+            create: (_) => di.sl<FeedbackViewModel>(),
+            child: ReviewsScreen(
+              courseId: args?['courseId'] ?? '',
+              courseName: args?['courseName'],
+            ),
           ),
           settings: settings,
         );
       case core_constants.AppConstants.routeWriteReview:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-          builder: (context) => WriteReviewScreen(
-            courseId: args?['courseId'] ?? '',
-            userId: args?['userId'] ?? '',
-            courseName: args?['courseName'],
+          builder: (context) => ChangeNotifierProvider(
+            create: (_) => di.sl<FeedbackViewModel>(),
+            child: WriteReviewScreen(
+              courseId: args?['courseId'] ?? '',
+              userId: args?['userId'] ?? '',
+              courseName: args?['courseName'],
+            ),
           ),
           settings: settings,
         );
@@ -456,7 +488,10 @@ class AppRoutes {
         );
       case core_constants.AppConstants.routeInviteFriends:
         return MaterialPageRoute(
-          builder: (context) => const InviteFriendsScreen(),
+          builder: (context) => ChangeNotifierProvider(
+            create: (context) => di.sl<PointsViewModel>(),
+            child: const InviteFriendsScreen(),
+          ),
           settings: settings,
         );
       case core_constants.AppConstants.routeCart:
@@ -488,9 +523,8 @@ class AppRoutes {
           );
         }
         return MaterialPageRoute(
-          builder: (context) => const Scaffold(
-            body: Center(child: Text('Invalid blog slug')),
-          ),
+          builder: (context) =>
+              const Scaffold(body: Center(child: Text('Invalid blog slug'))),
           settings: settings,
         );
       default:
@@ -503,20 +537,29 @@ class AppRoutes {
 
   // Navigation helpers
   static void navigateToHome(BuildContext context) {
-    Navigator.pushReplacementNamed(context, core_constants.AppConstants.routeHome);
+    Navigator.pushReplacementNamed(
+      context,
+      core_constants.AppConstants.routeHome,
+    );
   }
 
   static void navigateToPopularCourses(BuildContext context) {
-    Navigator.pushNamed(context, core_constants.AppConstants.routePopularCourses);
+    Navigator.pushNamed(
+      context,
+      core_constants.AppConstants.routePopularCourses,
+    );
   }
 
   static void navigateToTopMentors(BuildContext context) {
     Navigator.pushNamed(context, core_constants.AppConstants.routeTopMentors);
   }
 
-  static void navigateToCoursesList(BuildContext context, {String? searchQuery}) {
+  static void navigateToCoursesList(
+    BuildContext context, {
+    String? searchQuery,
+  }) {
     Navigator.pushNamed(
-      context, 
+      context,
       core_constants.AppConstants.routeCoursesList,
       arguments: searchQuery != null ? {'searchQuery': searchQuery} : null,
     );
@@ -526,7 +569,10 @@ class AppRoutes {
     Navigator.pushNamed(context, core_constants.AppConstants.routeMentorsList);
   }
 
-  static void navigateToSingleMentorDetails(BuildContext context, {required MentorItem mentor}) {
+  static void navigateToSingleMentorDetails(
+    BuildContext context, {
+    required MentorItem mentor,
+  }) {
     Navigator.pushNamed(
       context,
       core_constants.AppConstants.routeSingleMentorDetails,
@@ -534,14 +580,16 @@ class AppRoutes {
     );
   }
 
-  static void navigateToCourseDetail(BuildContext context, {required Course course}) {
+  static void navigateToCourseDetail(
+    BuildContext context, {
+    required Course course,
+  }) {
     Navigator.pushNamed(
       context,
       core_constants.AppConstants.routeCourseDetail,
       arguments: {'course': course},
     );
   }
-
 
   static void navigateToLearning(
     BuildContext context, {
@@ -551,10 +599,7 @@ class AppRoutes {
     Navigator.pushNamed(
       context,
       core_constants.AppConstants.routeLearning,
-      arguments: {
-        'lessonId': lessonId,
-        'categoryId': categoryId,
-      },
+      arguments: {'lessonId': lessonId, 'categoryId': categoryId},
     );
   }
 
@@ -579,12 +624,17 @@ class AppRoutes {
     Navigator.pushNamed(context, core_constants.AppConstants.routeProfile);
   }
 
-
   static void navigateToNotifications(BuildContext context) {
-    Navigator.pushNamed(context, core_constants.AppConstants.routeNotifications);
+    Navigator.pushNamed(
+      context,
+      core_constants.AppConstants.routeNotifications,
+    );
   }
 
-  static void navigateToChatMessages(BuildContext context, {required ChatItem chat}) {
+  static void navigateToChatMessages(
+    BuildContext context, {
+    required ChatItem chat,
+  }) {
     Navigator.pushNamed(
       context,
       core_constants.AppConstants.routeChatMessages,
@@ -592,20 +642,17 @@ class AppRoutes {
     );
   }
 
-  static void navigateToAiChat(BuildContext context, {
+  static void navigateToAiChat(
+    BuildContext context, {
     required String lessonId,
     required String lessonTitle,
   }) {
     Navigator.pushNamed(
       context,
       core_constants.AppConstants.routeChatMessages,
-      arguments: {
-        'lessonId': lessonId,
-        'lessonTitle': lessonTitle,
-      },
+      arguments: {'lessonId': lessonId, 'lessonTitle': lessonTitle},
     );
   }
-
 
   static void navigateToCurriculum(BuildContext context) {
     Navigator.pushNamed(context, core_constants.AppConstants.routeCurriculum);
@@ -619,9 +666,9 @@ class AppRoutes {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ReviewsScreen(
-          courseId: courseId,
-          courseName: courseName,
+        builder: (context) => ChangeNotifierProvider(
+          create: (_) => di.sl<FeedbackViewModel>(),
+          child: ReviewsScreen(courseId: courseId, courseName: courseName),
         ),
       ),
     );
@@ -633,14 +680,33 @@ class AppRoutes {
     required String userId,
     String? courseName,
   }) {
+    final FeedbackViewModel? viewModel = Provider.of<FeedbackViewModel?>(
+      context,
+      listen: false,
+    );
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => WriteReviewScreen(
-          courseId: courseId,
-          userId: userId,
-          courseName: courseName,
-        ),
+        builder: (context) {
+          if (viewModel != null) {
+            return ChangeNotifierProvider<FeedbackViewModel>.value(
+              value: viewModel,
+              child: WriteReviewScreen(
+                courseId: courseId,
+                userId: userId,
+                courseName: courseName,
+              ),
+            );
+          }
+          return ChangeNotifierProvider(
+            create: (_) => di.sl<FeedbackViewModel>(),
+            child: WriteReviewScreen(
+              courseId: courseId,
+              userId: userId,
+              courseName: courseName,
+            ),
+          );
+        },
       ),
     );
   }
@@ -663,17 +729,18 @@ class AppRoutes {
   }
 
   static void navigateToEnrollSuccess(BuildContext context) {
-    Navigator.pushNamed(context, core_constants.AppConstants.routeEnrollSuccess);
+    Navigator.pushNamed(
+      context,
+      core_constants.AppConstants.routeEnrollSuccess,
+    );
   }
 
   static void navigateToMyCourses(BuildContext context) {
     Navigator.pushNamed(context, core_constants.AppConstants.routeMyCourses);
   }
 
-
-
-
-  static void navigateToMyCourseOngoingLessons(BuildContext context, {
+  static void navigateToMyCourseOngoingLessons(
+    BuildContext context, {
     required String courseId,
     required String courseTitle,
     required String courseImage,
@@ -689,7 +756,8 @@ class AppRoutes {
     );
   }
 
-  static void navigateToMyCourseOngoingVideo(BuildContext context, {
+  static void navigateToMyCourseOngoingVideo(
+    BuildContext context, {
     required String lessonId,
     required String lessonTitle,
     required String courseTitle,
@@ -711,11 +779,11 @@ class AppRoutes {
     );
   }
 
-
-
-
   static void navigateToInviteFriends(BuildContext context) {
-    Navigator.pushNamed(context, core_constants.AppConstants.routeInviteFriends);
+    Navigator.pushNamed(
+      context,
+      core_constants.AppConstants.routeInviteFriends,
+    );
   }
 
   static void navigateToCart(BuildContext context) {
@@ -726,7 +794,10 @@ class AppRoutes {
     Navigator.pushNamed(context, core_constants.AppConstants.routeBlogList);
   }
 
-  static void navigateToBlogDetail(BuildContext context, {required String slugName}) {
+  static void navigateToBlogDetail(
+    BuildContext context, {
+    required String slugName,
+  }) {
     Navigator.pushNamed(
       context,
       core_constants.AppConstants.routeBlogDetail,
@@ -739,10 +810,6 @@ class AppRoutes {
   }
 
   static void navigateAndClearStack(BuildContext context, String routeName) {
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      routeName,
-      (route) => false,
-    );
+    Navigator.pushNamedAndRemoveUntil(context, routeName, (route) => false);
   }
 }

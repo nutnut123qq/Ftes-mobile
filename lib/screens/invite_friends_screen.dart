@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../models/point_response.dart';
-import '../providers/point_provider.dart';
+import 'package:ftes/features/points/domain/entities/invited_user.dart';
+import 'package:ftes/features/points/presentation/viewmodels/points_viewmodel.dart';
 import '../utils/colors.dart';
 import '../utils/format_utils.dart' as FormatUtils;
 
@@ -19,7 +19,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
     super.initState();
     // Initialize point data when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PointProvider>().initializeInviteFriendsData();
+      context.read<PointsViewModel>().initializeInviteFriendsData();
     });
   }
 
@@ -34,9 +34,10 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
   }
 
   void _shareReferralCode(String referralCode) {
-    final message = 'Tham gia FunnyCodeEdu với mã giới thiệu của tôi: $referralCode\n'
+    final message =
+        'Tham gia FunnyCodeEdu với mã giới thiệu của tôi: $referralCode\n'
         'Tải app tại: [Link download]';
-    
+
     // For now, just copy to clipboard as we don't have share_plus
     Clipboard.setData(ClipboardData(text: message));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -73,12 +74,11 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
         ),
         centerTitle: false,
       ),
-      body: Consumer<PointProvider>(
+      body: Consumer<PointsViewModel>(
         builder: (context, pointProvider, child) {
-          if (pointProvider.isLoadingReferral || pointProvider.isLoadingPoints) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+          if (pointProvider.isLoadingReferral ||
+              pointProvider.isLoadingPoints) {
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (pointProvider.error != null) {
@@ -89,10 +89,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                   Text(
                     pointProvider.error!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 16,
-                    ),
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -116,25 +113,25 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-                    
+
                     // Points Overview Card
                     _buildPointsOverviewCard(pointProvider),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Referral Code Section
                     _buildReferralCodeSection(pointProvider),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Statistics Cards
                     _buildStatisticsRow(pointProvider),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Invited Users List
                     _buildInvitedUsersList(pointProvider),
-                    
+
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -146,9 +143,9 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
     );
   }
 
-  Widget _buildPointsOverviewCard(PointProvider pointProvider) {
+  Widget _buildPointsOverviewCard(PointsViewModel pointProvider) {
     final userPoints = pointProvider.userPoints;
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -193,7 +190,9 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
               Expanded(
                 child: _buildPointDetail(
                   'Khả dụng',
-                  FormatUtils.NumberUtils.formatNumber(userPoints?.availablePoints),
+                  FormatUtils.NumberUtils.formatNumber(
+                    userPoints?.availablePoints,
+                  ),
                   Icons.account_balance_wallet,
                 ),
               ),
@@ -201,7 +200,9 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
               Expanded(
                 child: _buildPointDetail(
                   'Đã rút',
-                  FormatUtils.NumberUtils.formatNumber(userPoints?.withdrawnPoints),
+                  FormatUtils.NumberUtils.formatNumber(
+                    userPoints?.withdrawnPoints,
+                  ),
                   Icons.money_off,
                 ),
               ),
@@ -229,10 +230,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
                 ),
                 Text(
                   value,
@@ -250,10 +248,10 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
     );
   }
 
-  Widget _buildReferralCodeSection(PointProvider pointProvider) {
+  Widget _buildReferralCodeSection(PointsViewModel pointProvider) {
     final referralInfo = pointProvider.referralInfo;
     final referralCode = referralInfo?.referralCode ?? 'Chưa có mã';
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -284,9 +282,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
             decoration: BoxDecoration(
               color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: AppColors.primary.withOpacity(0.3),
-              ),
+              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
             ),
             child: Row(
               children: [
@@ -321,19 +317,16 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
           const SizedBox(height: 12),
           const Text(
             'Chia sẻ mã này để bạn bè đăng ký và nhận điểm thưởng!',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatisticsRow(PointProvider pointProvider) {
+  Widget _buildStatisticsRow(PointsViewModel pointProvider) {
     final referralCount = pointProvider.referralCount;
-    
+
     return Row(
       children: [
         Expanded(
@@ -366,7 +359,12 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -412,9 +410,9 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
     );
   }
 
-  Widget _buildInvitedUsersList(PointProvider pointProvider) {
+  Widget _buildInvitedUsersList(PointsViewModel pointProvider) {
     final invitedUsers = pointProvider.invitedUsers;
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -451,7 +449,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           if (invitedUsers.isEmpty)
             const Center(
               child: Column(
@@ -498,9 +496,9 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
     );
   }
 
-  Widget _buildInvitedUserItem(InvitedUserResponse user) {
-    final isActive = user.status?.toLowerCase() == 'active';
-    
+  Widget _buildInvitedUserItem(InvitedUser user) {
+    final isActive = user.status.toLowerCase() == 'active';
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -510,9 +508,9 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
             height: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isActive 
-                ? Colors.green.withOpacity(0.1)
-                : Colors.grey.withOpacity(0.1),
+              color: isActive
+                  ? Colors.green.withOpacity(0.1)
+                  : Colors.grey.withOpacity(0.1),
             ),
             child: Icon(
               Icons.person,
@@ -526,16 +524,18 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  user.fullName ?? user.username ?? 'Ẩn danh',
+                  user.fullName.isNotEmpty
+                      ? user.fullName
+                      : (user.username.isNotEmpty ? user.username : 'Ẩn danh'),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                if (user.email != null)
+                if (user.email.isNotEmpty)
                   Text(
-                    user.email!,
+                    user.email,
                     style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
@@ -543,7 +543,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                   ),
                 if (user.invitedAt != null)
                   Text(
-                    'Tham gia: ${FormatUtils.DateUtils.formatDate(user.invitedAt!)}',
+                    'Tham gia: ${FormatUtils.DateUtils.formatDate(user.invitedAt!.toIso8601String())}',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -558,9 +558,9 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isActive 
-                    ? Colors.green.withOpacity(0.1)
-                    : Colors.grey.withOpacity(0.1),
+                  color: isActive
+                      ? Colors.green.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -572,7 +572,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                   ),
                 ),
               ),
-              if (user.earnedPoints != null && user.earnedPoints! > 0)
+              if (user.earnedPoints > 0)
                 Text(
                   '+${FormatUtils.NumberUtils.formatNumber(user.earnedPoints)} điểm',
                   style: const TextStyle(
@@ -587,7 +587,4 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
       ),
     );
   }
-
-
-
 }

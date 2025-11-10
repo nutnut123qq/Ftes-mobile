@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/routes/app_routes.dart';
-import 'package:provider/provider.dart';
-import '../providers/feedback_provider.dart';
 import 'package:ftes/core/di/injection_container.dart' as di;
 import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';
-import '../models/feedback_response.dart';
+import 'package:ftes/features/feedback/domain/entities/feedback.dart';
+import 'package:ftes/features/feedback/presentation/viewmodels/feedback_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 class ReviewsScreen extends StatefulWidget {
   final String courseId;
   final String? courseName;
-  
-  const ReviewsScreen({
-    super.key,
-    required this.courseId,
-    this.courseName,
-  });
+
+  const ReviewsScreen({super.key, required this.courseId, this.courseName});
 
   @override
   State<ReviewsScreen> createState() => _ReviewsScreenState();
@@ -40,16 +36,16 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   }
 
   void _loadData() {
-    final provider = context.read<FeedbackProvider>();
+    final provider = context.read<FeedbackViewModel>();
     final courseIdInt = int.tryParse(widget.courseId) ?? 0;
     provider.loadFeedbacks(courseIdInt, refresh: true);
     provider.loadAverageRating(courseIdInt);
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= 
+    if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      final provider = context.read<FeedbackProvider>();
+      final provider = context.read<FeedbackViewModel>();
       if (!provider.isLoadingMore && provider.hasMore) {
         final courseIdInt = int.tryParse(widget.courseId) ?? 0;
         provider.loadFeedbacks(courseIdInt);
@@ -71,7 +67,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9FF),
       body: SafeArea(
-        child: Consumer<FeedbackProvider>(
+        child: Consumer<FeedbackViewModel>(
           builder: (context, provider, child) {
             if (provider.isLoading && provider.feedbacks.isEmpty) {
               return const Center(child: CircularProgressIndicator());
@@ -141,9 +137,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(width: 20),
-            
+
             // Title
             Expanded(
               child: Row(
@@ -174,10 +170,10 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     );
   }
 
-  Widget _buildRatingOverview(FeedbackProvider provider) {
+  Widget _buildRatingOverview(FeedbackViewModel provider) {
     final rating = provider.averageRating;
     final count = provider.totalElements;
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 20),
       child: Column(
@@ -191,9 +187,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Stars
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -201,11 +197,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
               if (index < rating.floor()) {
                 return const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 2),
-                  child: Icon(
-                    Icons.star,
-                    color: Color(0xFFFFD700),
-                    size: 16,
-                  ),
+                  child: Icon(Icons.star, color: Color(0xFFFFD700), size: 16),
                 );
               } else if (index < rating) {
                 return const Padding(
@@ -228,9 +220,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
               }
             }),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Review Count
           Text(
             'Dựa trên $count đánh giá',
@@ -255,7 +247,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         itemBuilder: (context, index) {
           final filter = _filters[index];
           final isSelected = _selectedFilter == filter;
-          
+
           return Container(
             margin: const EdgeInsets.only(right: 16),
             child: GestureDetector(
@@ -265,19 +257,20 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                 });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: isSelected 
-                      ? const Color(0xFF167F71) 
+                  color: isSelected
+                      ? const Color(0xFF167F71)
                       : const Color(0xFFE8F1FF),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Text(
                   filter,
                   style: AppTextStyles.body1.copyWith(
-                    color: isSelected 
-                        ? Colors.white 
-                        : const Color(0xFF202244),
+                    color: isSelected ? Colors.white : const Color(0xFF202244),
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -290,7 +283,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     );
   }
 
-  Widget _buildReviewsList(FeedbackProvider provider) {
+  Widget _buildReviewsList(FeedbackViewModel provider) {
     if (provider.feedbacks.isEmpty && !provider.isLoading) {
       return Padding(
         padding: const EdgeInsets.all(40),
@@ -317,7 +310,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     }
 
     // Filter reviews based on selected filter
-    List<FeedbackResponse> filteredReviews = provider.feedbacks;
+    List<FeedbackEntity> filteredReviews = provider.feedbacks;
     if (_selectedFilter != 'Tất cả') {
       filteredReviews = provider.feedbacks.where((review) {
         switch (_selectedFilter) {
@@ -340,12 +333,14 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(34, 20, 34, 0),
       child: Column(
-        children: filteredReviews.map((review) => _buildReviewCard(review)).toList(),
+        children: filteredReviews
+            .map((review) => _buildReviewCard(review))
+            .toList(),
       ),
     );
   }
 
-  Widget _buildReviewCard(FeedbackResponse review) {
+  Widget _buildReviewCard(FeedbackEntity review) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -395,9 +390,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                         size: 25,
                       ),
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // Name and Rating
               Expanded(
                 child: Column(
@@ -446,9 +441,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Comment
           Text(
             review.comment,
@@ -459,9 +454,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
               height: 1.4,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Footer with date
           Text(
             _formatDate(review.createdAt),
@@ -527,7 +522,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           child: Row(
             children: [
               const SizedBox(width: 20),
-              
+
               // Play Icon
               Container(
                 width: 40,
@@ -542,9 +537,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                   size: 20,
                 ),
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // Button Text
               Expanded(
                 child: Text(
@@ -557,7 +552,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              
+
               const SizedBox(width: 20),
             ],
           ),

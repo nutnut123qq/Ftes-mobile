@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/point_provider.dart';
+import 'package:ftes/features/points/presentation/viewmodels/points_viewmodel.dart';
 import '../utils/colors.dart';
 import '../utils/format_utils.dart' as FormatUtils;
 
@@ -14,7 +14,8 @@ class PointManagementScreen extends StatefulWidget {
 class _PointManagementScreenState extends State<PointManagementScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final TextEditingController _withdrawAmountController = TextEditingController();
+  final TextEditingController _withdrawAmountController =
+      TextEditingController();
   final TextEditingController _bankAccountController = TextEditingController();
   final TextEditingController _bankNameController = TextEditingController();
   final TextEditingController _referralCodeController = TextEditingController();
@@ -23,10 +24,10 @@ class _PointManagementScreenState extends State<PointManagementScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    
+
     // Initialize data when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PointProvider>().refreshAllData();
+      context.read<PointsViewModel>().refreshAllData();
     });
   }
 
@@ -63,7 +64,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
           ],
         ),
       ),
-      body: Consumer<PointProvider>(
+      body: Consumer<PointsViewModel>(
         builder: (context, pointProvider, child) {
           return TabBarView(
             controller: _tabController,
@@ -79,7 +80,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
     );
   }
 
-  Widget _buildPointsTab(PointProvider pointProvider) {
+  Widget _buildPointsTab(PointsViewModel pointProvider) {
     if (pointProvider.isLoadingPoints) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -100,7 +101,10 @@ class _PointManagementScreenState extends State<PointManagementScreen>
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.primary, AppColors.primary.withOpacity(0.7)],
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withOpacity(0.7),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -111,14 +115,13 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 children: [
                   const Text(
                     'Tổng điểm của bạn',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    FormatUtils.NumberUtils.formatPoints(userPoints?.totalPoints),
+                    FormatUtils.NumberUtils.formatPoints(
+                      userPoints?.totalPoints,
+                    ),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 36,
@@ -128,16 +131,18 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Points Breakdown
             Row(
               children: [
                 Expanded(
                   child: _buildStatCard(
                     'Khả dụng',
-                    FormatUtils.NumberUtils.formatNumber(userPoints?.availablePoints),
+                    FormatUtils.NumberUtils.formatNumber(
+                      userPoints?.availablePoints,
+                    ),
                     Colors.green,
                     Icons.account_balance_wallet,
                   ),
@@ -146,7 +151,9 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 Expanded(
                   child: _buildStatCard(
                     'Bị khóa',
-                    FormatUtils.NumberUtils.formatNumber(userPoints?.lockedPoints),
+                    FormatUtils.NumberUtils.formatNumber(
+                      userPoints?.lockedPoints,
+                    ),
                     Colors.orange,
                     Icons.lock,
                   ),
@@ -155,16 +162,18 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 Expanded(
                   child: _buildStatCard(
                     'Đã rút',
-                    FormatUtils.NumberUtils.formatNumber(userPoints?.withdrawnPoints),
+                    FormatUtils.NumberUtils.formatNumber(
+                      userPoints?.withdrawnPoints,
+                    ),
                     Colors.blue,
                     Icons.money_off,
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Last Updated
             if (userPoints?.lastUpdated != null)
               Container(
@@ -193,7 +202,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
     );
   }
 
-  Widget _buildTransactionsTab(PointProvider pointProvider) {
+  Widget _buildTransactionsTab(PointsViewModel pointProvider) {
     if (pointProvider.isLoadingTransactions) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -219,7 +228,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
               itemBuilder: (context, index) {
                 final transaction = transactions[index];
                 final isPositive = (transaction.amount ?? 0) > 0;
-                
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
@@ -239,7 +248,8 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: (isPositive ? Colors.green : Colors.red).withOpacity(0.1),
+                          color: (isPositive ? Colors.green : Colors.red)
+                              .withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -261,7 +271,9 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              FormatUtils.DateUtils.formatDateTime(transaction.createdAt),
+                              FormatUtils.DateUtils.formatDateTime(
+                                transaction.createdAt,
+                              ),
                               style: const TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 14,
@@ -283,9 +295,14 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                           ),
                           if (transaction.status != null)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
-                                color: _getStatusColor(transaction.status!).withOpacity(0.1),
+                                color: _getStatusColor(
+                                  transaction.status!,
+                                ).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -307,7 +324,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
     );
   }
 
-  Widget _buildAffiliateTab(PointProvider pointProvider) {
+  Widget _buildAffiliateTab(PointsViewModel pointProvider) {
     if (pointProvider.isLoadingReferral) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -335,10 +352,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 children: [
                   const Text(
                     'Mã giới thiệu của bạn',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 16),
                   Container(
@@ -346,7 +360,9 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                      border: Border.all(
+                        color: AppColors.primary.withOpacity(0.3),
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -363,7 +379,10 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                           onPressed: () {
                             // Copy referral code functionality
                           },
-                          icon: const Icon(Icons.copy, color: AppColors.primary),
+                          icon: const Icon(
+                            Icons.copy,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ],
                     ),
@@ -371,16 +390,18 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Statistics Row
             Row(
               children: [
                 Expanded(
                   child: _buildStatCard(
                     'Tổng mời',
-                    FormatUtils.NumberUtils.formatNumber(referralCount?.totalInvited),
+                    FormatUtils.NumberUtils.formatNumber(
+                      referralCount?.totalInvited,
+                    ),
                     Colors.blue,
                     Icons.people,
                   ),
@@ -389,7 +410,9 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 Expanded(
                   child: _buildStatCard(
                     'Đã kích hoạt',
-                    FormatUtils.NumberUtils.formatNumber(referralCount?.totalActive),
+                    FormatUtils.NumberUtils.formatNumber(
+                      referralCount?.totalActive,
+                    ),
                     Colors.green,
                     Icons.check_circle,
                   ),
@@ -398,16 +421,18 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 Expanded(
                   child: _buildStatCard(
                     'Thu nhập',
-                    FormatUtils.NumberUtils.formatPoints(referralCount?.totalEarnings),
+                    FormatUtils.NumberUtils.formatPoints(
+                      referralCount?.totalEarnings,
+                    ),
                     Colors.orange,
                     Icons.monetization_on,
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Set New Referral Code
             Container(
               padding: const EdgeInsets.all(20),
@@ -420,10 +445,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 children: [
                   const Text(
                     'Thiết lập mã giới thiệu mới',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -444,65 +466,70 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Invited Users List
             if (invitedUsers.isNotEmpty) ...[
               const Text(
                 'Người đã mời',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 16),
-              ...invitedUsers.map((user) => Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: AppColors.primary.withOpacity(0.1),
-                      child: const Icon(Icons.person, color: AppColors.primary),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              ...invitedUsers
+                  .map(
+                    (user) => Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
                         children: [
-                          Text(
-                            user.fullName ?? user.username ?? 'Ẩn danh',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
+                          CircleAvatar(
+                            backgroundColor: AppColors.primary.withOpacity(0.1),
+                            child: const Icon(
+                              Icons.person,
+                              color: AppColors.primary,
                             ),
                           ),
-                          if (user.email != null)
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user.fullName ?? user.username ?? 'Ẩn danh',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (user.email != null)
+                                  Text(
+                                    user.email!,
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          if (user.earnedPoints != null &&
+                              user.earnedPoints! > 0)
                             Text(
-                              user.email!,
+                              '+${FormatUtils.NumberUtils.formatNumber(user.earnedPoints)}',
                               style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 14,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                         ],
                       ),
                     ),
-                    if (user.earnedPoints != null && user.earnedPoints! > 0)
-                      Text(
-                        '+${FormatUtils.NumberUtils.formatNumber(user.earnedPoints)}',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                  ],
-                ),
-              )).toList(),
+                  )
+                  .toList(),
             ],
           ],
         ),
@@ -510,7 +537,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
     );
   }
 
-  Widget _buildWithdrawTab(PointProvider pointProvider) {
+  Widget _buildWithdrawTab(PointsViewModel pointProvider) {
     final userPoints = pointProvider.userPoints;
     final availablePoints = userPoints?.availablePoints ?? 0;
 
@@ -549,9 +576,9 @@ class _PointManagementScreenState extends State<PointManagementScreen>
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Withdraw Form
           Container(
             padding: const EdgeInsets.all(20),
@@ -564,13 +591,10 @@ class _PointManagementScreenState extends State<PointManagementScreen>
               children: [
                 const Text(
                   'Yêu cầu rút điểm',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 20),
-                
+
                 TextField(
                   controller: _withdrawAmountController,
                   keyboardType: TextInputType.number,
@@ -581,7 +605,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 TextField(
                   controller: _bankAccountController,
                   decoration: const InputDecoration(
@@ -590,7 +614,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 TextField(
                   controller: _bankNameController,
                   decoration: const InputDecoration(
@@ -599,19 +623,19 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: availablePoints > 0 
-                        ? () => _withdrawPoints(pointProvider) 
+                    onPressed: availablePoints > 0
+                        ? () => _withdrawPoints(pointProvider)
                         : null,
                     child: const Text('Yêu cầu rút điểm'),
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 const Text(
                   'Lưu ý: Yêu cầu rút điểm sẽ được xử lý trong vòng 24-48 giờ làm việc.',
                   style: TextStyle(
@@ -627,7 +651,12 @@ class _PointManagementScreenState extends State<PointManagementScreen>
     );
   }
 
-  Widget _buildStatCard(String title, String value, Color color, IconData icon) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -654,10 +683,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           Text(
             title,
@@ -687,7 +713,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
     }
   }
 
-  void _withdrawPoints(PointProvider pointProvider) async {
+  void _withdrawPoints(PointsViewModel pointProvider) async {
     final amount = int.tryParse(_withdrawAmountController.text);
     if (amount == null || amount <= 0) {
       _showErrorDialog('Vui lòng nhập số điểm hợp lệ');
@@ -718,7 +744,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
     }
   }
 
-  void _setReferralCode(PointProvider pointProvider) async {
+  void _setReferralCode(PointsViewModel pointProvider) async {
     final referralCode = _referralCodeController.text.trim();
     if (referralCode.isEmpty) {
       _showErrorDialog('Vui lòng nhập mã giới thiệu');
@@ -731,7 +757,9 @@ class _PointManagementScreenState extends State<PointManagementScreen>
       _showSuccessDialog('Mã giới thiệu đã được cập nhật!');
       _referralCodeController.clear();
     } else {
-      _showErrorDialog(pointProvider.error ?? 'Có lỗi xảy ra khi cập nhật mã giới thiệu');
+      _showErrorDialog(
+        pointProvider.error ?? 'Có lỗi xảy ra khi cập nhật mã giới thiệu',
+      );
     }
   }
 
