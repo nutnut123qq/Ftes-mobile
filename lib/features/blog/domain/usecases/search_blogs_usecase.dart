@@ -12,6 +12,14 @@ class SearchBlogsUseCase implements UseCase<PaginatedBlogResponse, SearchBlogsPa
 
   @override
   Future<Either<Failure, PaginatedBlogResponse>> call(SearchBlogsParams params) async {
+    // Validate input parameters
+    if (params.pageNumber < 1) {
+      return const Left(ValidationFailure('Page number must be >= 1'));
+    }
+    if (params.pageSize < 1 || params.pageSize > 100) {
+      return const Left(ValidationFailure('Page size must be between 1 and 100'));
+    }
+
     return await repository.searchBlogs(
       pageNumber: params.pageNumber,
       pageSize: params.pageSize,

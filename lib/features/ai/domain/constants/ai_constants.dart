@@ -41,5 +41,15 @@ class AiConstants {
 
   // ========== JSON Parsing Threshold ==========
   static const int jsonParsingThreshold = 10000; // Parse on isolate if response > 10KB
+
+  // ========== Cache TTL ==========
+  static const Duration cacheVideoKnowledgeTTL = Duration(hours: 24);
+  static const Duration cacheChatSessionTTL = Duration(days: 7);
+  static const Duration cacheMessagesTTL = Duration(days: 30);
+
+  // ========== Cache Key Prefixes ==========
+  static const String cacheKeyPrefixSession = 'ai_chat_session_';
+  static const String cacheKeyPrefixMessages = 'ai_chat_messages_';
+  static const String cacheKeyPrefixKnowledge = 'ai_chat_knowledge_';
 }
 

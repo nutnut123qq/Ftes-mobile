@@ -4,6 +4,8 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/network/network_info.dart';
 import '../data/datasources/ai_chat_remote_datasource.dart';
 import '../data/datasources/ai_chat_remote_datasource_impl.dart';
+import '../data/datasources/ai_chat_local_datasource.dart';
+import '../data/datasources/ai_chat_local_datasource_impl.dart';
 import '../data/repositories/ai_chat_repository_impl.dart';
 import '../domain/repositories/ai_chat_repository.dart';
 import '../domain/usecases/send_ai_message_usecase.dart';
@@ -18,10 +20,18 @@ class AiInjection {
       () => AiChatRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
     );
 
+    // Local data source
+    sl.registerLazySingleton<AiChatLocalDataSource>(
+      () => AiChatLocalDataSourceImpl(
+        sharedPreferences: sl<SharedPreferences>(),
+      ),
+    );
+
     // Repositories
     sl.registerLazySingleton<AiChatRepository>(
       () => AiChatRepositoryImpl(
         remoteDataSource: sl<AiChatRemoteDataSource>(),
+        localDataSource: sl<AiChatLocalDataSource>(),
         networkInfo: sl<NetworkInfo>(),
       ),
     );
@@ -44,6 +54,7 @@ class AiInjection {
         
         return AiChatViewModel(
           sendAiMessageUseCase: sl<SendAiMessageUseCase>(),
+          localDataSource: sl<AiChatLocalDataSource>(),
           userId: userId,
         );
       },

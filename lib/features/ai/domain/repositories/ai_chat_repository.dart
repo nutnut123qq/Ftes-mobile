@@ -8,7 +8,7 @@ abstract class AiChatRepository {
   /// Check if video has knowledge
   /// 
   /// Args:
-  ///   - videoId: ID of the video/lesson
+  ///   - videoId: Video ID for HLS streaming (e.g., "video_ab83bee3-b55")
   /// 
   /// Returns:
   ///   - Either&lt;Failure, VideoKnowledge&gt; containing knowledge status
@@ -18,7 +18,7 @@ abstract class AiChatRepository {
   /// 
   /// Args:
   ///   - message: User's question
-  ///   - lessonId: ID of the lesson (used as video_id in API)
+  ///   - videoId: Video ID for HLS streaming (e.g., "video_ab83bee3-b55")
   ///   - lessonTitle: Title of the lesson
   ///   - sessionId: Chat session identifier
   ///   - userId: User ID for session tracking
@@ -27,7 +27,7 @@ abstract class AiChatRepository {
   ///   - Either&lt;Failure, AiChatMessage&gt; containing AI response
   Future<Either<Failure, AiChatMessage>> sendMessage({
     required String message,
-    required String lessonId,
+    required String videoId,
     required String lessonTitle,
     required String sessionId,
     required String userId,

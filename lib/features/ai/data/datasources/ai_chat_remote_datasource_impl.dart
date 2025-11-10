@@ -5,9 +5,10 @@ import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/retry_helper.dart';
 import '../models/ai_chat_request_model.dart';
-import '../models/ai_chat_response_model.dart';
 import '../models/video_knowledge_model.dart';
+import '../helpers/ai_json_parser_helper.dart';
 import '../../domain/constants/ai_constants.dart';
 import '../../domain/entities/ai_chat_message.dart';
 import '../../domain/entities/video_knowledge.dart';
@@ -26,31 +27,80 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
       debugPrint('📚 Checking video knowledge: $videoId');
       
       final token = await _getAccessToken();
-      final url = '${AppConstants.aiCheckVideoKnowledgeEndpoint}/$videoId';
+      final url = AppConstants.aiCheckVideoKnowledgeEndpoint;
       debugPrint('🔗 Full URL: $url');
       
-      // Use http package for external API
+      // Use POST request with body containing video_id (snake_case)
       try {
-        final response = await http.get(
-          Uri.parse(url),
-          headers: token != null ? {'Authorization': 'Bearer $token'} : null,
-        );
+        final client = http.Client();
+        try {
+          final request = http.Request('POST', Uri.parse(url));
+          request.headers.addAll({
+            if (token != null) 'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          });
+          request.body = json.encode({
+            'video_id': videoId, // Use snake_case as per API spec
+          });
 
-        debugPrint('📥 Check knowledge response status: ${response.statusCode}');
-        debugPrint('📥 Check knowledge response data: ${response.body}');
-
-        if (response.statusCode == 200) {
-          final jsonData = json.decode(response.body) as Map<String, dynamic>;
-          final model = VideoKnowledgeModel.fromJson(jsonData);
-          return model.toEntity();
-        } else {
-          // If API fails, return true to allow chat
-          debugPrint('⚠️ API returned ${response.statusCode}, allowing chat by default');
-          return const VideoKnowledge(
-            hasKnowledge: true,
-            status: 'error',
-            message: 'API error, allowing chat',
+          // Follow redirects manually
+          final streamedResponse = await client.send(request).timeout(
+            const Duration(seconds: 30),
           );
+          
+          // Handle redirects (307, 301, 302)
+          var currentResponse = await http.Response.fromStream(streamedResponse);
+          var redirectCount = 0;
+          var currentUrl = Uri.parse(url);
+          
+          while (currentResponse.statusCode >= 300 && 
+                 currentResponse.statusCode < 400 && 
+                 redirectCount < 5) {
+            final location = currentResponse.headers['location'];
+            if (location != null) {
+              // Handle relative URLs
+              final redirectUri = location.startsWith('http') 
+                  ? Uri.parse(location)
+                  : currentUrl.resolve(location);
+              
+              debugPrint('🔄 Following redirect ${redirectCount + 1} to: $redirectUri');
+              final redirectRequest = http.Request('POST', redirectUri);
+              redirectRequest.headers.addAll({
+                if (token != null) 'Authorization': 'Bearer $token',
+                'Content-Type': 'application/json',
+              });
+              redirectRequest.body = json.encode({
+                'video_id': videoId,
+              });
+              final redirectStream = await client.send(redirectRequest).timeout(
+                const Duration(seconds: 30),
+              );
+              currentResponse = await http.Response.fromStream(redirectStream);
+              currentUrl = redirectUri;
+              redirectCount++;
+            } else {
+              break;
+            }
+          }
+
+          debugPrint('📥 Check knowledge response status: ${currentResponse.statusCode}');
+          debugPrint('📥 Check knowledge response data: ${currentResponse.body}');
+
+          if (currentResponse.statusCode == 200) {
+            final jsonData = json.decode(currentResponse.body) as Map<String, dynamic>;
+            final model = VideoKnowledgeModel.fromJson(jsonData);
+            return model.toEntity();
+          } else {
+            // If API fails, return true to allow chat
+            debugPrint('⚠️ API returned ${currentResponse.statusCode}, allowing chat by default');
+            return const VideoKnowledge(
+              hasKnowledge: true,
+              status: 'error',
+              message: 'API error, allowing chat',
+            );
+          }
+        } finally {
+          client.close();
         }
       } on Exception catch (e) {
         // If network/CORS error, allow chat by default
@@ -88,22 +138,22 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
   @override
   Future<AiChatMessage> sendMessage({
     required String message,
-    required String lessonId,
+    required String videoId,
     required String lessonTitle,
     required String sessionId,
   }) async {
     try {
       debugPrint('🤖 Sending message to AI: $message');
       debugPrint('📚 Lesson: $lessonTitle');
+      debugPrint('🎬 Video ID: $videoId');
       debugPrint('🔗 Session: $sessionId');
 
       // Create request model
       final request = AiChatRequestModel(
         message: message,
-        videoId: lessonId,
+        videoId: videoId,
         lessonTitle: lessonTitle,
         sessionId: sessionId,
-        prompt: message, // Use message as prompt
       );
 
       // Use full URL for AI API (external service)
@@ -115,41 +165,34 @@ class AiChatRemoteDataSourceImpl implements AiChatRemoteDataSource {
       final dio = _apiClient.dio;
       final token = await _getAccessToken();
       
-      final response = await dio.post(
-        url,
-        data: request.toJson(),
-        options: Options(
-          headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+      // Use retry with exponential backoff
+      final response = await retryWithBackoff(
+        operation: () => dio.post(
+          url,
+          data: request.toJson(),
+          options: Options(
+            headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+            receiveTimeout: const Duration(seconds: 60), // AI can take time
+            sendTimeout: const Duration(seconds: 30),
+          ),
         ),
+        maxRetries: 3,
+        initialDelay: const Duration(seconds: 2),
       );
 
       debugPrint('📥 AI response status: ${response.statusCode}');
       debugPrint('📥 AI response data: ${response.data}');
 
       if (response.statusCode == 200) {
-        // Parse response off main thread if large
         final responseData = response.data as Map<String, dynamic>;
-        final aiResponse = AiChatResponseModel.fromJson(responseData);
-
-        if (aiResponse.success) {
-          final answer = aiResponse.getAnswer();
-
-          if (answer != null && answer.isNotEmpty) {
-            debugPrint('✅ AI response received: ${answer.substring(0, answer.length > 50 ? 50 : answer.length)}...');
-            
-            // Create AI message from response
-            return AiChatMessage.ai(answer);
-          } else {
-            throw ServerException(AiConstants.errorEmptyResponse);
-          }
-        } else {
-          final errorMsg = (aiResponse.error?.isNotEmpty == true)
-              ? aiResponse.error!
-              : (aiResponse.message.isNotEmpty
-                  ? aiResponse.message
-                  : AiConstants.errorSendMessageFailed);
-          throw ServerException(errorMsg);
-        }
+        
+        // Parse in isolate using helper
+        final aiMessage = await AiJsonParserHelper.parseAiChatResponseInIsolate(
+          responseData,
+        );
+        
+        debugPrint('✅ AI response received');
+        return aiMessage;
       } else {
         throw ServerException(
           response.data?['messageDTO']?['message'] ??

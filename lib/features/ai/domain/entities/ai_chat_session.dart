@@ -21,9 +21,12 @@ class AiChatSession extends Equatable {
     this.lastActiveAt,
   });
 
-  /// Create session ID format: default (backend will handle session)
+  /// Create session ID format: unique per lesson
+  /// Format: {userId}_{lessonId} to ensure each lesson has its own session
   static String createSessionId(String userId, String lessonId) {
-    return 'default';
+    // Use lessonId in session ID to ensure each lesson has separate chat history
+    // Backend will still use 'default' for the actual session, but we use this for caching
+    return '${userId}_$lessonId';
   }
 
   /// Create new session

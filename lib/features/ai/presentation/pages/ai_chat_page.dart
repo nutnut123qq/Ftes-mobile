@@ -12,11 +12,15 @@ import '../../domain/usecases/check_video_knowledge_usecase.dart';
 class AiChatPage extends StatefulWidget {
   final String lessonId;
   final String lessonTitle;
+  final String videoId; // Video ID for HLS streaming (e.g., "video_ab83bee3-b55")
+  final String? lessonDescription; // Lesson description to combine with title
 
   const AiChatPage({
     super.key,
     required this.lessonId,
     required this.lessonTitle,
+    required this.videoId,
+    this.lessonDescription,
   });
 
   @override
@@ -50,7 +54,7 @@ class _AiChatPageState extends State<AiChatPage> {
       });
 
       final checkUseCase = di.sl<CheckVideoKnowledgeUseCase>();
-      final result = await checkUseCase.call(widget.lessonId);
+      final result = await checkUseCase.call(widget.videoId);
 
       setState(() {
         _hasKnowledge = result.fold(
@@ -75,7 +79,12 @@ class _AiChatPageState extends State<AiChatPage> {
   void _initializeChat() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<AiChatViewModel>();
-      viewModel.initializeLessonChat(widget.lessonId, widget.lessonTitle);
+      viewModel.initializeLessonChat(
+        widget.lessonId, 
+        widget.lessonTitle, 
+        widget.videoId,
+        widget.lessonDescription,
+      );
     });
   }
 

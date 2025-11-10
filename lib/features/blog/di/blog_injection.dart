@@ -1,7 +1,10 @@
 import 'package:ftes/core/network/api_client.dart';
 import 'package:ftes/core/di/injection_container.dart' as core;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../data/datasources/blog_remote_datasource.dart';
 import '../data/datasources/blog_remote_datasource_impl.dart';
+import '../data/datasources/blog_local_datasource.dart';
+import '../data/datasources/blog_local_datasource_impl.dart';
 import '../data/repositories/blog_repository_impl.dart';
 import '../domain/repositories/blog_repository.dart';
 import '../domain/usecases/get_all_blogs_usecase.dart';
@@ -19,11 +22,15 @@ Future<void> initBlogDependencies() async {
   sl.registerLazySingleton<BlogRemoteDataSource>(
     () => BlogRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
   );
+  sl.registerLazySingleton<BlogLocalDataSource>(
+    () => BlogLocalDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
+  );
 
   // Repository
   sl.registerLazySingleton<BlogRepository>(
     () => BlogRepositoryImpl(
       remoteDataSource: sl(),
+      localDataSource: sl(),
       networkInfo: sl(),
     ),
   );

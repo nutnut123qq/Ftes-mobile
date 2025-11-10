@@ -9,11 +9,13 @@ import 'package:ftes/features/ai/domain/entities/ai_chat_message.dart';
 class ChatMessagesScreen extends StatefulWidget {
   final String? lessonId;
   final String? lessonTitle;
+  final String? videoId; // Video ID for HLS streaming
 
   const ChatMessagesScreen({
     super.key,
     this.lessonId,
     this.lessonTitle,
+    this.videoId,
   });
 
   @override
@@ -29,13 +31,15 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   void initState() {
     super.initState();
     
-    // Initialize AI chat if lessonId is provided
-    if (widget.lessonId != null) {
+    // Initialize AI chat if lessonId and videoId are provided
+    if (widget.lessonId != null && widget.videoId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _aiVm = di.sl<AiChatViewModel>();
         _aiVm!.initializeLessonChat(
           widget.lessonId!,
           widget.lessonTitle ?? 'Lesson',
+          widget.videoId!,
+          null, // lessonDescription not available in ChatMessagesScreen
         );
       });
     }

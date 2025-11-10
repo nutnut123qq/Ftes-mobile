@@ -14,7 +14,7 @@ class SendAiMessageUseCase implements UseCase<AiChatMessage, SendAiMessageParams
   Future<Either<Failure, AiChatMessage>> call(SendAiMessageParams params) async {
     return await repository.sendMessage(
       message: params.message,
-      lessonId: params.lessonId,
+      videoId: params.videoId,
       lessonTitle: params.lessonTitle,
       sessionId: params.sessionId,
       userId: params.userId,
@@ -25,14 +25,14 @@ class SendAiMessageUseCase implements UseCase<AiChatMessage, SendAiMessageParams
 /// Parameters for SendAiMessageUseCase
 class SendAiMessageParams {
   final String message;
-  final String lessonId;
+  final String videoId; // Video ID for HLS streaming (e.g., "video_ab83bee3-b55")
   final String lessonTitle;
   final String sessionId;
   final String userId;
 
   const SendAiMessageParams({
     required this.message,
-    required this.lessonId,
+    required this.videoId,
     required this.lessonTitle,
     required this.sessionId,
     required this.userId,

@@ -173,17 +173,28 @@ class AppRoutes {
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       final lessonId = args?['lessonId'] as String?;
       final lessonTitle = args?['lessonTitle'] as String?;
+      final videoId = args?['videoId'] as String?;
+      final lessonDescription = args?['lessonDescription'] as String?;
 
       // Use AiChatPage if lessonId is provided, otherwise use old ChatMessagesScreen
-      if (lessonId != null && lessonTitle != null) {
+      if (lessonId != null && lessonTitle != null && videoId != null) {
         return ChangeNotifierProvider(
           create: (context) => di.sl<AiChatViewModel>(),
-          child: AiChatPage(lessonId: lessonId, lessonTitle: lessonTitle),
+          child: AiChatPage(
+            lessonId: lessonId,
+            lessonTitle: lessonTitle,
+            videoId: videoId,
+            lessonDescription: lessonDescription,
+          ),
         );
       }
 
-      // Fallback to old screen for non-lesson chats
-      return const ChatMessagesScreen();
+        // Fallback to old screen for non-lesson chats
+        return ChatMessagesScreen(
+          lessonId: lessonId,
+          lessonTitle: lessonTitle,
+          videoId: videoId,
+        );
     },
     core_constants.AppConstants.routeReviews: (context) {
       final args =
@@ -360,6 +371,7 @@ class AppRoutes {
               videoUrl: args?['videoUrl'] ?? '',
               courseId: args?['courseId'] ?? '',
               type: args?['type'], // Pass lesson type
+              descriptions: args?['descriptions'], // Pass lesson descriptions
             ),
           ),
           settings: settings,
@@ -377,10 +389,33 @@ class AppRoutes {
         );
       case core_constants.AppConstants.routeChatMessages:
         final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
+        final lessonId = args?['lessonId'] as String?;
+        final lessonTitle = args?['lessonTitle'] as String?;
+        final videoId = args?['videoId'] as String?;
+        final lessonDescription = args?['lessonDescription'] as String?;
+        
+        // Use AiChatPage if lessonId is provided, otherwise use old ChatMessagesScreen
+        if (lessonId != null && lessonTitle != null && videoId != null) {
+          return MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider(
+              create: (context) => di.sl<AiChatViewModel>(),
+              child: AiChatPage(
+                lessonId: lessonId,
+                lessonTitle: lessonTitle,
+                videoId: videoId,
+                lessonDescription: lessonDescription,
+              ),
+            ),
+            settings: settings,
+          );
+        }
+        
+      // Fallback to old screen for non-lesson chats
+      return MaterialPageRoute(
           builder: (context) => ChatMessagesScreen(
-            lessonId: args?['lessonId'],
-            lessonTitle: args?['lessonTitle'],
+            lessonId: lessonId,
+            lessonTitle: lessonTitle,
+            videoId: videoId,
           ),
           settings: settings,
         );
@@ -580,11 +615,18 @@ class AppRoutes {
     BuildContext context, {
     required String lessonId,
     required String lessonTitle,
+    required String videoId,
+    String? lessonDescription,
   }) {
     Navigator.pushNamed(
       context,
       core_constants.AppConstants.routeChatMessages,
-      arguments: {'lessonId': lessonId, 'lessonTitle': lessonTitle},
+      arguments: {
+        'lessonId': lessonId,
+        'lessonTitle': lessonTitle,
+        'videoId': videoId,
+        'lessonDescription': lessonDescription,
+      },
     );
   }
 
@@ -747,3 +789,4 @@ class AppRoutes {
     Navigator.pushNamedAndRemoveUntil(context, routeName, (route) => false);
   }
 }
+

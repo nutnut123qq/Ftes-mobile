@@ -72,6 +72,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                       'videoUrl': firstLesson.video,
                       'courseId': courseDetail.id,
                       'type': firstLesson.type,
+                      'descriptions': firstLesson.description,
                     },
                   );
                 } else {
@@ -546,6 +547,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   'videoUrl': lesson.video,
                   'courseId': courseDetail.id,
                   'type': lesson.type,
+                  'descriptions': lesson.description,
                 },
               );
             } else {
@@ -606,6 +608,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               'videoUrl': firstLesson.video,
               'courseId': courseDetail.id,
               'type': firstLesson.type,
+              'descriptions': firstLesson.description,
             },
           );
         } else {

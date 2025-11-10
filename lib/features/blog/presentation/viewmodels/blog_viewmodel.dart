@@ -122,21 +122,22 @@ class BlogViewModel extends ChangeNotifier {
   
   /// Expose method to manually refresh categories if needed
   Future<void> refreshCategories() async {
-    _isLoadingCategories = true;
-    notifyListeners();
-    
+    _updateState(isLoadingCategories: true);
+
     final result = await _getBlogCategoriesUseCase(const NoParams());
 
     result.fold(
       (failure) {
-        _errorMessage = _mapFailureToMessage(failure);
-        _isLoadingCategories = false;
-        notifyListeners();
+        _updateState(
+          isLoadingCategories: false,
+          errorMessage: _mapFailureToMessage(failure),
+        );
       },
       (categories) {
-        _categories = categories;
-        _isLoadingCategories = false;
-        notifyListeners();
+        _updateState(
+          isLoadingCategories: false,
+          categories: categories,
+        );
       },
     );
   }
@@ -152,13 +153,11 @@ class BlogViewModel extends ChangeNotifier {
     if (_isLoading && !loadMore) return;
 
     // Set loading state
-    if (loadMore) {
-      _isLoadingMore = true;
-    } else {
-      _isLoading = true;
-    }
-    _errorMessage = null;
-    notifyListeners();
+    _updateState(
+      isLoading: loadMore ? null : true,
+      isLoadingMore: loadMore ? true : null,
+      errorMessage: '',
+    );
 
     final result = await _getAllBlogsUseCase(GetAllBlogsParams(
       pageNumber: pageNumber,
@@ -169,28 +168,24 @@ class BlogViewModel extends ChangeNotifier {
 
     result.fold(
       (failure) {
-        _errorMessage = _mapFailureToMessage(failure);
-        if (loadMore) {
-          _isLoadingMore = false;
-        } else {
-          _isLoading = false;
-        }
-        notifyListeners();
+        _updateState(
+          isLoading: loadMore ? null : false,
+          isLoadingMore: loadMore ? false : null,
+          errorMessage: _mapFailureToMessage(failure),
+        );
       },
       (paginatedResponse) {
-        _currentPage = paginatedResponse.currentPage;
-        _totalPages = paginatedResponse.totalPages;
-        _totalElements = paginatedResponse.totalElements;
-        
         if (loadMore) {
           _blogs.addAll(paginatedResponse.data);
-          _isLoadingMore = false;
-        } else {
-          _blogs = paginatedResponse.data;
-          _isLoading = false;
         }
-        
-        notifyListeners();
+        _updateState(
+          isLoading: loadMore ? null : false,
+          isLoadingMore: loadMore ? false : null,
+          blogs: loadMore ? null : paginatedResponse.data,
+          currentPage: paginatedResponse.currentPage,
+          totalPages: paginatedResponse.totalPages,
+          totalElements: paginatedResponse.totalElements,
+        );
       },
     );
   }
@@ -208,22 +203,25 @@ class BlogViewModel extends ChangeNotifier {
 
   /// Fetch blog detail by slug
   Future<void> fetchBlogBySlug(String slugName) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
+    _updateState(
+      isLoading: true,
+      errorMessage: '',
+    );
 
     final result = await _getBlogBySlugUseCase(slugName);
 
     result.fold(
       (failure) {
-        _errorMessage = _mapFailureToMessage(failure);
-        _isLoading = false;
-        notifyListeners();
+        _updateState(
+          isLoading: false,
+          errorMessage: _mapFailureToMessage(failure),
+        );
       },
       (blog) {
-        _selectedBlog = blog;
-        _isLoading = false;
-        notifyListeners();
+        _updateState(
+          isLoading: false,
+          selectedBlog: blog,
+        );
       },
     );
   }
@@ -239,13 +237,11 @@ class BlogViewModel extends ChangeNotifier {
     if (_isLoading && !loadMore) return;
 
     // Set loading state
-    if (loadMore) {
-      _isLoadingMore = true;
-    } else {
-      _isLoading = true;
-    }
-    _errorMessage = null;
-    notifyListeners();
+    _updateState(
+      isLoading: loadMore ? null : true,
+      isLoadingMore: loadMore ? true : null,
+      errorMessage: '',
+    );
 
     final result = await _searchBlogsUseCase(SearchBlogsParams(
       pageNumber: pageNumber,
@@ -256,52 +252,51 @@ class BlogViewModel extends ChangeNotifier {
 
     result.fold(
       (failure) {
-        _errorMessage = _mapFailureToMessage(failure);
-        if (loadMore) {
-          _isLoadingMore = false;
-        } else {
-          _isLoading = false;
-        }
-        notifyListeners();
+        _updateState(
+          isLoading: loadMore ? null : false,
+          isLoadingMore: loadMore ? false : null,
+          errorMessage: _mapFailureToMessage(failure),
+        );
       },
       (paginatedResponse) {
-        _currentPage = paginatedResponse.currentPage;
-        _totalPages = paginatedResponse.totalPages;
-        _totalElements = paginatedResponse.totalElements;
-        _searchText = title;
-        _selectedCategory = category;
-        
         if (loadMore) {
           _blogs.addAll(paginatedResponse.data);
-          _isLoadingMore = false;
-        } else {
-          _blogs = paginatedResponse.data;
-          _isLoading = false;
         }
-        
-        notifyListeners();
+        _updateState(
+          isLoading: loadMore ? null : false,
+          isLoadingMore: loadMore ? false : null,
+          blogs: loadMore ? null : paginatedResponse.data,
+          currentPage: paginatedResponse.currentPage,
+          totalPages: paginatedResponse.totalPages,
+          totalElements: paginatedResponse.totalElements,
+          searchText: title,
+          selectedCategory: category,
+        );
       },
     );
   }
 
   /// Fetch blog categories
   Future<void> fetchBlogCategories() async {
-    _isLoadingCategories = true;
-    _errorMessage = null;
-    notifyListeners();
+    _updateState(
+      isLoadingCategories: true,
+      errorMessage: '',
+    );
 
     final result = await _getBlogCategoriesUseCase(const NoParams());
 
     result.fold(
       (failure) {
-        _errorMessage = _mapFailureToMessage(failure);
-        _isLoadingCategories = false;
-        notifyListeners();
+        _updateState(
+          isLoadingCategories: false,
+          errorMessage: _mapFailureToMessage(failure),
+        );
       },
       (categories) {
-        _categories = categories;
-        _isLoadingCategories = false;
-        notifyListeners();
+        _updateState(
+          isLoadingCategories: false,
+          categories: categories,
+        );
       },
     );
   }
@@ -320,8 +315,7 @@ class BlogViewModel extends ChangeNotifier {
 
   /// Clear selected blog
   void clearSelectedBlog() {
-    _selectedBlog = null;
-    notifyListeners();
+    _updateState(selectedBlog: null);
   }
 
   /// Refresh blogs
@@ -332,8 +326,77 @@ class BlogViewModel extends ChangeNotifier {
 
   /// Clear error message
   void clearError() {
-    if (_errorMessage != null) {
-      _errorMessage = null;
+    _updateState(errorMessage: '');
+  }
+
+  /// Batch state updates to minimize notifyListeners() calls
+  void _updateState({
+    bool? isLoading,
+    bool? isLoadingMore,
+    bool? isLoadingCategories,
+    List<Blog>? blogs,
+    List<BlogCategory>? categories,
+    Blog? selectedBlog,
+    String? errorMessage,
+    int? currentPage,
+    int? totalPages,
+    int? totalElements,
+    String? selectedCategory,
+    String? searchText,
+  }) {
+    bool hasChanges = false;
+
+    if (isLoading != null && _isLoading != isLoading) {
+      _isLoading = isLoading;
+      hasChanges = true;
+    }
+    if (isLoadingMore != null && _isLoadingMore != isLoadingMore) {
+      _isLoadingMore = isLoadingMore;
+      hasChanges = true;
+    }
+    if (isLoadingCategories != null &&
+        _isLoadingCategories != isLoadingCategories) {
+      _isLoadingCategories = isLoadingCategories;
+      hasChanges = true;
+    }
+    if (blogs != null && _blogs != blogs) {
+      _blogs = blogs;
+      hasChanges = true;
+    }
+    if (categories != null && _categories != categories) {
+      _categories = categories;
+      hasChanges = true;
+    }
+    if (selectedBlog != _selectedBlog) {
+      _selectedBlog = selectedBlog;
+      hasChanges = true;
+    }
+    if (errorMessage != _errorMessage) {
+      _errorMessage = errorMessage;
+      hasChanges = true;
+    }
+    if (currentPage != null && _currentPage != currentPage) {
+      _currentPage = currentPage;
+      hasChanges = true;
+    }
+    if (totalPages != null && _totalPages != totalPages) {
+      _totalPages = totalPages;
+      hasChanges = true;
+    }
+    if (totalElements != null && _totalElements != totalElements) {
+      _totalElements = totalElements;
+      hasChanges = true;
+    }
+    if (selectedCategory != _selectedCategory) {
+      _selectedCategory = selectedCategory;
+      hasChanges = true;
+    }
+    if (searchText != _searchText) {
+      _searchText = searchText;
+      hasChanges = true;
+    }
+
+    if (hasChanges) {
       notifyListeners();
     }
   }
