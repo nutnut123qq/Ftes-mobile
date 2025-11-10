@@ -53,10 +53,10 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
       // If no userId, try to get from user_data
       final userDataString = prefs.getString(AppConstants.keyUserData);
       if (userDataString != null && userDataString.isNotEmpty) {
-        print('⚠️ No userId found, using user_data fallback');
+        // Using user_data fallback
       }
     } catch (e) {
-      print('❌ Error loading userId: $e');
+      // Error loading userId
     }
   }
 
@@ -121,7 +121,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 2),
@@ -264,14 +264,11 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
                 onTap: () {
                   // Navigate to course detail using slugName
                   if (course.slugName != null && course.slugName!.isNotEmpty) {
-                    print('Navigate to course: ${course.slugName}');
                     Navigator.pushNamed(
                       context,
                       AppConstants.routeCourseDetail,
                       arguments: course.slugName,
                     );
-                  } else {
-                    print('⚠️ Course slugName is null or empty: ${course.id}');
                   }
                 },
               ),

@@ -257,7 +257,7 @@ class _CourseFilterScreenState extends State<CourseFilterScreen> {
                       child: Text(
                         option,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: const Color(0xFF202244).withOpacity(0.8),
+                          color: const Color(0xFF202244).withValues(alpha: 0.8),
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                           letterSpacing: 0.2,
@@ -287,7 +287,7 @@ class _CourseFilterScreenState extends State<CourseFilterScreen> {
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(1, 2),
               ),

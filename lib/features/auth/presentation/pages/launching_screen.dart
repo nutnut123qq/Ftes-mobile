@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
-import '../utils/text_styles.dart';
+import 'package:ftes/core/utils/colors.dart';
+import 'package:ftes/core/utils/text_styles.dart';
 
 class LaunchingScreen extends StatelessWidget {
   const LaunchingScreen({super.key});

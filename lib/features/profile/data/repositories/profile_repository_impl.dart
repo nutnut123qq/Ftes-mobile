@@ -150,11 +150,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
           // Use compute isolate for parsing if list is large
           if (coursesList.length > ProfileConstants.instructorCoursesThreshold) {
-            print('⚡ Using compute isolate for parsing ${coursesList.length} instructor courses');
             final courseModels = await compute(parseInstructorCoursesJson, coursesList);
             return courseModels.map((model) => model.toEntity()).toList();
           } else {
-            print('⚡ Parsing instructor courses on main thread (${coursesList.length} courses)');
             final courseModels = parseInstructorCoursesJson(coursesList);
             return courseModels.map((model) => model.toEntity()).toList();
           }

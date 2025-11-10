@@ -73,7 +73,7 @@ class DateUtils {
     }
   }
   
-  /// Format date and time
+  /// Format date and time from String
   static String formatDateTime(String? dateStr) {
     if (dateStr == null) return '';
     
@@ -82,6 +82,18 @@ class DateUtils {
       return '${formatDate(dateStr)} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } catch (e) {
       return dateStr;
+    }
+  }
+  
+  /// Format date and time from DateTime
+  static String formatDateTimeFromDate(DateTime? date) {
+    if (date == null) return '';
+    
+    try {
+      final dateStr = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+      return '$dateStr ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return '';
     }
   }
 }

@@ -17,13 +17,9 @@ class MyCoursesRemoteDataSourceImpl implements MyCoursesRemoteDataSource {
   @override
   Future<List<MyCourseModel>> getUserCourses(String userId) async {
     try {
-      print('📚 Fetching user courses: ${AppConstants.baseUrl}${AppConstants.myCoursesEndpoint}/$userId');
       final response = await _apiClient.get(
         '${AppConstants.myCoursesEndpoint}/$userId',
       );
-      
-      print('📥 Response status: ${response.statusCode}');
-      
       if (response.statusCode == 200) {
         final result = response.data['result'];
         List<dynamic> coursesList;
@@ -37,24 +33,20 @@ class MyCoursesRemoteDataSourceImpl implements MyCoursesRemoteDataSource {
         }
         
         final coursesCount = countCourses(coursesList);
-        print('📊 Total courses: $coursesCount');
         
         // Use compute isolate for large lists to avoid blocking main thread
         if (coursesCount > MyCoursesConstants.defaultCoursesThreshold) {
-          print('⚡ Using compute isolate for JSON parsing');
           return await compute<List<dynamic>, List<MyCourseModel>>(
             parseMyCourseListJson,
             coursesList,
           );
         } else {
-          print('⚡ Parsing JSON on main thread (small list)');
           return parseMyCourseListJson(coursesList);
         }
       } else {
         throw ServerException(response.data['message'] ?? MyCoursesConstants.errorLoadCoursesFailed);
       }
     } catch (e) {
-      print('❌ Get user courses error: $e');
       if (e is AppException) {
         rethrow;
       }
