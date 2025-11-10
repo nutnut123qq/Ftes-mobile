@@ -28,7 +28,7 @@ class LaunchingScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -55,7 +55,7 @@ class LaunchingScreen extends StatelessWidget {
                     Text(
                       'Học tập thông minh',
                       style: AppTextStyles.body1.copyWith(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 18,
                       ),
                     ),
@@ -77,7 +77,7 @@ class LaunchingScreen extends StatelessWidget {
                     Text(
                       'Khám phá thế giới tri thức với ứng dụng học tập thông minh',
                       style: AppTextStyles.body1.copyWith(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 16,
                         height: 1.5,
                       ),
@@ -121,7 +121,7 @@ class LaunchingScreen extends StatelessWidget {
                       child: Text(
                         'Bỏ qua',
                         style: AppTextStyles.body1.copyWith(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 16,
                         ),
                       ),

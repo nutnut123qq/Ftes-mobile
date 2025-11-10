@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show compute, debugPrint;
 import '../../domain/entities/ai_chat_message.dart';
 import '../models/ai_chat_response_model.dart';
 import '../../domain/constants/ai_constants.dart';
@@ -31,7 +31,7 @@ class AiJsonParserHelper {
         throw Exception(errorMsg);
       }
     } catch (e) {
-      print('❌ Parse AI response error: $e');
+      debugPrint('❌ Parse AI response error: $e');
       rethrow;
     }
   }
@@ -45,10 +45,10 @@ class AiJsonParserHelper {
       final jsonString = jsonEncode(json);
       final jsonSize = jsonString.length;
       
-      print('📊 JSON size: $jsonSize bytes');
+      debugPrint('📊 JSON size: $jsonSize bytes');
       
       if (jsonSize > AiConstants.jsonParsingThreshold) {
-        print('⚡ Using compute isolate for JSON parsing (${jsonSize}B > ${AiConstants.jsonParsingThreshold}B)');
+        debugPrint('⚡ Using compute isolate for JSON parsing (${jsonSize}B > ${AiConstants.jsonParsingThreshold}B)');
         
         // Use top-level function for compute
         return await compute(
@@ -56,11 +56,11 @@ class AiJsonParserHelper {
           json,
         );
       } else {
-        print('⚡ Parsing JSON on main thread (${jsonSize}B <= ${AiConstants.jsonParsingThreshold}B)');
+        debugPrint('⚡ Parsing JSON on main thread (${jsonSize}B <= ${AiConstants.jsonParsingThreshold}B)');
         return parseAiChatResponse(json);
       }
     } catch (e) {
-      print('❌ Parse JSON error: $e');
+      debugPrint('❌ Parse JSON error: $e');
       rethrow;
     }
   }
@@ -88,6 +88,8 @@ AiChatMessage _parseAiChatResponseInIsolate(Map<String, dynamic> json) {
       throw Exception(errorMsg);
     }
   } catch (e) {
+    // Note: Cannot use debugPrint in isolate, using print is acceptable here
+    // ignore: avoid_print
     print('Parse AI response in isolate error: $e');
     rethrow;
   }

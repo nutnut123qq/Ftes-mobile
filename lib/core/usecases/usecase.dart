@@ -2,8 +2,8 @@ import 'package:dartz/dartz.dart';
 import '../error/failures.dart';
 
 /// Base use case interface
-abstract class UseCase<Type, Params> {
-  Future<Either<Failure, Type>> call(Params params);
+abstract class UseCase<ReturnType, Params> {
+  Future<Either<Failure, ReturnType>> call(Params params);
 }
 
 /// No parameters use case

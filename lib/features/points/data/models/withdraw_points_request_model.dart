@@ -5,11 +5,11 @@ part 'withdraw_points_request_model.g.dart';
 
 @JsonSerializable()
 class WithdrawPointsRequestModel extends WithdrawPointsCommand {
-  WithdrawPointsRequestModel({
-    required int amount,
-    String? bankAccount,
-    String? bankName,
-  }) : super(amount: amount, bankAccount: bankAccount, bankName: bankName);
+  const WithdrawPointsRequestModel({
+    required super.amount,
+    super.bankAccount,
+    super.bankName,
+  });
 
   factory WithdrawPointsRequestModel.fromJson(Map<String, dynamic> json) =>
       _$WithdrawPointsRequestModelFromJson(json);

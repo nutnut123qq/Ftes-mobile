@@ -58,7 +58,7 @@ class _CongratulationsScreenState extends State<CongratulationsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF202244).withOpacity(0.8),
+      backgroundColor: const Color(0xFF202244).withValues(alpha: 0.8),
       body: SafeArea(
         child: Center(
           child: AnimatedBuilder(
@@ -76,7 +76,7 @@ class _CongratulationsScreenState extends State<CongratulationsScreen>
                       borderRadius: BorderRadius.circular(40),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),

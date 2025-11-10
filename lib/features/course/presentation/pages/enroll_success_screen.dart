@@ -141,7 +141,7 @@ class _EnrollSuccessScreenState extends State<EnrollSuccessScreen>
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -239,7 +239,7 @@ class _EnrollSuccessScreenState extends State<EnrollSuccessScreen>
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               elevation: 8,
-                              shadowColor: Colors.black.withOpacity(0.3),
+                              shadowColor: Colors.black.withValues(alpha: 0.3),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,

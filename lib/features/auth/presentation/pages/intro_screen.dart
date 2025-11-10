@@ -117,7 +117,7 @@ class _IntroScreenState extends State<IntroScreen> {
                         decoration: BoxDecoration(
                           color: index == _currentPage
                               ? AppColors.primary
-                              : AppColors.textSecondary.withOpacity(0.3),
+                              : AppColors.textSecondary.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -212,7 +212,7 @@ class _IntroScreenState extends State<IntroScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: page.color.withOpacity(0.1),
+                color: page.color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(60),
               ),
               child: Icon(

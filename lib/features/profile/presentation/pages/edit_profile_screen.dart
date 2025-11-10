@@ -651,6 +651,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _isUpdating = false;
         });
 
+        if (!mounted) return;
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -665,6 +666,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         setState(() {
           _isUpdating = false;
         });
+        if (!mounted) return;
         _showErrorDialog(profileViewModel.errorMessage ?? 'Cập nhật hồ sơ thất bại');
       }
       
@@ -740,6 +742,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _showErrorDialog('Chức năng upload ảnh chưa hỗ trợ trên web. Vui lòng sử dụng ứng dụng mobile.');
         return;
       } else {
+        if (!mounted) return;
         final profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
         imageUrl = await profileViewModel.uploadImage(filePath: _selectedImage!.path);
       }
@@ -750,7 +753,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _isUploadingImage = false;
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
+        if (!mounted) return;
+        final messenger = ScaffoldMessenger.of(context);
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Upload ảnh thành công!'),
             backgroundColor: Color(0xFF0961F5),

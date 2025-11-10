@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Video-related constants and utilities
 class VideoConstants {
   // Video type detection patterns
@@ -98,7 +100,7 @@ class VideoConstants {
         }
       }
     } catch (e) {
-      print('❌ Error extracting YouTube ID: $e');
+      debugPrint('❌ Error extracting YouTube ID: $e');
     }
     
     return null;
@@ -128,7 +130,7 @@ class VideoConstants {
         }
       }
     } catch (e) {
-      print('❌ Error extracting Vimeo ID: $e');
+      debugPrint('❌ Error extracting Vimeo ID: $e');
     }
     
     return null;

@@ -65,7 +65,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 30,
             offset: const Offset(2, 5),
           ),
@@ -134,7 +134,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -268,7 +268,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -362,7 +362,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
         boxShadow: isEnabled
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(1, 2),
                 ),
@@ -446,6 +446,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
 
       if (success) {
         await viewModel.loadAverageRating(courseIdInt);
+        if (!mounted) return;
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

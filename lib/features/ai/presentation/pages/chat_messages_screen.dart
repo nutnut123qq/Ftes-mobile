@@ -165,7 +165,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         color: AppColors.lightBlue,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: AppColors.borderLight.withOpacity(0.5),
+          color: AppColors.borderLight.withValues(alpha: 0.5),
           width: 1.8,
         ),
       ),
@@ -250,7 +250,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -326,7 +326,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -354,7 +354,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                     message.time,
                     style: AppTextStyles.caption.copyWith(
                       color: isFromUser 
-                          ? Colors.white.withOpacity(0.8) 
+                          ? Colors.white.withValues(alpha: 0.8) 
                           : AppColors.textPrimary,
                       fontWeight: FontWeight.w800,
                       fontSize: 11,
@@ -437,7 +437,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),

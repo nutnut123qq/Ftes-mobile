@@ -117,7 +117,7 @@ class CourseDetailViewModel extends ChangeNotifier {
 
     result.fold(
       (failure) {
-        print('❌ Failed to fetch mentor profile: ${failure.message}');
+        debugPrint('❌ Failed to fetch mentor profile: ${failure.message}');
         _isLoadingProfile = false;
       },
       (profile) {
@@ -136,7 +136,7 @@ class CourseDetailViewModel extends ChangeNotifier {
 
     result.fold(
       (failure) {
-        print('❌ Failed to check enrollment: ${failure.message}');
+        debugPrint('❌ Failed to check enrollment: ${failure.message}');
         _isEnrolled = null;
         _isCheckingEnrollment = false;
       },

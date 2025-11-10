@@ -64,7 +64,7 @@ class CourseVideoViewModel extends ChangeNotifier {
         // Determine video type based on video field
         _videoType = getVideoTypeFromField(videoId);
         
-        print('🎬 Video type detected: $_videoType for video: $videoId');
+        debugPrint('🎬 Video type detected: $_videoType for video: $videoId');
         
         _isCheckingEnrollment = false;
         return true;
@@ -110,7 +110,7 @@ class CourseVideoViewModel extends ChangeNotifier {
 
     result.fold(
       (failure) {
-        print('❌ Failed to check video status: ${failure.message}');
+        debugPrint('❌ Failed to check video status: ${failure.message}');
       },
       (status) {
         _videoStatus = status;

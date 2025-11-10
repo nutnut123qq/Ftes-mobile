@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../error/exceptions.dart';
 import '../constants/app_constants.dart';
@@ -51,13 +52,13 @@ class ApiClient {
           if (_requiresAuthentication(options.path)) {
             final token = _sharedPreferences.getString(AppConstants.keyAccessToken);
             if (token != null) {
-              print('🔑 Adding Bearer token to request: ${token.substring(0, 20)}...');
+              debugPrint('🔑 Adding Bearer token to request: ${token.substring(0, 20)}...');
               options.headers['Authorization'] = 'Bearer $token';
             } else {
-              print('⚠️ No access token found, making request without authentication');
+              debugPrint('⚠️ No access token found, making request without authentication');
             }
           } else {
-            print('🔓 Public endpoint, skipping authentication: ${options.path}');
+            debugPrint('🔓 Public endpoint, skipping authentication: ${options.path}');
           }
           return handler.next(options);
         },
@@ -85,10 +86,10 @@ class ApiClient {
       InterceptorsWrapper(
         onError: (error, handler) {
           // Log chi tiết lỗi để debug
-          print('❌ DioException type: ${error.type}');
-          print('❌ DioException message: ${error.message}');
-          print('❌ Response status: ${error.response?.statusCode}');
-          print('❌ Response data: ${error.response?.data}');
+          debugPrint('❌ DioException type: ${error.type}');
+          debugPrint('❌ DioException message: ${error.message}');
+          debugPrint('❌ Response status: ${error.response?.statusCode}');
+          debugPrint('❌ Response data: ${error.response?.data}');
           
           AppException appException;
           

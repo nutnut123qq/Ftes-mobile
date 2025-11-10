@@ -100,9 +100,12 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               if (price > 0) {
                 final courseId = courseDetail?.id ?? widget.course.id ?? '';
                 if (courseId.isNotEmpty) {
+                  if (!mounted) return;
+                  final messenger = ScaffoldMessenger.of(context);
                   final success = await cartViewModel.addToCart(courseId);
+                  if (!mounted) return;
                   if (success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       const SnackBar(
                         content: Text('Đã thêm khóa học vào giỏ hàng'),
                         backgroundColor: Colors.green,
@@ -110,7 +113,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                       ),
                     );
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       SnackBar(
                         content: Text(cartViewModel.errorMessage ?? 'Không thể thêm vào giỏ hàng'),
                         backgroundColor: Colors.red,
@@ -134,7 +137,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -206,9 +209,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
       // Initialize course detail (fetches course, profile, enrollment in one go)
       await viewModel.initialize(courseIdentifier, userId);
 
-      print('✅ Course detail initialized successfully');
+      debugPrint('✅ Course detail initialized successfully');
     } catch (e) {
-      print('❌ Error initializing course detail: $e');
+      debugPrint('❌ Error initializing course detail: $e');
     }
   }
 
@@ -377,7 +380,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -469,7 +472,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                     child: Text(
                       lesson.description,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 14,
                       ),
                     ),
@@ -641,11 +644,15 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         // Add to cart for paid courses
         final courseId = apiCourse?.id ?? widget.course.id ?? '';
         if (courseId.isNotEmpty) {
+          if (!mounted) return;
+          final messenger = ScaffoldMessenger.of(context);
+          final navigator = Navigator.of(context);
           final success = await cartViewModel.addToCart(courseId);
           
+          if (!mounted) return;
           if (success) {
             // Show success message
-            ScaffoldMessenger.of(context).showSnackBar(
+            messenger.showSnackBar(
               SnackBar(
                 content: const Text('Đã thêm khóa học vào giỏ hàng'),
                 backgroundColor: Colors.green,
@@ -657,14 +664,14 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   label: 'Xem giỏ hàng',
                   textColor: Colors.white,
                   onPressed: () {
-                    Navigator.pushNamed(context, AppConstants.routeCart);
+                    navigator.pushNamed(AppConstants.routeCart);
                   },
                 ),
               ),
             );
           } else {
             // Show error message
-            ScaffoldMessenger.of(context).showSnackBar(
+            messenger.showSnackBar(
               SnackBar(
                 content: Text(cartViewModel.errorMessage ?? 'Không thể thêm vào giỏ hàng'),
                 backgroundColor: Colors.red,
