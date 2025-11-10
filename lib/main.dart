@@ -81,7 +81,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        initialRoute: AppConstants.routeSignIn,
+        initialRoute: AppConstants.routeSplash,
         routes: AppRoutes.routes,
         onGenerateRoute: AppRoutes.onGenerateRoute,
       ),

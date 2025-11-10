@@ -87,7 +87,8 @@ class AppConstants {
   static const String routeCart = '/cart';
   static const String routeBlogList = '/blog-list';
   static const String routeBlogDetail = '/blog-detail';
-
+  static const String routeOnboarding = '/onboarding';
+  
   // API Endpoints
   static const String loginEndpoint = '/api/auth/token';
   static const String registerEndpoint = '/api/users/registration';

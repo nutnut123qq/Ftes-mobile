@@ -4,6 +4,7 @@ import '../screens/loading_screen.dart';
 import '../screens/launching_screen.dart';
 import '../screens/intro_screen.dart';
 import '../screens/lets_you_in_screen.dart';
+import '../screens/onboarding_screen.dart';
 import '../features/auth/routes/auth_routes.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/register_page.dart';
@@ -54,6 +55,7 @@ import '../features/home/domain/entities/course.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
+    core_constants.AppConstants.routeOnboarding: (context) => const OnboardingScreen(),
     core_constants.AppConstants.routeSplash: (context) => const LoadingScreen(),
     core_constants.AppConstants.routeLaunching: (context) =>
         const LaunchingScreen(),

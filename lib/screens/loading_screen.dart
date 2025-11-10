@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ftes/utils/text_styles.dart';
-import 'package:ftes/utils/constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../core/constants/app_constants.dart';
+import '../utils/text_styles.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -21,48 +22,38 @@ class _LoadingScreenState extends State<LoadingScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _logoController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _textController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
-    _logoScaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _logoController,
-      curve: Curves.elasticOut,
-    ));
+    _logoScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
+    );
 
-    _logoOpacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _logoController,
-      curve: const Interval(0.0, 0.7, curve: Curves.easeInOut),
-    ));
+    _logoOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _logoController,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeInOut),
+      ),
+    );
 
-    _textOpacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _textController,
-      curve: Curves.easeInOut,
-    ));
+    _textOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _textController, curve: Curves.easeInOut),
+    );
 
-    _loadingAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _textController,
-      curve: const Interval(0.5, 1.0, curve: Curves.easeInOut),
-    ));
+    _loadingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _textController,
+        curve: const Interval(0.5, 1.0, curve: Curves.easeInOut),
+      ),
+    );
 
     _startAnimations();
   }
@@ -70,12 +61,25 @@ class _LoadingScreenState extends State<LoadingScreen>
   void _startAnimations() async {
     await _logoController.forward();
     await _textController.forward();
-    
-    // Wait for 2 seconds then navigate to home
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (mounted) {
+
+    // Wait for 1.2 seconds then decide next route based on first-launch and auth token
+    await Future.delayed(const Duration(milliseconds: 1200));
+
+    final prefs = await SharedPreferences.getInstance();
+    final isFirstLaunch = prefs.getBool(AppConstants.keyFirstLaunch) ?? true;
+    final token = prefs.getString(AppConstants.keyAccessToken);
+
+    if (!mounted) return;
+
+    if (isFirstLaunch) {
+      Navigator.pushReplacementNamed(context, AppConstants.routeOnboarding);
+      return;
+    }
+
+    if (token != null && token.isNotEmpty) {
       Navigator.pushReplacementNamed(context, AppConstants.routeHome);
+    } else {
+      Navigator.pushReplacementNamed(context, AppConstants.routeSignIn);
     }
   }
 
@@ -89,12 +93,12 @@ class _LoadingScreenState extends State<LoadingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0961F5),
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo with animation
+            // Logo with animation (using app logo image)
             AnimatedBuilder(
               animation: _logoController,
               builder: (context, child) {
@@ -102,67 +106,18 @@ class _LoadingScreenState extends State<LoadingScreen>
                   scale: _logoScaleAnimation.value,
                   child: Opacity(
                     opacity: _logoOpacityAnimation.value,
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.school,
-                        color: Color(0xFF0961F5),
-                        size: 40,
-                      ),
+                    child: Image.asset(
+                      'assets/app_icon.png',
+                      width: 400,
+                      height: 400,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 );
               },
             ),
-            
-            const SizedBox(height: 30),
-            
-            // App name with animation
-            AnimatedBuilder(
-              animation: _textController,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _textOpacityAnimation.value,
-                  child: Column(
-                    children: [
-                      Text(
-                        'FTES',
-                        style: AppTextStyles.heading1.copyWith(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Học tập thông minh cùng FTES',
-                        style: AppTextStyles.body1.copyWith(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            
-            const SizedBox(height: 50),
-            
+            const SizedBox(height: 40),
+
             // Loading indicator with animation
             AnimatedBuilder(
               animation: _textController,
@@ -173,9 +128,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                     width: 30,
                     height: 30,
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.white.withOpacity(0.8),
-                      ),
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
                       strokeWidth: 3,
                     ),
                   ),

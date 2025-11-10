@@ -45,7 +45,7 @@ class InputFieldWidget extends StatelessWidget {
           hintText: hintText,
           hintStyle: AppTextStyles.body1.copyWith(
             color: const Color(0xFF505050),
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
           prefixIcon: Icon(

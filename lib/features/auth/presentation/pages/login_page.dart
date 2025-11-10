@@ -19,7 +19,6 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
-  bool _rememberMe = false;
 
   @override
   void dispose() {
@@ -31,58 +30,197 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      body: SafeArea(
-        child: SingleChildScrollView(
-            padding: EdgeInsets.all(AppConstants.spacingL),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40),
-              // Logo section
-              _buildLogoSection(),
-              const SizedBox(height: 60),
-              // Title section
-              _buildTitleSection(),
-              const SizedBox(height: 40),
-              // Email input field
-              InputFieldWidget(
-                controller: _emailController,
-                hintText: 'Email',
-                icon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
+      backgroundColor: Colors.transparent,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment(0, -0.8), // ~ 50% 10%
+            radius: 1.25, // ~ 125%
+            colors: [Colors.white, Color(0xFF6366F1)],
+            stops: [0.4, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppConstants.spacingL,
+                vertical: AppConstants.spacingXL,
               ),
-              const SizedBox(height: 20),
-              // Password input field
-              InputFieldWidget(
-                controller: _passwordController,
-                hintText: 'Mật khẩu',
-                icon: Icons.lock_outline,
-                isPassword: true,
-                isPasswordVisible: _isPasswordVisible,
-                onTogglePassword: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Header with big logo
+                  Padding(
+                    padding: EdgeInsets.only(
+                      top: AppConstants.spacingL,
+                      bottom: AppConstants.spacingM,
+                    ),
+                    child: Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        height:
+                            300, // 200 (logo) + 2px gap + 20 text height approx
+                        child: Stack(
+                          alignment: Alignment.topCenter,
+                          children: [
+                            Align(
+                              alignment: Alignment.topCenter,
+                              child: Image.asset(
+                                'assets/app_icon.png',
+                                width: 400,
+                                height: 400,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            Positioned(
+                              top: 200, // logo height + small gap
+                              left: 0,
+                              right: 0,
+                              child: Text(
+                                'Khơi mở tiềm năng, Dẫn đầu công nghệ',
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.body1.copyWith(
+                                  color: Colors.black87,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 560),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Email
+                          Material(
+                            color: Colors.white,
+                            elevation: 1.5,
+                            shadowColor: Colors.black12,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: InputFieldWidget(
+                                controller: _emailController,
+                                hintText: 'Email',
+                                icon: Icons.email_outlined,
+                                keyboardType: TextInputType.emailAddress,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          // Password
+                          Material(
+                            color: Colors.white,
+                            elevation: 1.5,
+                            shadowColor: Colors.black12,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: InputFieldWidget(
+                                controller: _passwordController,
+                                hintText: 'Mật khẩu',
+                                icon: Icons.lock_outline,
+                                isPassword: true,
+                                isPasswordVisible: _isPasswordVisible,
+                                onTogglePassword: () {
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildRememberMeAndForgotPasswordRow(),
+                          const SizedBox(height: 18),
+                          _buildSignInButton(),
+                          const SizedBox(height: 18),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 1,
+                                  color: Colors.black12,
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppConstants.spacingS,
+                                ),
+                                child: Text(
+                                  'Hoặc',
+                                  style: AppTextStyles.body1.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  height: 1,
+                                  color: Colors.black12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            height: 56,
+                            child: OutlinedButton(
+                              onPressed: _signInWithGoogle,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.textPrimary,
+                                side: const BorderSide(color: Colors.black12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                backgroundColor: Colors.white,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/google-icon.png',
+                                    width: 22,
+                                    height: 22,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Đăng nhập với Google',
+                                    style: AppTextStyles.button.copyWith(
+                                      color: AppColors.textPrimary,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          _buildDontHaveAccountText(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              // Remember Me and Forgot Password row
-              _buildRememberMeAndForgotPasswordRow(),
-              const SizedBox(height: 30),
-              // Sign In button
-              _buildSignInButton(),
-              const SizedBox(height: 25),
-              // Or Continue With text
-              _buildOrContinueWithText(),
-              const SizedBox(height: 25),
-              // Social media buttons
-              _buildSocialButtons(),
-              const SizedBox(height: 40),
-              // Don't have account text
-              _buildDontHaveAccountText(),
-              const SizedBox(height: 20),
-            ],
+            ),
           ),
         ),
       ),
@@ -152,62 +290,20 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildRememberMeAndForgotPasswordRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Remember Me checkbox
-        Row(
-          children: [
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _rememberMe = !_rememberMe;
-                });
-              },
-              child: Container(
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(
-                  color: _rememberMe ? AppColors.primary : Colors.transparent,
-                  border: Border.all(
-                    color: _rememberMe ? AppColors.primary : AppColors.textSecondary,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: _rememberMe
-                    ? const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 12,
-                      )
-                    : null,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Ghi nhớ đăng nhập',
-              style: AppTextStyles.body1.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-        // Forgot Password link
-        GestureDetector(
-          onTap: () => Navigator.pushNamed(context, AppConstants.routeForgotPassword),
-          child: Text(
-            'Quên mật khẩu?',
-            style: AppTextStyles.body1.copyWith(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-            ),
+    return Align(
+      alignment: Alignment.centerRight,
+      child: GestureDetector(
+        onTap: () =>
+            Navigator.pushNamed(context, AppConstants.routeForgotPassword),
+        child: Text(
+          'Quên mật khẩu?',
+          style: AppTextStyles.body1.copyWith(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -236,7 +332,7 @@ class _LoginPageState extends State<LoginPage> {
                         'Đăng Nhập',
                         style: AppTextStyles.button.copyWith(
                           fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -278,10 +374,7 @@ class _LoginPageState extends State<LoginPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SocialButtonWidget(
-          icon: Icons.g_mobiledata,
-          onTap: _signInWithGoogle,
-        ),
+        SocialButtonWidget(icon: Icons.g_mobiledata, onTap: _signInWithGoogle),
         const SizedBox(width: 20),
       ],
     );
@@ -295,7 +388,7 @@ class _LoginPageState extends State<LoginPage> {
           Text(
             'Chưa có tài khoản? ',
             style: AppTextStyles.body1.copyWith(
-              color: AppColors.textSecondary,
+              color: Colors.white,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
@@ -307,7 +400,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Text(
               'ĐĂNG KÝ',
               style: AppTextStyles.body1.copyWith(
-                color: AppColors.primary,
+                color: Colors.white,
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
@@ -319,9 +412,10 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _signIn() async {
-    if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
+    if (_emailController.text.isNotEmpty &&
+        _passwordController.text.isNotEmpty) {
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-      
+
       final success = await authViewModel.login(
         _emailController.text,
         _passwordController.text,
