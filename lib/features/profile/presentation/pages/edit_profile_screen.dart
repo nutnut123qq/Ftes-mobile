@@ -28,7 +28,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _twitterController = TextEditingController();
 
   final ImagePicker _imagePicker = ImagePicker();
-  Profile? _currentProfile;
   bool _isLoading = true;
   bool _isUpdating = false;
   bool _isUploadingImage = false;
@@ -72,7 +71,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         
         if (profileViewModel.currentProfile != null) {
           setState(() {
-            _currentProfile = profileViewModel.currentProfile;
             _populateFields(profileViewModel.currentProfile!);
             _isLoading = false;
           });
@@ -650,7 +648,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       
       if (success) {
         setState(() {
-          _currentProfile = profileViewModel.currentProfile;
           _isUpdating = false;
         });
 

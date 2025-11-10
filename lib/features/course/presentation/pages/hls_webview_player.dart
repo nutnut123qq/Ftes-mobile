@@ -12,8 +12,6 @@ class HlsWebViewPlayer extends StatefulWidget {
 }
 
 class _HlsWebViewPlayerState extends State<HlsWebViewPlayer> {
-  InAppWebViewController? _controller;
-
   @override
   Widget build(BuildContext context) {
     if (kIsWeb) {
@@ -29,7 +27,6 @@ class _HlsWebViewPlayerState extends State<HlsWebViewPlayer> {
         transparentBackground: true,
       ),
       initialData: InAppWebViewInitialData(data: html),
-      onWebViewCreated: (c) => _controller = c,
     );
   }
 

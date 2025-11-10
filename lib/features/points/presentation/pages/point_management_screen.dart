@@ -262,7 +262,7 @@ class _PointManagementScreenState extends State<PointManagementScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              transaction.description ?? 'Giao dịch',
+                              transaction.description,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16,

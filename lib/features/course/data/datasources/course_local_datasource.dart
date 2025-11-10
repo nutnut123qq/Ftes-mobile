@@ -1,4 +1,3 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/course_detail_model.dart';
 import '../models/video_playlist_model.dart';
 
