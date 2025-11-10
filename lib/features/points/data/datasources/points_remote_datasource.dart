@@ -1,4 +1,3 @@
-import '../models/chart_data_point_model.dart';
 import '../models/invited_user_model.dart';
 import '../models/point_transaction_model.dart';
 import '../models/points_chart_model.dart';

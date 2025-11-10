@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/image_cache_helper.dart';
 import '../../domain/entities/course_detail.dart';
 
@@ -80,5 +79,7 @@ class CourseHeroSection extends StatelessWidget {
     );
   }
 }
+
+
 
 

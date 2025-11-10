@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../models/cart_item_model.dart';
 import '../models/cart_summary_model.dart';
 import '../models/add_to_cart_request_model.dart';
 import '../helpers/json_parser_helper.dart';

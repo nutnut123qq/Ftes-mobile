@@ -9,7 +9,6 @@ import '../../domain/entities/video_status.dart';
 import '../../domain/repositories/course_repository.dart';
 import '../datasources/course_remote_datasource.dart';
 import '../datasources/course_local_datasource.dart';
-import '../models/course_detail_model.dart';
 import '../../domain/constants/course_constants.dart';
 
 /// Repository implementation for Course feature

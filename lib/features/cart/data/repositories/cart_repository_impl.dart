@@ -2,7 +2,6 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/network_info.dart';
-import '../../domain/entities/cart_item.dart';
 import '../../domain/entities/cart_summary.dart';
 import '../../domain/repositories/cart_repository.dart';
 import '../datasources/cart_remote_datasource.dart';

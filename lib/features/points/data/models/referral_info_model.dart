@@ -1,5 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import '../../domain/entities/invited_user.dart';
 import '../../domain/entities/referral_info.dart';
 import 'invited_user_model.dart';
 

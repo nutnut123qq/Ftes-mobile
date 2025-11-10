@@ -160,13 +160,13 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
       String? videoUrl;
       // Tất cả platforms ưu tiên proxy URL (chỉ có proxy là dùng được)
       if (playlist.proxyPlaylistUrl != null && playlist.proxyPlaylistUrl!.isNotEmpty) {
-        videoUrl = playlist.proxyPlaylistUrl!;
+        videoUrl = playlist.proxyPlaylistUrl;
         print('✅ Using proxy URL (only proxy is available): $videoUrl');
-      } else if (playlist.cdnPlaylistUrl != null && playlist.cdnPlaylistUrl!.isNotEmpty) {
-        videoUrl = playlist.cdnPlaylistUrl!;
+      } else if (playlist.cdnPlaylistUrl.isNotEmpty) {
+        videoUrl = playlist.cdnPlaylistUrl;
         print('⚠️ Fallback to CDN URL: $videoUrl');
       } else if (playlist.presignedUrl != null && playlist.presignedUrl!.isNotEmpty) {
-        videoUrl = playlist.presignedUrl!;
+        videoUrl = playlist.presignedUrl;
         print('⚠️ Fallback to presigned URL: $videoUrl');
       } else {
         throw Exception('Không tìm thấy URL video hợp lệ từ server');
@@ -175,16 +175,11 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
       // For web platform, use HLS player directly (HTML5 video supports HLS natively)
       if (kIsWeb) {
         // Web doesn't support VideoPlayerController for HLS properly, use HLS URL directly
-        if (videoUrl != null) {
-          _hlsVideoUrl = videoUrl;
-          print('🌐 Web platform - Using HLS URL for HTML5 video player');
-          print('   $_hlsVideoUrl');
-        } else {
-          throw Exception('Không tìm thấy URL video hợp lệ từ server');
-        }
+        _hlsVideoUrl = videoUrl!;
+        print('🌐 Web platform - Using HLS URL for HTML5 video player');
+        print('   $_hlsVideoUrl');
       } else {
         // Mobile: dùng VideoPlayerController.networkUrl (hỗ trợ HLS native)
-        if (videoUrl != null) {
           print('📱 Mobile platform - Initializing VideoPlayerController with HLS');
           print('   URL: $videoUrl');
           print('⚠️ Note: If publicly available m3u8 fails, backend must transform m3u8 segments to proxy');
@@ -214,7 +209,7 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
           print('🔑 Using headers: Referer + User-Agent for BunnyCDN Hotlink Protection bypass');
           
           _controller = VideoPlayerController.networkUrl(
-            Uri.parse(videoUrl),
+            Uri.parse(videoUrl!),
             httpHeaders: headers,
           );
           
@@ -232,9 +227,6 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
           });
           
           print('✅ Mobile video initialized and playing');
-        } else {
-          throw Exception('Không tìm thấy URL video hợp lệ từ server');
-        }
       }
       
       if (mounted) {

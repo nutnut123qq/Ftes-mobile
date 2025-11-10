@@ -25,17 +25,39 @@ class ApiClient {
     _dio.options.headers['Content-Type'] = 'application/json';
   }
   
+  /// Danh sách các endpoint không cần authentication
+  static const List<String> _publicEndpoints = [
+    '/api/auth/token', // Login
+    '/api/users/registration', // Register
+    '/api/auth/outbound/authentication', // Google Auth
+    '/api/users/mail/forgot-password', // Forgot password
+    '/api/users/mail/resend-verify-code', // Resend verify code
+    '/api/auth/verify-email-code', // Verify email code
+    '/api/users/reset-password', // Reset password
+    '/api/users/active-user', // Active user
+  ];
+
+  /// Kiểm tra endpoint có cần authentication không
+  bool _requiresAuthentication(String path) {
+    return !_publicEndpoints.contains(path);
+  }
+
   void _setupInterceptors() {
     _dio.interceptors.addAll([
       // Authentication interceptor
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final token = _sharedPreferences.getString(AppConstants.keyAccessToken);
-          if (token != null) {
-            print('🔑 Adding Bearer token to request: ${token.substring(0, 20)}...');
-            options.headers['Authorization'] = 'Bearer $token';
+          // Chỉ thêm token nếu endpoint yêu cầu authentication
+          if (_requiresAuthentication(options.path)) {
+            final token = _sharedPreferences.getString(AppConstants.keyAccessToken);
+            if (token != null) {
+              print('🔑 Adding Bearer token to request: ${token.substring(0, 20)}...');
+              options.headers['Authorization'] = 'Bearer $token';
+            } else {
+              print('⚠️ No access token found, making request without authentication');
+            }
           } else {
-            print('⚠️ No access token found, making request without authentication');
+            print('🔓 Public endpoint, skipping authentication: ${options.path}');
           }
           return handler.next(options);
         },
@@ -62,6 +84,14 @@ class ApiClient {
       // Error handling interceptor
       InterceptorsWrapper(
         onError: (error, handler) {
+          // Log chi tiết lỗi để debug
+          print('❌ DioException type: ${error.type}');
+          print('❌ DioException message: ${error.message}');
+          print('❌ Response status: ${error.response?.statusCode}');
+          print('❌ Response data: ${error.response?.data}');
+          
+          AppException appException;
+          
           if (error.response != null) {
             // Handle HTTP errors
             final statusCode = error.response!.statusCode;
@@ -76,30 +106,51 @@ class ApiClient {
             
             switch (statusCode) {
               case 400:
-                throw ValidationException(message);
+                appException = ValidationException(message);
+                break;
               case 401:
-                throw AuthException('Unauthorized: $message');
+                appException = AuthException('Unauthorized: $message');
+                break;
               case 403:
-                throw AuthException('Forbidden: $message');
+                appException = AuthException('Forbidden: $message');
+                break;
               case 404:
-                throw ServerException('Not found: $message');
+                appException = ServerException('Not found: $message');
+                break;
               case 500:
-                throw ServerException('Server error: $message');
+                appException = ServerException('Server error: $message');
+                break;
               default:
-                throw ServerException('HTTP $statusCode: $message');
+                appException = ServerException('HTTP $statusCode: $message');
             }
           } else {
             // Handle network errors
+            String errorMessage;
             if (error.type == DioExceptionType.connectionTimeout ||
                 error.type == DioExceptionType.receiveTimeout ||
                 error.type == DioExceptionType.sendTimeout) {
-              throw NetworkException('Connection timeout');
+              errorMessage = 'Connection timeout';
             } else if (error.type == DioExceptionType.connectionError) {
-              throw NetworkException('No internet connection');
+              errorMessage = 'No internet connection';
+            } else if (error.type == DioExceptionType.badResponse) {
+              errorMessage = 'Bad response from server';
+            } else if (error.type == DioExceptionType.cancel) {
+              errorMessage = 'Request cancelled';
             } else {
-              throw NetworkException('Network error: ${error.message}');
+              // Xử lý trường hợp error.message null
+              final message = error.message ?? 'Unknown network error';
+              errorMessage = 'Network error: $message';
             }
+            appException = NetworkException(errorMessage);
           }
+          
+          // Reject với DioException mới chứa AppException
+          return handler.reject(DioException(
+            requestOptions: error.requestOptions,
+            error: appException,
+            response: error.response,
+            type: error.type,
+          ));
         },
       ),
     ]);
@@ -184,7 +235,13 @@ class ApiClient {
     if (error is AppException) {
       return error;
     } else if (error is DioException) {
-      return NetworkException('Network error: ${error.message}');
+      // Nếu DioException.error là AppException, trả về nó
+      if (error.error is AppException) {
+        return error.error as AppException;
+      }
+      // Xử lý trường hợp error.message null
+      final message = error.message ?? 'Unknown network error';
+      return NetworkException('Network error: $message');
     } else {
       return ServerException('Unexpected error: $error');
     }
