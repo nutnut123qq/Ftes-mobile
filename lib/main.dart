@@ -4,6 +4,7 @@ import 'routes/app_routes.dart';
 import 'core/utils/colors.dart';
 import 'core/constants/app_constants.dart';
 import 'core/di/injection_container.dart' as di;
+import 'core/utils/auth_helper.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/auth/presentation/viewmodels/register_viewmodel.dart';
 import 'features/course/presentation/viewmodels/course_detail_viewmodel.dart';
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
         // ),
       ],
       child: MaterialApp(
+        navigatorKey: AuthHelper.navigatorKey,
         title: AppConstants.appName,
         debugShowCheckedModeBanner: false,
         theme: ThemeData(

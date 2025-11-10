@@ -190,11 +190,11 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
+          color: Colors.white.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -225,7 +225,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 30,
                     spreadRadius: 5,
                   ),
@@ -270,10 +270,10 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               width: 1.5,
             ),
           ),
@@ -335,16 +335,16 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.98),
-                      Colors.white.withOpacity(0.92),
+                      Colors.white.withValues(alpha: 0.98),
+                      Colors.white.withValues(alpha: 0.92),
                     ],
                   )
                 : LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.9),
-                      Colors.white.withOpacity(0.8),
+                      Colors.white.withValues(alpha: 0.9),
+                      Colors.white.withValues(alpha: 0.8),
                     ],
                   ),
         borderRadius: BorderRadius.circular(18),
@@ -352,15 +352,15 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
           color: isFocused
               ? AppColors.primary
               : hasValue
-                  ? AppColors.primary.withOpacity(0.6)
-                  : Colors.white.withOpacity(0.7),
+                  ? AppColors.primary.withValues(alpha: 0.6)
+                  : Colors.white.withValues(alpha: 0.7),
           width: isFocused ? 3 : 2.5,
         ),
         boxShadow: [
           BoxShadow(
             color: isFocused
-                ? AppColors.primary.withOpacity(0.35)
-                : Colors.black.withOpacity(0.12),
+                ? AppColors.primary.withValues(alpha: 0.35)
+                : Colors.black.withValues(alpha: 0.12),
             blurRadius: isFocused ? 16 : 10,
             spreadRadius: isFocused ? 2.5 : 1,
             offset: const Offset(0, 5),
@@ -467,7 +467,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage>
             boxShadow: isEnabled
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.4),
+                      color: AppColors.primary.withValues(alpha: 0.4),
                       blurRadius: 15,
                       offset: const Offset(0, 5),
                     ),

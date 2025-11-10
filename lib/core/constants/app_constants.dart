@@ -107,8 +107,8 @@ class AppConstants {
   static const String logoutEndpoint = '/auth/logout';
   static const String forgotPasswordEndpoint = '/auth/forgot-password';
   static const String activeUserEndpoint = '/auth/activate';
+  static const String introspectEndpoint = '/api/auth/introspect';
   static const String myInfoEndpoint = '/user/me';
-  static const String introspectEndpoint = '/auth/introspect';
   static const String verifyOtpEndpoint = '/auth/verify-otp';
   static const String sendSecretKeyEndpoint = '/auth/2fa/send-secret';
   static const String verifyUpdateEmailEndpoint = '/auth/verify-update-email';

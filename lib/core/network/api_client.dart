@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../error/exceptions.dart';
 import '../constants/app_constants.dart';
+import '../services/token_validator.dart';
+import '../utils/auth_helper.dart';
 
 /// API Client using Dio for HTTP requests
 class ApiClient {
@@ -15,6 +18,7 @@ class ApiClient {
   
   ApiClient({required Dio dio, required SharedPreferences sharedPreferences}) 
       : _dio = dio, _sharedPreferences = sharedPreferences {
+    _tokenValidator = TokenValidator.getInstance(dio);
     _setupDio();
     _setupInterceptors();
   }
@@ -36,7 +40,14 @@ class ApiClient {
     '/api/auth/verify-email-code', // Verify email code
     '/api/users/reset-password', // Reset password
     '/api/users/active-user', // Active user
+    '/api/auth/introspect', // Introspect (used to check token)
   ];
+  
+  // Token validator instance
+  late final TokenValidator _tokenValidator;
+  
+  // Flag to prevent multiple logout attempts
+  bool _isLoggingOut = false;
 
   /// Kiểm tra endpoint có cần authentication không
   bool _requiresAuthentication(String path) {
@@ -62,9 +73,38 @@ class ApiClient {
           }
           return handler.next(options);
         },
-        onError: (error, handler) {
+        onError: (error, handler) async {
+          // Handle 401 Unauthorized - check token validity
           if (error.response?.statusCode == 401) {
-            // Handle token expiration or unauthorized access
+            final token = _sharedPreferences.getString(AppConstants.keyAccessToken);
+            
+            if (token != null && !_isLoggingOut) {
+              debugPrint('🔍 Received 401, validating token...');
+              
+              // Validate token using introspect
+              final isValid = await _tokenValidator.validateToken(token);
+              
+              if (!isValid) {
+                debugPrint('❌ Token is invalid, logging out...');
+                _isLoggingOut = true;
+                
+                // Clear token validator cache
+                _tokenValidator.clearCache();
+                
+                // Logout and navigate to login
+                unawaited(_handleTokenExpired());
+                
+                return handler.reject(DioException(
+                  requestOptions: error.requestOptions,
+                  error: AuthException('Token expired or invalid'),
+                  response: error.response,
+                ));
+              } else {
+                debugPrint('⚠️ Token is valid but request returned 401 - may be permission issue');
+              }
+            }
+            
+            // Return 401 error
             return handler.reject(DioException(
               requestOptions: error.requestOptions,
               error: AuthException('Unauthorized access'),
@@ -231,6 +271,25 @@ class ApiClient {
     }
   }
   
+  /// Handle token expired - logout and navigate to login
+  Future<void> _handleTokenExpired() async {
+    try {
+      await AuthHelper.logoutAndNavigateToLogin();
+    } catch (e) {
+      debugPrint('❌ Error during token expiration handling: $e');
+    } finally {
+      // Reset flag after a delay to allow navigation
+      Future.delayed(const Duration(seconds: 2), () {
+        _isLoggingOut = false;
+      });
+    }
+  }
+  
+  /// Clear token validator cache (useful after login/logout)
+  void clearTokenCache() {
+    _tokenValidator.clearCache();
+  }
+
   /// Handle and convert errors to appropriate exceptions
   Exception _handleError(dynamic error) {
     if (error is AppException) {

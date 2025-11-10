@@ -85,7 +85,7 @@ class LessonItem extends StatelessWidget {
                   padding: const EdgeInsets.all(6),
                   margin: const EdgeInsets.only(left: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0961F5).withOpacity(0.1),
+                    color: const Color(0xFF0961F5).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Icon(
