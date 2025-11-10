@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/retry_helper.dart';
 import '../models/blog_model.dart';
 import '../models/blog_category_model.dart';
 import '../models/paginated_blog_response_model.dart';
@@ -21,7 +22,11 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
     try {
       debugPrint('📂 Fetching blog categories: ${AppConstants.baseUrl}${AppConstants.blogCategoriesEndpoint}');
       
-      final response = await _apiClient.get(AppConstants.blogCategoriesEndpoint);
+      final response = await retryWithBackoff(
+        operation: () => _apiClient.get(AppConstants.blogCategoriesEndpoint),
+        maxRetries: BlogConstants.maxRetries,
+        initialDelay: BlogConstants.retryDelay,
+      );
       
       debugPrint('📥 Response status: ${response.statusCode}');
       
@@ -72,14 +77,18 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
       debugPrint('📚 Fetching all blogs: ${AppConstants.baseUrl}${AppConstants.blogsEndpoint}');
       debugPrint('📊 Page: $pageNumber, Size: $pageSize, Sort: $sortField $sortOrder');
       
-      final response = await _apiClient.get(
-        AppConstants.blogsEndpoint,
-        queryParameters: {
-          'pageNumber': pageNumber.toString(),
-          'pageSize': pageSize.toString(),
-          'sortField': sortField,
-          'sortOrder': sortOrder,
-        },
+      final response = await retryWithBackoff(
+        operation: () => _apiClient.get(
+          AppConstants.blogsEndpoint,
+          queryParameters: {
+            'pageNumber': pageNumber.toString(),
+            'pageSize': pageSize.toString(),
+            'sortField': sortField,
+            'sortOrder': sortOrder,
+          },
+        ),
+        maxRetries: BlogConstants.maxRetries,
+        initialDelay: BlogConstants.retryDelay,
       );
       
       debugPrint('📥 Response status: ${response.statusCode}');
@@ -157,9 +166,13 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
         queryParams['category'] = category;
       }
       
-      final response = await _apiClient.get(
-        AppConstants.blogsSearchEndpoint,
-        queryParameters: queryParams,
+      final response = await retryWithBackoff(
+        operation: () => _apiClient.get(
+          AppConstants.blogsSearchEndpoint,
+          queryParameters: queryParams,
+        ),
+        maxRetries: BlogConstants.maxRetries,
+        initialDelay: BlogConstants.retryDelay,
       );
       
       debugPrint('📥 Response status: ${response.statusCode}');
@@ -215,7 +228,11 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
     try {
       debugPrint('📖 Fetching blog by ID: ${AppConstants.baseUrl}${AppConstants.blogsEndpoint}/$blogId');
       
-      final response = await _apiClient.get('${AppConstants.blogsEndpoint}/$blogId');
+      final response = await retryWithBackoff(
+        operation: () => _apiClient.get('${AppConstants.blogsEndpoint}/$blogId'),
+        maxRetries: BlogConstants.maxRetries,
+        initialDelay: BlogConstants.retryDelay,
+      );
       
       debugPrint('📥 Response status: ${response.statusCode}');
       
@@ -224,7 +241,9 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
         if (success == true) {
           final result = response.data['result'];
           if (result != null) {
-            return BlogModel.fromJson(result);
+            // Always parse in isolate to avoid blocking UI thread
+            // Blog content can be large (HTML content)
+            return await compute(parseBlogModelJson, result as Map<String, dynamic>);
           } else {
             throw const ServerException(BlogConstants.errorInvalidData);
           }
@@ -248,7 +267,11 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
     try {
       debugPrint('📖 Fetching blog by slug: ${AppConstants.baseUrl}${AppConstants.blogsEndpoint}/$slugName');
       
-      final response = await _apiClient.get('${AppConstants.blogsEndpoint}/$slugName');
+      final response = await retryWithBackoff(
+        operation: () => _apiClient.get('${AppConstants.blogsEndpoint}/$slugName'),
+        maxRetries: BlogConstants.maxRetries,
+        initialDelay: BlogConstants.retryDelay,
+      );
       
       debugPrint('📥 Response status: ${response.statusCode}');
       
@@ -257,7 +280,9 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
         if (success == true) {
           final result = response.data['result'];
           if (result != null) {
-            return BlogModel.fromJson(result);
+            // Always parse in isolate to avoid blocking UI thread
+            // Blog content can be large (HTML content)
+            return await compute(parseBlogModelJson, result as Map<String, dynamic>);
           } else {
             throw const ServerException(BlogConstants.errorInvalidData);
           }

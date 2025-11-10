@@ -1,13 +1,16 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/ai_chat_message.dart';
 import '../../domain/usecases/send_ai_message_usecase.dart';
 import '../../domain/constants/ai_constants.dart';
 import '../../domain/entities/ai_chat_session.dart';
 import '../../../../core/error/failures.dart';
+import '../../data/datasources/ai_chat_local_datasource.dart';
 
 /// ViewModel for AI Chat feature with async optimization
 class AiChatViewModel extends ChangeNotifier {
   final SendAiMessageUseCase sendAiMessageUseCase;
+  final AiChatLocalDataSource localDataSource;
   final String userId;
 
   // State
@@ -15,9 +18,15 @@ class AiChatViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   AiChatSession? _currentSession;
+  String? _videoId; // Video ID for HLS streaming
+  String? _lessonDescription; // Lesson description to combine with title
+  
+  // Batch state updates
+  bool _isNotifying = false;
 
   AiChatViewModel({
     required this.sendAiMessageUseCase,
+    required this.localDataSource,
     required this.userId,
   });
 
@@ -27,17 +36,46 @@ class AiChatViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   /// Initialize chat session for a specific lesson
-  Future<void> initializeLessonChat(String lessonId, String lessonTitle) async {
+  Future<void> initializeLessonChat(
+    String lessonId, 
+    String lessonTitle, 
+    String videoId,
+    String? lessonDescription,
+  ) async {
     try {
+      // Clear previous session messages first to avoid showing messages from different lessons
+      _messages = [];
+      _errorMessage = null;
+      _isLoading = false;
+      
+      _videoId = videoId;
+      _lessonDescription = lessonDescription;
       _currentSession = AiChatSession.create(
         userId: userId,
         lessonId: lessonId,
         lessonTitle: lessonTitle,
       );
 
-      _messages = _currentSession!.messages;
-      _errorMessage = null;
-      notifyListeners();
+      // Load cached messages for this specific lesson
+      final cached = await localDataSource.getCachedMessages(
+        _currentSession!.sessionId,
+      );
+      
+      if (cached != null && cached.isNotEmpty) {
+        // Verify cached messages belong to the same lesson
+        _messages = cached;
+      } else {
+        // Start fresh with welcome message
+        _messages = _currentSession!.messages;
+      }
+
+      // Cache session
+      unawaited(
+        localDataSource.cacheChatSession(_currentSession!.sessionId, _currentSession!)
+          .catchError((_) {}),
+      );
+
+      _notifyIfNeeded();
     } catch (e) {
       debugPrint('❌ Initialize lesson chat error: $e');
       _setError('Không thể khởi tạo chat');
@@ -46,7 +84,15 @@ class AiChatViewModel extends ChangeNotifier {
 
   /// Send a message to AI (async/await optimization)
   Future<void> sendMessage(String content) async {
-    if (content.trim().isEmpty || _currentSession == null) {
+    // Input validation
+    final trimmedContent = content.trim();
+    if (trimmedContent.isEmpty || _currentSession == null) {
+      return;
+    }
+
+    // Validate message length (max 5000 chars)
+    if (trimmedContent.length > 5000) {
+      _setError('Tin nhắn quá dài (tối đa 5000 ký tự)');
       return;
     }
 
@@ -56,20 +102,30 @@ class AiChatViewModel extends ChangeNotifier {
     }
 
     // Add user message immediately
-    final userMessage = AiChatMessage.user(content);
+    final userMessage = AiChatMessage.user(trimmedContent);
     _addMessage(userMessage);
 
     // Send to AI asynchronously
     _setLoading(true);
     _clearError();
 
+    if (_videoId == null || _videoId!.isEmpty) {
+      _setError('Video ID không hợp lệ');
+      return;
+    }
+
     try {
+      // Combine lesson title with description: "Buổi N - Description"
+      final fullLessonTitle = _lessonDescription != null && _lessonDescription!.isNotEmpty
+          ? '${_currentSession!.lessonTitle} - $_lessonDescription'
+          : _currentSession!.lessonTitle;
+      
       final result = await sendAiMessageUseCase.call(
         SendAiMessageParams(
-          message: content,
-          lessonId: _currentSession!.lessonId,
-          lessonTitle: _currentSession!.lessonTitle,
-          sessionId: _currentSession!.sessionId,
+          message: trimmedContent,
+          videoId: _videoId!,
+          lessonTitle: fullLessonTitle,
+          sessionId: 'default', // API requires 'default' session ID
           userId: userId,
         ),
       );
@@ -81,6 +137,16 @@ class AiChatViewModel extends ChangeNotifier {
           _clearError();
           _addMessage(aiMessage);
           _currentSession = _currentSession!.addMessage(aiMessage);
+          
+          // Cache updated messages (async, don't block)
+          if (_currentSession != null) {
+            unawaited(
+              localDataSource.cacheMessages(
+                _currentSession!.sessionId,
+                _messages,
+              ).catchError((_) {}),
+            );
+          }
         },
       );
     } catch (e) {
@@ -94,26 +160,37 @@ class AiChatViewModel extends ChangeNotifier {
   /// Add message to list
   void _addMessage(AiChatMessage message) {
     _messages = [..._messages, message];
-    notifyListeners();
+    _notifyIfNeeded();
   }
 
   /// Set loading state
   void _setLoading(bool loading) {
     _isLoading = loading;
-    notifyListeners();
+    _notifyIfNeeded();
   }
 
   /// Set error message
   void _setError(String error) {
     _errorMessage = error;
     _isLoading = false;
-    notifyListeners();
+    _notifyIfNeeded();
   }
 
   /// Clear error message
   void _clearError() {
     _errorMessage = null;
-    notifyListeners();
+    _notifyIfNeeded();
+  }
+
+  /// Batch state updates to reduce rebuilds
+  void _notifyIfNeeded() {
+    if (!_isNotifying) {
+      _isNotifying = true;
+      Future.microtask(() {
+        notifyListeners();
+        _isNotifying = false;
+      });
+    }
   }
 
   /// Handle failure

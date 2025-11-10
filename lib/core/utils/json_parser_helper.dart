@@ -41,4 +41,10 @@ List<BlogCategoryModel> parseBlogCategoryListWithParams(BlogCategoryParseParams 
   return parseBlogCategoryListJson(params.jsonList);
 }
 
+/// Top-level function for parsing single blog JSON in compute isolate
+/// This function must be top-level or static to work with compute()
+BlogModel parseBlogModelJson(Map<String, dynamic> json) {
+  return BlogModel.fromJson(json);
+}
+
 

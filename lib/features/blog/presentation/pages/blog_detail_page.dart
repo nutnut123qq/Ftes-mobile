@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../viewmodels/blog_viewmodel.dart';
 import '../../domain/constants/blog_constants.dart';
 import '../../../../core/utils/colors.dart';
+import '../../../../core/utils/blog_helpers.dart';
 
 class BlogDetailPage extends StatefulWidget {
   final String slugName;
@@ -25,30 +26,6 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
     });
   }
 
-  String _formatDate(DateTime? date) {
-    if (date == null) return BlogConstants.unknownDate;
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      if (difference.inHours == 0) {
-        return '${difference.inMinutes} ${BlogConstants.minutesAgo}';
-      }
-      return '${difference.inHours} ${BlogConstants.hoursAgo}';
-    } else if (difference.inDays == 1) {
-      return BlogConstants.yesterday;
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} ${BlogConstants.daysAgo}';
-    } else {
-      return DateFormat('dd/MM/yyyy').format(date);
-    }
-  }
-
-  int _calculateReadTime(String? content) {
-    if (content == null || content.isEmpty) return 1;
-    final wordCount = content.split(' ').length;
-    return (wordCount / BlogConstants.averageReadingSpeed).ceil();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,43 +102,33 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
                     fit: StackFit.expand,
                     children: [
                       if (blog.image.isNotEmpty)
-                        Image.network(
-                          blog.image,
+                        CachedNetworkImage(
+                          imageUrl: blog.image,
                           fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              color: Colors.grey[300],
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey[300],
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.broken_image,
+                                  size: 64,
+                                  color: Colors.grey[400],
                                 ),
-                              ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.broken_image,
-                                    size: 64,
-                                    color: Colors.grey[400],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Không thể tải ảnh',
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Không thể tải ảnh',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                              ],
+                            ),
+                          ),
                         )
                       else
                         Container(
@@ -242,23 +209,33 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
                                 Icon(Icons.calendar_today,
                                     size: 16, color: Colors.grey[600]),
                                 const SizedBox(width: 8),
-                                Text(
-                                  _formatDate(blog.createdAt),
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
+                                FutureBuilder<String>(
+                                  future: BlogHelpers.formatDateAsync(blog.createdAt),
+                                  builder: (context, snapshot) {
+                                    return Text(
+                                      snapshot.data ?? BlogConstants.unknownDate,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                    );
+                                  },
                                 ),
                                 const SizedBox(width: 20),
                                 Icon(Icons.access_time,
                                     size: 16, color: Colors.grey[600]),
                                 const SizedBox(width: 8),
-                                Text(
-                                  '${_calculateReadTime(blog.content)} phút đọc',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
+                                FutureBuilder<String>(
+                                  future: BlogHelpers.calculateReadTimeAsync(blog.content),
+                                  builder: (context, snapshot) {
+                                    return Text(
+                                      snapshot.data ?? '',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             ),

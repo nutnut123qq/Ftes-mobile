@@ -7,6 +7,7 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../../../../core/constants/app_constants.dart' as app_constants;
 import '../../../../core/widgets/youtube_player_widget.dart';
+import '../../../../routes/app_routes.dart';
 import '../viewmodels/course_video_viewmodel.dart';
 import '../../domain/constants/video_constants.dart';
 import 'web_hls_helper.dart';
@@ -18,6 +19,7 @@ class CourseVideoPage extends StatefulWidget {
   final String videoUrl;
   final String courseId;
   final String? type; // VIDEO, DOCUMENT, EXERCISE
+  final String? descriptions; // Lesson descriptions
 
   const CourseVideoPage({
     super.key,
@@ -27,6 +29,7 @@ class CourseVideoPage extends StatefulWidget {
     required this.videoUrl,
     required this.courseId,
     this.type,
+    this.descriptions,
   });
 
   @override
@@ -803,6 +806,47 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
             //     ),
             //   ),
             // ),
+            
+            // Chat With AI button
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: IgnorePointer(
+                ignoring: false,
+                child: GestureDetector(
+                  onTap: () {
+                    AppRoutes.navigateToAiChat(
+                      context,
+                      lessonId: widget.lessonId,
+                      lessonTitle: widget.lessonTitle,
+                      videoId: widget.videoUrl, // videoUrl is the videoId for HLS streaming
+                      lessonDescription: widget.descriptions, // Lesson description
+                    );
+                  },
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0961F5),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.smart_toy,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ),
+              ),
+            ),
             
             // Bottom indicator
             Positioned(

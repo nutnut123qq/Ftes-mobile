@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/utils/text_styles.dart';
+import '../../../../../routes/app_routes.dart';
 import '../../../domain/entities/lesson.dart';
 
 class LessonItem extends StatelessWidget {
@@ -67,6 +68,33 @@ class LessonItem extends StatelessWidget {
                 ],
               ),
             ),
+            // AI Chat icon - only show for enrolled users and VIDEO lessons
+            if (isEnrolled && lesson.type == 'VIDEO')
+              GestureDetector(
+                onTap: () {
+                  AppRoutes.navigateToAiChat(
+                    context,
+                    lessonId: lesson.id,
+                    lessonTitle: lesson.title,
+                    videoId: lesson.video, // Video ID for HLS streaming
+                    lessonDescription: lesson.description, // Lesson description
+                  );
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  margin: const EdgeInsets.only(left: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0961F5).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(
+                    Icons.smart_toy,
+                    color: Color(0xFF0961F5),
+                    size: 18,
+                  ),
+                ),
+              ),
             if (!isEnrolled)
               const Icon(
                 Icons.lock_outline,

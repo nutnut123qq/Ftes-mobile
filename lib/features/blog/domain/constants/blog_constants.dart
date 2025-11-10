@@ -32,12 +32,26 @@ class BlogConstants {
   static const int defaultPageNumber = 1;
   static const String defaultSortField = 'createdAt';
   static const String defaultSortOrder = 'desc';
-  static const int computeThreshold = 50; // Use compute isolate when list > 50 items
+  static const int computeThreshold = 10; // Use compute isolate when list > 10 items
   static const int averageReadingSpeed = 200; // Words per minute
   
   // Pagination
-  static const int loadMoreThreshold = 200; // Pixels from bottom to trigger load more
+  static const double loadMoreThreshold = 0.8; // 80% scroll position to trigger load more (prefetching)
+  
+  // Cache Configuration
+  static const String cacheKeyPrefixBlogList = 'cache_blog_list_';
+  static const String cacheKeyPrefixBlogDetail = 'cache_blog_detail_';
+  static const String cacheKeyPrefixCategories = 'cache_blog_categories';
+  
+  // Cache TTL (Time To Live)
+  static const Duration cacheTTL = Duration(hours: 24);
+  static const Duration categoryCacheTTL = Duration(hours: 12);
+  static const Duration blogDetailCacheTTL = Duration(hours: 6);
+  
+  // Retry Configuration
   static const int maxRetries = 3;
+  static const Duration retryDelay = Duration(seconds: 2);
+  static const Duration networkTimeout = Duration(seconds: 30);
   
   // UI Text
   static const String blogListTitle = 'Blog';
