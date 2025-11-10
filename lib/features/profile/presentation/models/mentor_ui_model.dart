@@ -1,20 +1,20 @@
-class MentorItem {
+class MentorUiModel {
   final String name;
   final String specialization;
   final String avatarUrl;
 
-  MentorItem({
+  const MentorUiModel({
     required this.name,
     required this.specialization,
     required this.avatarUrl,
   });
 
-  // Constructor for backward compatibility with top_mentors_screen
-  MentorItem.fromTopMentors({
+  const MentorUiModel.fromTopMentor({
     required String name,
     required String specialty,
     required String imageUrl,
-  }) : name = name,
-       specialization = specialty,
-       avatarUrl = imageUrl;
+  })  : name = name,
+        specialization = specialty,
+        avatarUrl = imageUrl;
 }
+

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
-import 'package:ftes/models/mentor_item.dart';
+import 'package:ftes/features/profile/presentation/models/mentor_ui_model.dart';
 
 class TopMentorsScreen extends StatefulWidget {
   const TopMentorsScreen({super.key});
@@ -11,38 +11,38 @@ class TopMentorsScreen extends StatefulWidget {
 }
 
 class _TopMentorsScreenState extends State<TopMentorsScreen> {
-  final List<MentorItem> _mentors = [
-    MentorItem.fromTopMentors(
+  final List<MentorUiModel> _mentors = [
+    MentorUiModel.fromTopMentor(
       name: 'Jiya Shetty',
       specialty: 'Thiết kế 3D',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=JS',
     ),
-    MentorItem.fromTopMentors(
+    MentorUiModel.fromTopMentor(
       name: 'Donald S',
       specialty: 'Nghệ thuật & Nhân văn',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=DS',
     ),
-    MentorItem.fromTopMentors(
+    MentorUiModel.fromTopMentor(
       name: 'Aman',
       specialty: 'Phát triển cá nhân',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=AM',
     ),
-    MentorItem.fromTopMentors(
+    MentorUiModel.fromTopMentor(
       name: 'Vrushab. M',
       specialty: 'SEO & Marketing',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=VM',
     ),
-    MentorItem.fromTopMentors(
+    MentorUiModel.fromTopMentor(
       name: 'Robert William',
       specialty: 'Năng suất văn phòng',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=RW',
     ),
-    MentorItem.fromTopMentors(
+    MentorUiModel.fromTopMentor(
       name: 'Soman',
       specialty: 'Phát triển Web',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=SM',
     ),
-    MentorItem.fromTopMentors(
+    MentorUiModel.fromTopMentor(
       name: 'Rahul kamal',
       specialty: 'Thiết kế 3D',
       imageUrl: 'https://via.placeholder.com/66x66/4A90E2/FFFFFF?text=RK',
@@ -155,7 +155,7 @@ class _TopMentorsScreenState extends State<TopMentorsScreen> {
     );
   }
 
-  Widget _buildMentorCard(MentorItem mentor, bool isLast) {
+  Widget _buildMentorCard(MentorUiModel mentor, bool isLast) {
     return Column(
       children: [
         Container(

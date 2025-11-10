@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/screens/single_mentor_details_screen.dart';
-import 'package:ftes/models/mentor_item.dart';
+import 'package:ftes/features/profile/presentation/models/mentor_ui_model.dart';
 
 class MentorsListScreen extends StatefulWidget {
   const MentorsListScreen({super.key});
@@ -15,60 +15,60 @@ class _MentorsListScreenState extends State<MentorsListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
-  final List<MentorItem> _mentors = [
-    MentorItem(
+  final List<MentorUiModel> _mentors = [
+    MentorUiModel(
       name: 'Ramal',
       specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=R',
     ),
-    MentorItem(
+    MentorUiModel(
       name: 'Aman MK',
       specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=A',
     ),
-    MentorItem(
+    MentorUiModel(
       name: 'Manav M',
       specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=M',
     ),
-    MentorItem(
+    MentorUiModel(
       name: 'Siya Dhawal',
       specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=S',
     ),
-    MentorItem(
+    MentorUiModel(
       name: 'Robert jr',
       specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=R',
     ),
-    MentorItem(
+    MentorUiModel(
       name: 'William K. Olivas',
       specialization: 'Thiết kế 3D',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=W',
     ),
-    MentorItem(
+    MentorUiModel(
       name: 'Sarah Johnson',
       specialization: 'Phát triển Web',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=S',
     ),
-    MentorItem(
+    MentorUiModel(
       name: 'Mike Chen',
       specialization: 'Thiết kế đồ họa',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=M',
     ),
-    MentorItem(
+    MentorUiModel(
       name: 'Emma Wilson',
       specialization: 'Thiết kế UI/UX',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=E',
     ),
-    MentorItem(
+    MentorUiModel(
       name: 'David Lee',
       specialization: 'Phát triển Mobile',
       avatarUrl: 'https://via.placeholder.com/66x66/000000/FFFFFF?text=D',
     ),
   ];
 
-  List<MentorItem> _filteredMentors = [];
+  List<MentorUiModel> _filteredMentors = [];
 
   @override
   void initState() {
@@ -353,7 +353,7 @@ class _MentorsListScreenState extends State<MentorsListScreen> {
     );
   }
 
-  Widget _buildMentorCard(MentorItem mentor) {
+  Widget _buildMentorCard(MentorUiModel mentor) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -460,7 +460,7 @@ class _MentorsListScreenState extends State<MentorsListScreen> {
   }
 
 
-  List<MentorItem> _filterMentors() {
+  List<MentorUiModel> _filterMentors() {
     if (_searchQuery.isEmpty) {
       return List.from(_mentors);
     }

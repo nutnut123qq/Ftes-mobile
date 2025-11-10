@@ -46,12 +46,11 @@ import '../features/blog/presentation/pages/blog_list_page.dart';
 import '../features/blog/presentation/viewmodels/blog_viewmodel.dart';
 import '../features/feedback/presentation/viewmodels/feedback_viewmodel.dart';
 import '../features/points/presentation/viewmodels/points_viewmodel.dart';
-import '../models/chat_item.dart';
 import 'package:provider/provider.dart';
 import '../core/di/injection_container.dart' as di;
 import '../features/course/presentation/viewmodels/course_video_viewmodel.dart';
-import '../models/mentor_item.dart';
 import '../features/home/domain/entities/course.dart';
+import 'package:ftes/features/profile/presentation/models/mentor_ui_model.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
@@ -136,9 +135,8 @@ class AppRoutes {
       final args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       return SingleMentorDetailsScreen(
-        mentor:
-            args?['mentor'] ??
-            MentorItem(
+        mentor: args?['mentor'] ??
+            const MentorUiModel(
               name: 'Default Mentor',
               specialization: 'Design',
               avatarUrl:
@@ -206,11 +204,7 @@ class AppRoutes {
       }
 
       // Fallback to old screen for non-lesson chats
-      return ChatMessagesScreen(
-        chat: args?['chat'],
-        lessonId: lessonId,
-        lessonTitle: lessonTitle,
-      );
+      return const ChatMessagesScreen();
     },
     core_constants.AppConstants.routeReviews: (context) {
       final args =
@@ -344,9 +338,8 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => SingleMentorDetailsScreen(
-            mentor:
-                args?['mentor'] ??
-                MentorItem(
+            mentor: args?['mentor'] ??
+                const MentorUiModel(
                   name: 'Default Mentor',
                   specialization: 'Design',
                   avatarUrl:
@@ -431,7 +424,6 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => ChatMessagesScreen(
-            chat: args?['chat'],
             lessonId: args?['lessonId'],
             lessonTitle: args?['lessonTitle'],
           ),
@@ -573,7 +565,7 @@ class AppRoutes {
 
   static void navigateToSingleMentorDetails(
     BuildContext context, {
-    required MentorItem mentor,
+    required MentorUiModel mentor,
   }) {
     Navigator.pushNamed(
       context,
@@ -635,12 +627,16 @@ class AppRoutes {
 
   static void navigateToChatMessages(
     BuildContext context, {
-    required ChatItem chat,
+    String? lessonId,
+    String? lessonTitle,
   }) {
     Navigator.pushNamed(
       context,
       core_constants.AppConstants.routeChatMessages,
-      arguments: {'chat': chat},
+      arguments: {
+        if (lessonId != null) 'lessonId': lessonId,
+        if (lessonTitle != null) 'lessonTitle': lessonTitle,
+      },
     );
   }
 

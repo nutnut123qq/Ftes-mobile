@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
-import 'package:ftes/models/mentor_item.dart';
+import 'package:ftes/features/profile/presentation/models/mentor_ui_model.dart';
 import 'package:ftes/routes/app_routes.dart';
 
 class SingleMentorDetailsScreen extends StatefulWidget {
-  final MentorItem mentor;
+  final MentorUiModel mentor;
   
   const SingleMentorDetailsScreen({super.key, required this.mentor});
 
