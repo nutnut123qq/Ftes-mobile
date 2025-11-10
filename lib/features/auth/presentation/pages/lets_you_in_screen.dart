@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
-import '../utils/text_styles.dart';
-import '../utils/constants.dart';
+import 'package:ftes/core/utils/colors.dart';
+import 'package:ftes/core/utils/text_styles.dart';
+import 'package:ftes/core/constants/app_constants.dart';
 import 'package:ftes/core/di/injection_container.dart' as di;
 import 'package:ftes/features/auth/presentation/pages/login_page.dart';
 import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';

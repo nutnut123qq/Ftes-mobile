@@ -35,6 +35,13 @@ class AppConstants {
   // Card Settings
   static const double cardElevation = 2.0;
   static const double cardElevationHover = 4.0;
+  static const double cardPadding = 16.0;
+
+  // Animation Durations
+  static const Duration animationFast = Duration(milliseconds: 150);
+  static const Duration animationMedium = Duration(milliseconds: 300);
+  static const Duration animationSlow = Duration(milliseconds: 500);
+  static const Duration animationVerySlow = Duration(milliseconds: 1000);
 
   // Storage Keys
   static const String keyAccessToken = 'access_token';

@@ -18,9 +18,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   @override
   Future<List<CourseModel>> getLatestCourses({int limit = 50}) async {
     try {
-      print('📚 Fetching latest courses: ${AppConstants.baseUrl}${AppConstants.latestCoursesEndpoint}');
-      print('📊 Limit: $limit');
-      
       final response = await _apiClient.get(
         AppConstants.latestCoursesEndpoint,
         queryParameters: {
@@ -30,8 +27,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           'sortOrder': 'desc',
         },
       );
-      
-      print('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final result = response.data['result'];
@@ -47,7 +42,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         
         // Use compute() isolate for parsing if list is large (>50 items)
         if (coursesList.length > 50) {
-          print('🔄 Using compute() isolate for parsing ${coursesList.length} courses');
           return await compute(parseCourseListJson, coursesList);
         } else {
           // For smaller lists, parse directly on main isolate
@@ -57,7 +51,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         throw ServerException(response.data['message'] ?? 'Failed to fetch latest courses');
       }
     } catch (e) {
-      print('❌ Get latest courses error: $e');
       if (e is ServerException) {
         rethrow;
       }
@@ -68,8 +61,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   @override
   Future<List<CourseModel>> getFeaturedCourses() async {
     try {
-      print('⭐ Fetching featured courses: ${AppConstants.baseUrl}${AppConstants.featuredCoursesEndpoint}');
-      
       final response = await _apiClient.get(
         AppConstants.featuredCoursesEndpoint,
         queryParameters: {
@@ -79,8 +70,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           'sortOrder': 'desc',
         },
       );
-      
-      print('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final result = response.data['result'];
@@ -96,7 +85,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         
         // Use compute() isolate for parsing if list is large (>50 items)
         if (coursesList.length > 50) {
-          print('🔄 Using compute() isolate for parsing ${coursesList.length} featured courses');
           return await compute(parseCourseListJson, coursesList);
         } else {
           return parseCourseListJson(coursesList);
@@ -105,7 +93,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         throw ServerException(response.data['message'] ?? 'Failed to fetch featured courses');
       }
     } catch (e) {
-      print('❌ Get featured courses error: $e');
       if (e is ServerException) {
         rethrow;
       }
@@ -116,11 +103,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   @override
   Future<List<BannerModel>> getBanners() async {
     try {
-      print('🖼️ Fetching banners: ${AppConstants.baseUrl}${AppConstants.bannerEndpoint}');
-      
       final response = await _apiClient.get(AppConstants.bannerEndpoint);
-      
-      print('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final result = response.data['result'];
@@ -140,7 +123,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         throw ServerException(response.data['message'] ?? 'Failed to fetch banners');
       }
     } catch (e) {
-      print('❌ Get banners error: $e');
       if (e is ServerException) {
         rethrow;
       }
@@ -151,8 +133,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   @override
   Future<List<CategoryModel>> getCourseCategories() async {
     try {
-      print('📂 Fetching course categories: ${AppConstants.baseUrl}${AppConstants.courseCategoriesEndpoint}');
-      
       final response = await _apiClient.get(
         AppConstants.courseCategoriesEndpoint,
         queryParameters: {
@@ -162,8 +142,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           'sortOrder': 'ASC',
         },
       );
-      
-      print('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final result = response.data['result'];
@@ -182,13 +160,11 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
             .map((categoryJson) => CategoryModel.fromJson(categoryJson as Map<String, dynamic>))
             .toList();
         
-        print('✅ Fetched ${categories.length} categories');
         return categories;
       } else {
         throw ServerException(response.data['message'] ?? 'Failed to fetch categories');
       }
     } catch (e) {
-      print('❌ Get categories error: $e');
       if (e is ServerException) {
         rethrow;
       }
@@ -199,9 +175,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   @override
   Future<List<CourseModel>> getCoursesByCategory(String categoryId) async {
     try {
-      print('📚 Fetching courses by category: ${AppConstants.baseUrl}${AppConstants.coursesSearchEndpoint}');
-      print('🏷️ Category ID: $categoryId');
-      
       final response = await _apiClient.get(
         AppConstants.coursesSearchEndpoint,
         queryParameters: {
@@ -212,8 +185,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           'sortOrder': 'DESC',
         },
       );
-      
-      print('📥 Response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final result = response.data['result'];
@@ -229,7 +200,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         
         // Use compute() isolate for parsing if list is large (>50 items)
         if (coursesList.length > 50) {
-          print('🔄 Using compute() isolate for parsing ${coursesList.length} category courses');
           return await compute(parseCourseListJson, coursesList);
         } else {
           return parseCourseListJson(coursesList);
@@ -238,7 +208,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         throw ServerException(response.data['message'] ?? 'Failed to fetch category courses');
       }
     } catch (e) {
-      print('❌ Get category courses error: $e');
       if (e is ServerException) {
         rethrow;
       }
@@ -258,7 +227,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     String sortOrder = 'ASC',
   }) async {
     try {
-      print('🔍 Searching courses: ${AppConstants.baseUrl}${AppConstants.coursesSearchEndpoint}');
       final queryParams = <String, dynamic>{
         'pageNumber': pageNumber.toString(),
         'pageSize': pageSize.toString(),
@@ -290,7 +258,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         }
 
         if (coursesList.length > 50) {
-          print('🔄 Using compute() isolate for parsing ${coursesList.length} search courses');
           return await compute(parseCourseListJson, coursesList);
         } else {
           return parseCourseListJson(coursesList);
@@ -299,7 +266,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         throw ServerException(response.data['messageDTO']?['message'] ?? 'Failed to search courses');
       }
     } catch (e) {
-      print('❌ Search courses error: $e');
       if (e is ServerException) {
         rethrow;
       }

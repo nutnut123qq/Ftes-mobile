@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
-import '../utils/text_styles.dart';
-import '../utils/constants.dart';
+import 'package:ftes/core/utils/colors.dart';
+import 'package:ftes/core/utils/text_styles.dart';
+import 'package:ftes/core/constants/app_constants.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
@@ -44,7 +44,7 @@ class _IntroScreenState extends State<IntroScreen> {
   void _nextPage() {
     if (_currentPage < _pages.length - 1) {
       _pageController.nextPage(
-        duration: AppConstants.animationMedium,
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {

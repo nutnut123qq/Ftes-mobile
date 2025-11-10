@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../utils/colors.dart';
-import '../utils/text_styles.dart';
+import 'package:ftes/core/utils/colors.dart';
+import 'package:ftes/core/utils/text_styles.dart';
 import 'package:ftes/core/di/injection_container.dart' as di;
 import 'package:ftes/features/ai/presentation/viewmodels/ai_chat_viewmodel.dart';
 import 'package:ftes/features/ai/domain/entities/ai_chat_message.dart';
@@ -303,7 +303,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                 color: AppColors.lightBlue,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.smart_toy, // Robot icon for AI
                 color: AppColors.primary,
                 size: 16,
@@ -374,7 +374,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                 color: AppColors.lightBlue,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.person,
                 color: AppColors.primary,
                 size: 16,
@@ -490,7 +490,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             child: Container(
               width: 48,
               height: 48,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.primary,
                 shape: BoxShape.circle,
               ),

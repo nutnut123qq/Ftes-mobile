@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/constants/app_constants.dart';
-import '../utils/text_styles.dart';
+import 'package:ftes/core/constants/app_constants.dart';
+import 'package:ftes/utils/text_styles.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});

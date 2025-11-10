@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:ftes/utils/text_styles.dart';
 import 'package:ftes/utils/constants.dart';
 import 'package:ftes/widgets/bottom_navigation_bar.dart';
-import 'package:ftes/screens/edit_profile_screen.dart';
-import 'package:ftes/screens/notifications_screen.dart';
-import 'package:ftes/screens/invite_friends_screen.dart';
+import 'package:ftes/features/profile/presentation/pages/edit_profile_screen.dart';
+import 'package:ftes/features/profile/presentation/pages/notifications_screen.dart';
+import 'package:ftes/features/points/presentation/pages/invite_friends_screen.dart';
 import 'package:ftes/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:ftes/features/auth/domain/entities/user.dart';
 import 'package:ftes/features/profile/presentation/viewmodels/profile_viewmodel.dart';
@@ -123,7 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -258,7 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
