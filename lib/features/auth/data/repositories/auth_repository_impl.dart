@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dartz/dartz.dart';
 // import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:ftes/core/error/exceptions.dart';
@@ -26,15 +27,36 @@ class AuthRepositoryImpl implements AuthRepository {
     if (await networkInfo.isConnected) {
       try {
         final authResponse = await remoteDataSource.login(email, password);
+        
+        // Cache access token and user ID (critical, await them)
         await Future.wait([
           localDataSource.cacheAccessToken(authResponse.accessToken),
           if (authResponse.userId != null && authResponse.userId!.isNotEmpty)
             localDataSource.cacheUserId(authResponse.userId!),
         ]);
 
-        // Since API doesn't return user info in login response, we'll fetch it separately
-        // For now, return a placeholder user
-        return Right(UserModel(id: authResponse.userId ?? 'temp', email: email));
+        // Fetch user info after login (like Google login)
+        // If getMyInfo fails, return placeholder user (user info can be fetched later)
+        try {
+          final userInfo = await remoteDataSource.getMyInfo();
+          
+          // Cache user info with TTL (non-critical, don't block)
+          unawaited(
+            localDataSource
+                .cacheUserWithTTL(userInfo, AuthConstants.userCacheTTL)
+                .catchError((_) {}),
+          );
+
+          return Right(userInfo);
+        } catch (e) {
+          // If getMyInfo fails (e.g., endpoint not available), return placeholder
+          // User info can be fetched later when needed
+          final placeholderUser = UserModel(
+            id: authResponse.userId ?? 'temp',
+            email: email,
+          );
+          return Right(placeholderUser);
+        }
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message));
       } on AuthException catch (e) {
@@ -61,11 +83,21 @@ class AuthRepositoryImpl implements AuthRepository {
         
         // Step 2: Exchange code with backend
         final authResponse = await remoteDataSource.loginWithGoogle(authCode, isAdmin: false);
-        await localDataSource.cacheAccessToken(authResponse.accessToken);
         
-        // Step 3: Fetch user info
-        final userInfo = await remoteDataSource.getMyInfo();
-        await localDataSource.cacheUser(userInfo);
+        // Step 3: Parallel execution - Cache access token and fetch user info simultaneously
+        final results = await Future.wait([
+          localDataSource.cacheAccessToken(authResponse.accessToken), // Critical operation
+          remoteDataSource.getMyInfo(), // Can run in parallel
+        ]);
+        
+        final userInfo = results[1] as UserModel;
+        
+        // Cache user info (non-critical, don't block)
+        unawaited(
+          localDataSource
+              .cacheUserWithTTL(userInfo, AuthConstants.userCacheTTL)
+              .catchError((_) {}),
+        );
         
         return Right(userInfo);
       } on ServerException catch (e) {
@@ -110,21 +142,36 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> getCurrentUser() async {
     try {
-      final user = await localDataSource.getCachedUser();
-      if (user != null) {
-        return Right(user);
+      // 1. Try cache first (even offline) - with TTL check
+      final cached = await localDataSource.getCachedUserWithTTL(AuthConstants.userCacheTTL);
+      if (cached != null) {
+        return Right(cached);
       }
-      // Optionally try to fetch from remote if not in cache and online
-      if (await networkInfo.isConnected) {
-        final remoteUser = await remoteDataSource.getMyInfo();
-        await localDataSource.cacheUser(remoteUser);
-        return Right(remoteUser);
+
+      // 2. Check network connection
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(AuthConstants.errorNoInternet));
       }
-      return const Left(CacheFailure(AuthConstants.errorGetUserInfo));
+
+      // 3. Fetch from network
+      final remoteUser = await remoteDataSource.getMyInfo();
+
+      // 4. Cache for next time (async, don't block)
+      unawaited(
+        localDataSource
+            .cacheUserWithTTL(remoteUser, AuthConstants.userCacheTTL)
+            .catchError((_) {}),
+      );
+
+      return Right(remoteUser);
     } on CacheException catch (e) {
       return Left(CacheFailure(e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('${AuthConstants.errorGetUserInfo}: $e'));
     }
   }
 
@@ -274,6 +321,18 @@ class AuthRepositoryImpl implements AuthRepository {
       }
     } else {
       return const Left(NetworkFailure(AuthConstants.errorNoInternet));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> invalidateUserCache() async {
+    try {
+      await localDataSource.clearUser();
+      return const Right(null);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(e.message));
+    } catch (e) {
+      return Left(CacheFailure('${AuthConstants.errorCache}: $e'));
     }
   }
 }

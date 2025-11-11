@@ -26,6 +26,12 @@ abstract class AuthLocalDataSource {
   /// Get cached user data
   Future<UserModel?> getCachedUser();
 
+  /// Cache user data with TTL
+  Future<void> cacheUserWithTTL(UserModel user, Duration ttl);
+
+  /// Get cached user data with TTL check
+  Future<UserModel?> getCachedUserWithTTL(Duration ttl);
+
   /// Clear user data
   Future<void> clearUser();
 

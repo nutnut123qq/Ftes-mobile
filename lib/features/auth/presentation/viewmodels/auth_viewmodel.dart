@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
-import 'dart:async';
 import 'package:ftes/features/auth/domain/constants/auth_constants.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/login_with_google_usecase.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
+import '../../domain/usecases/refresh_user_info_usecase.dart';
 import 'package:ftes/core/error/failures.dart';
 
 /// ViewModel for authentication operations
@@ -14,16 +14,19 @@ class AuthViewModel extends ChangeNotifier {
   final LoginWithGoogleUseCase _loginWithGoogleUseCase;
   final GetCurrentUserUseCase _getCurrentUserUseCase;
   final LogoutUseCase _logoutUseCase;
+  final RefreshUserInfoUseCase _refreshUserInfoUseCase;
 
   AuthViewModel({
     required LoginUseCase loginUseCase,
     required LoginWithGoogleUseCase loginWithGoogleUseCase,
     required GetCurrentUserUseCase getCurrentUserUseCase,
     required LogoutUseCase logoutUseCase,
+    required RefreshUserInfoUseCase refreshUserInfoUseCase,
   })  : _loginUseCase = loginUseCase,
         _loginWithGoogleUseCase = loginWithGoogleUseCase,
         _getCurrentUserUseCase = getCurrentUserUseCase,
-        _logoutUseCase = logoutUseCase;
+        _logoutUseCase = logoutUseCase,
+        _refreshUserInfoUseCase = refreshUserInfoUseCase;
 
   // State variables
   User? _currentUser;
@@ -124,27 +127,22 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  /// Refresh user information
-  Timer? _refreshDebounce;
-
+  /// Refresh user information (with debounce handled in UseCase)
   Future<void> refreshUserInfo() async {
     if (!_isLoggedIn) return;
 
-    _refreshDebounce?.cancel();
-    _refreshDebounce = Timer(const Duration(milliseconds: 300), () async {
-      try {
-        final result = await _getCurrentUserUseCase();
-        result.fold(
-          (failure) => _setError(_mapFailureToMessage(failure)),
-          (user) {
-            _currentUser = user;
-            notifyListeners();
-          },
-        );
-      } catch (e) {
-        _setError(AuthConstants.errorServer);
-      }
-    });
+    try {
+      final result = await _refreshUserInfoUseCase();
+      result.fold(
+        (failure) => _setError(_mapFailureToMessage(failure)),
+        (user) {
+          _currentUser = user;
+          notifyListeners();
+        },
+      );
+    } catch (e) {
+      _setError(AuthConstants.errorServer);
+    }
   }
 
   /// Clear error message

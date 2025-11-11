@@ -12,6 +12,7 @@ import '../models/verify_otp_response_model.dart';
 import '../models/forgot_password_request_model.dart' as forgot_password_req;
 import '../models/verify_otp_for_password_response_model.dart';
 import '../models/reset_password_request_model.dart';
+import '../helpers/auth_json_parser_helper.dart';
 import 'auth_remote_datasource.dart';
 
 /// Implementation of AuthRemoteDataSource
@@ -75,21 +76,44 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final response = await _apiClient.get(AppConstants.myInfoEndpoint);
       if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data['result']);
+        // Handle both response structures: with 'result' wrapper or direct data
+        Map<String, dynamic> userData;
+        if (response.data['result'] != null) {
+          userData = response.data['result'] as Map<String, dynamic>;
+        } else if (response.data is Map<String, dynamic>) {
+          userData = response.data as Map<String, dynamic>;
+        } else {
+          throw const ServerException(AuthConstants.errorInvalidResponse);
+        }
+        // Use isolate helper for large responses
+        return await AuthJsonParserHelper.parseUserResponseInIsolate(userData);
       } else {
         throw ServerException(response.data['message'] ?? AuthConstants.errorGetUserInfo);
       }
+    } on ServerException {
+      rethrow;
+    } on NetworkException {
+      rethrow;
     } catch (e) {
-      throw const ServerException(AuthConstants.errorServer);
+      throw ServerException('${AuthConstants.errorServer}: ${e.toString()}');
     }
   }
 
   @override
   Future<void> logout() async {
     try {
-      await _apiClient.post(AppConstants.logoutEndpoint);
+      final response = await _apiClient.post(AppConstants.logoutEndpoint);
+      if (response.statusCode != 200) {
+        throw ServerException(
+          response.data['message'] ?? AuthConstants.errorServer,
+        );
+      }
+    } on ServerException {
+      rethrow;
+    } on NetworkException {
+      rethrow;
     } catch (e) {
-      // Swallow error: local cleanup vẫn tiếp tục ở repository
+      throw ServerException('${AuthConstants.errorServer}: ${e.toString()}');
     }
   }
 

@@ -32,6 +32,23 @@ class AuthConstants {
   // Default values
   static const int defaultMaxRetries = 3;
   static const Duration defaultTimeout = Duration(seconds: 20);
+
+  // Cache Configuration
+  static const String cacheKeyPrefixUser = 'auth_user_cache_';
+
+  // Cache TTL (Time To Live)
+  static const Duration userCacheTTL = Duration(hours: 1);
+
+  // Retry Configuration
+  static const int maxRetries = 3;
+  static const Duration retryDelay = Duration(seconds: 2);
+
+  // JSON Parsing Threshold
+  static const int jsonParsingThreshold = 10000; // Use compute isolate if response > 10KB
+
+  // Validation
+  static const int minPasswordLength = 6;
+  static const int maxPasswordLength = 100;
 }
 
 

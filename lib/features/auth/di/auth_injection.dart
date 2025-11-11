@@ -10,6 +10,7 @@ import '../domain/usecases/login_usecase.dart';
 import '../domain/usecases/login_with_google_usecase.dart';
 import '../domain/usecases/get_current_user_usecase.dart';
 import '../domain/usecases/logout_usecase.dart';
+import '../domain/usecases/refresh_user_info_usecase.dart';
 import '../domain/usecases/register_usecase.dart';
 import '../domain/usecases/verify_email_otp_usecase.dart';
 import '../domain/usecases/resend_verification_code_usecase.dart';
@@ -46,6 +47,7 @@ Future<void> initAuthDependencies() async {
   sl.registerLazySingleton(() => LoginWithGoogleUseCase(sl()));
   sl.registerLazySingleton(() => GetCurrentUserUseCase(sl()));
   sl.registerLazySingleton(() => LogoutUseCase(sl()));
+  sl.registerLazySingleton(() => RefreshUserInfoUseCase(sl()));
   sl.registerLazySingleton(() => RegisterUseCase(sl()));
   sl.registerLazySingleton(() => VerifyEmailOTPUseCase(sl()));
   sl.registerLazySingleton(() => ResendVerificationCodeUseCase(sl()));
@@ -59,6 +61,7 @@ Future<void> initAuthDependencies() async {
     loginWithGoogleUseCase: sl(),
     getCurrentUserUseCase: sl(),
     logoutUseCase: sl(),
+    refreshUserInfoUseCase: sl(),
   ));
   sl.registerFactory(() => RegisterViewModel(
     registerUseCase: sl(),

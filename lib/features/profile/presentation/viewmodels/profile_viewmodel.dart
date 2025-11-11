@@ -67,10 +67,12 @@ class ProfileViewModel extends ChangeNotifier {
   /// Initialize ViewModel - load profile from cache if available
   /// This is called when ViewModel is created to restore cached data
   Future<void> initialize() async {
-    if (_sharedPreferences == null || _localDataSource == null) return;
+    final sharedPreferences = _sharedPreferences;
+    final localDataSource = _localDataSource;
+    if (sharedPreferences == null || localDataSource == null) return;
     
     try {
-      final userId = _sharedPreferences!.getString(AppConstants.keyUserId);
+      final userId = sharedPreferences.getString(AppConstants.keyUserId);
       if (userId != null && userId.isNotEmpty) {
         await loadProfileFromCache(userId);
       }
