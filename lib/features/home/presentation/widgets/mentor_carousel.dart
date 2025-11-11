@@ -40,7 +40,7 @@ class _MentorCarouselState extends State<MentorCarousel> {
 
         // --- Carousel ---
         SizedBox(
-          height: 230,
+          height: 200,
           child: PageView.builder(
             controller: _pageController,
             onPageChanged: (index) {
@@ -56,10 +56,7 @@ class _MentorCarouselState extends State<MentorCarousel> {
                     value = _pageController.page! - index;
                     value = (1 - (value.abs() * 0.25)).clamp(0.85, 1.0);
                   }
-                  return Transform.scale(
-                    scale: value,
-                    child: child,
-                  );
+                  return Transform.scale(scale: value, child: child);
                 },
                 child: MentorCard(mentor: mentor),
               );
@@ -74,7 +71,7 @@ class _MentorCarouselState extends State<MentorCarousel> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(
             topMentors.length,
-                (i) => Container(
+            (i) => Container(
               width: 8,
               height: 8,
               margin: const EdgeInsets.symmetric(horizontal: 3),

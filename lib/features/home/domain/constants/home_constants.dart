@@ -37,5 +37,15 @@ class HomeConstants {
   static const String popularCoursesTitle = 'Khóa học phổ biến';
   static const String topMentorsTitle = 'Giảng viên hàng đầu';
   static const String allCategoriesLabel = 'Tất cả';
+
+  // Featured Category IDs (mirror web sections)
+  // DEV căn bản, không lo PHÍ
+  static const String categoryDevFree = '9f59a8bf-490c-4645-a60e-02c83a279bc3';
+  // Từ Zero đến Pro-Dev
+  static const String categoryZeroToPro = '2837e815-2ed8-49af-b0c3-6d3d8d883640';
+  // Tư duy toán học cho dân Dev
+  static const String categoryMathForDev = '2bbb2eed-d14d-43f2-b4a9-28fe867d49cb';
+  // Dev chinh phục Ngoại ngữ
+  static const String categoryLanguageForDev = 'bc669cc6-a425-4af3-93b7-7eb66f666649';
 }
 

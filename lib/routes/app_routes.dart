@@ -108,21 +108,23 @@ class AppRoutes {
       create: (context) => di.sl<HomeViewModel>(),
       child: const HomePage(),
     ),
-    core_constants.AppConstants.routeCourseSearch: (context) =>
-        ChangeNotifierProvider(
-          create: (context) => di.sl<HomeViewModel>(),
-          child: const CourseSearchPage(),
-        ),
+    core_constants.AppConstants.routeCourseSearch: (context) {
+      return ChangeNotifierProvider(
+        create: (context) => di.sl<HomeViewModel>(),
+        child: const CourseSearchPage(),
+      );
+    },
     core_constants.AppConstants.routePopularCourses: (context) =>
         ChangeNotifierProvider(
           create: (context) => di.sl<HomeViewModel>(),
           child: const CourseSearchPage(),
         ),
-    core_constants.AppConstants.routeCoursesList: (context) =>
-        ChangeNotifierProvider(
-          create: (context) => di.sl<HomeViewModel>(),
-          child: const CourseSearchPage(),
-        ),
+    core_constants.AppConstants.routeCoursesList: (context) {
+      return ChangeNotifierProvider(
+        create: (context) => di.sl<HomeViewModel>(),
+        child: const CourseSearchPage(),
+      );
+    },
     core_constants.AppConstants.routeCourseDetail: (context) {
       final arguments = ModalRoute.of(context)?.settings.arguments;
       Course? course;
@@ -537,11 +539,15 @@ class AppRoutes {
   static void navigateToCoursesList(
     BuildContext context, {
     String? searchQuery,
+    String? categoryId,
   }) {
     Navigator.pushNamed(
       context,
       core_constants.AppConstants.routeCoursesList,
-      arguments: searchQuery != null ? {'searchQuery': searchQuery} : null,
+      arguments: {
+        if (searchQuery != null) 'searchQuery': searchQuery,
+        if (categoryId != null) 'categoryId': categoryId,
+      },
     );
   }
 

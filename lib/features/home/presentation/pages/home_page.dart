@@ -7,13 +7,13 @@ import 'package:ftes/core/utils/colors.dart';
 import 'package:ftes/core/widgets/bottom_navigation_bar.dart';
 import 'package:ftes/core/di/injection_container.dart' as di;
 import 'package:ftes/core/constants/app_constants.dart';
+import 'package:ftes/routes/app_routes.dart';
 import 'package:ftes/features/profile/domain/usecases/profile_usecases.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/constants/home_constants.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../widgets/course_card_widget.dart';
 import '../widgets/banner_widget.dart';
-import '../widgets/category_filter_widget.dart';
 import '../widgets/mentor_carousel.dart';
 
 class HomePage extends StatefulWidget {
@@ -47,8 +47,7 @@ class _HomePageState extends State<HomePage> {
         if (banners.isEmpty) return;
 
         setState(() {
-          _currentBannerIndex =
-              (_currentBannerIndex + 1) % banners.length;
+          _currentBannerIndex = (_currentBannerIndex + 1) % banners.length;
         });
 
         _bannerController.animateToPage(
@@ -74,8 +73,9 @@ class _HomePageState extends State<HomePage> {
       final getProfileByIdUseCase = di.sl<GetProfileByIdUseCase>();
       final result = await getProfileByIdUseCase(userId);
       result.fold(
-            (failure) => debugPrint('❌ Failed to load user profile: ${failure.message}'),
-            (profile) {
+        (failure) =>
+            debugPrint('❌ Failed to load user profile: ${failure.message}'),
+        (profile) {
           final displayName = _getDisplayName(profile.name, profile.username);
           if (mounted) setState(() => _userName = displayName);
         },
@@ -126,7 +126,29 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 30),
               _buildOfferBanner(),
               const SizedBox(height: 30),
-              _buildPopularCoursesSection(),
+              _buildCategorySection(
+                titleParts: const ['DEV', ' căn bản, không lo ', 'PHÍ'],
+                titleFirstGradient: true,
+                categoryId: HomeConstants.categoryDevFree,
+              ),
+              const SizedBox(height: 24),
+              _buildCategorySection(
+                titleParts: const ['Từ ', 'Zero', ' đến ', 'Pro-Dev'],
+                titleFirstGradient: false,
+                categoryId: HomeConstants.categoryZeroToPro,
+              ),
+              const SizedBox(height: 24),
+              _buildCategorySection(
+                titleParts: const [' Tư duy ', 'toán học', ' cho dân ', 'Dev'],
+                titleFirstGradient: true,
+                categoryId: HomeConstants.categoryMathForDev,
+              ),
+              const SizedBox(height: 24),
+              _buildCategorySection(
+                titleParts: const ['Dân ', 'Dev', ' chinh phục ', 'Ngoại ngữ'],
+                titleFirstGradient: true,
+                categoryId: HomeConstants.categoryLanguageForDev,
+              ),
               const SizedBox(height: 40),
               const MentorCarousel(),
               const SizedBox(height: 100),
@@ -135,6 +157,116 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       bottomNavigationBar: const AppBottomNavigationBar(selectedIndex: 0),
+    );
+  }
+
+  Widget _buildCategorySection({
+    required List<String> titleParts,
+    required bool titleFirstGradient,
+    required String categoryId,
+  }) {
+    return Consumer<HomeViewModel>(
+      builder: (context, vm, _) {
+        // Filter from latest courses to avoid extra requests
+        final courses = vm.latestCourses
+            .where((c) => c.categoryId == categoryId)
+            .toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _buildGradientTitle(titleParts, titleFirstGradient),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      AppRoutes.navigateToCoursesList(
+                        context,
+                        categoryId: categoryId,
+                      );
+                    },
+                    child: const Text('Xem tất cả'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 280,
+              child: courses.isEmpty
+                  ? Center(
+                      child: Text(
+                        HomeConstants.noCoursesAvailable,
+                        style: AppTextStyles.body1.copyWith(
+                          color: Colors.grey[600]!,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: courses.length,
+                      itemBuilder: (context, index) {
+                        final course = courses[index];
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            right: index < courses.length - 1 ? 10 : 0,
+                          ),
+                          child: CourseCardWidget(
+                            course: course,
+                            onTap: () {
+                              if (course.slugName != null &&
+                                  course.slugName!.isNotEmpty) {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppConstants.routeCourseDetail,
+                                  arguments: course.slugName,
+                                );
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGradientTitle(List<String> parts, bool firstGradient) {
+    TextStyle base = AppTextStyles.h3.copyWith(
+      color: const Color(0xFF202244),
+      fontWeight: FontWeight.bold,
+    );
+    Widget gradientText(String text) {
+      return ShaderMask(
+        shaderCallback: (bounds) => const LinearGradient(
+          colors: [AppColors.primary, AppColors.secondary],
+        ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
+        child: Text(text, style: base.copyWith(color: Colors.white)),
+      );
+    }
+
+    final children = <Widget>[];
+    for (int i = 0; i < parts.length; i++) {
+      final isGradient =
+          (firstGradient && (i == 0 || i == 2)) ||
+          (!firstGradient && (i == 1 || i == 3));
+      children.add(
+        isGradient ? gradientText(parts[i]) : Text(parts[i], style: base),
+      );
+    }
+
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: children,
     );
   }
 
@@ -165,7 +297,8 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           GestureDetector(
-            onTap: () => Navigator.pushNamed(context, AppConstants.routeProfile),
+            onTap: () =>
+                Navigator.pushNamed(context, AppConstants.routeProfile),
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -179,7 +312,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.person, color: AppColors.primary, size: 24),
+              child: const Icon(
+                Icons.person,
+                color: AppColors.primary,
+                size: 24,
+              ),
             ),
           ),
         ],
@@ -204,7 +341,8 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         child: InkWell(
-          onTap: () => Navigator.pushNamed(context, AppConstants.routeCourseSearch),
+          onTap: () =>
+              Navigator.pushNamed(context, AppConstants.routeCourseSearch),
           child: Row(
             children: [
               Icon(Icons.search, color: Colors.grey[600]!, size: 20),
@@ -243,15 +381,16 @@ class _HomePageState extends State<HomePage> {
         }
 
         return SizedBox(
-          height: 160,
+          height: 240,
           child: PageView.builder(
             controller: _bannerController,
-            onPageChanged: (index) => setState(() => _currentBannerIndex = index),
+            onPageChanged: (index) =>
+                setState(() => _currentBannerIndex = index),
             itemCount: homeViewModel.banners.length,
             itemBuilder: (context, index) {
               final banner = homeViewModel.banners[index];
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 0),
                 child: BannerWidget(
                   banner: banner,
                   onTap: () => debugPrint('Banner tapped: ${banner.title}'),
@@ -259,96 +398,6 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPopularCoursesSection() {
-    return Consumer<HomeViewModel>(
-      builder: (context, homeViewModel, child) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                HomeConstants.popularCoursesTitle,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.h3.copyWith(
-                  color: const Color(0xFF202244),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: homeViewModel.categories.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    final category = entry.value;
-                    bool isSelected = category.id == homeViewModel.selectedCategoryId;
-                    return Padding(
-                      padding: EdgeInsets.only(right: index < homeViewModel.categories.length - 1 ? 12 : 0),
-                      child: CategoryFilterWidget(
-                        text: category.name ?? '',
-                        isSelected: isSelected,
-                        onTap: () => homeViewModel.fetchCoursesByCategory(category.id ?? 'all'),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (homeViewModel.isLoadingLatestCourses || homeViewModel.isLoadingCategoryCourses)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            else if (homeViewModel.categoryCourses.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Text(HomeConstants.noCoursesAvailable),
-                ),
-              )
-            else
-              SizedBox(
-                height: 250,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: homeViewModel.categoryCourses.length,
-                  cacheExtent: 1000,
-                  itemBuilder: (context, index) {
-                    final course = homeViewModel.categoryCourses[index];
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        right: index < homeViewModel.categoryCourses.length - 1 ? 10 : 0,
-                      ),
-                      child: CourseCardWidget(
-                        course: course,
-                        onTap: () {
-                          if (course.slugName != null && course.slugName!.isNotEmpty) {
-                            Navigator.pushNamed(
-                              context,
-                              AppConstants.routeCourseDetail,
-                              arguments: course.slugName,
-                            );
-                          }
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-          ],
         );
       },
     );

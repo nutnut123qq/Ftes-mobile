@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/banner.dart' as home_banner;
 import 'package:ftes/core/utils/text_styles.dart';
@@ -21,83 +22,94 @@ class BannerWidget extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 120,
-        margin: const EdgeInsets.symmetric(horizontal: 20),
+        height: 200,
+        margin: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
-              // Background Image with caching
+              // Background from API gradient/color
+              Positioned.fill(child: _buildApiBackground()),
+
+              // Foreground Image with caching
               if (banner.imageUrl != null && banner.imageUrl!.isNotEmpty)
                 CachedNetworkImage(
                   imageUrl: banner.imageUrl!,
                   width: double.infinity,
                   height: double.infinity,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => _buildDefaultBanner(),
-                  errorWidget: (context, url, error) => _buildDefaultBanner(),
+                  fit: BoxFit.contain, // show full image clearly without cropping
+                  // Show API background immediately (no color shift): keep placeholder transparent
+                  placeholder: (context, url) => Container(color: Colors.transparent),
+                  errorWidget: (context, url, error) => Container(color: Colors.transparent),
                   // Memory cache configuration
-                  memCacheWidth: 800,
-                  memCacheHeight: 240,
-                  maxWidthDiskCache: 1600,
-                  maxHeightDiskCache: 480,
+                  memCacheWidth: 1400,
+                  memCacheHeight: 420,
+                  maxWidthDiskCache: 2200,
+                  maxHeightDiskCache: 660,
                 )
               else
                 _buildDefaultBanner(),
               
-              // Gradient overlay
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.3),
-                      Colors.black.withValues(alpha: 0.1),
-                    ],
-                  ),
-                ),
-              ),
-              
               // Content
-              Padding(
-                padding: const EdgeInsets.all(16),
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 14,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     if (banner.title != null && banner.title!.isNotEmpty)
                       Text(
                         banner.title!,
                         style: AppTextStyles.h3.copyWith(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                         ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    if (banner.description != null && banner.description!.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        banner.description!,
-                        style: AppTextStyles.body1.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 14,
+                    if (banner.description != null && banner.description!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          banner.description!,
+                          style: AppTextStyles.body1.copyWith(
+                            color: Colors.white.withValues(alpha: 0.92),
+                            fontSize: 13,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
+                    if (banner.buttonText != null && banner.buttonText!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Text(
+                            banner.buttonText!,
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -109,6 +121,7 @@ class BannerWidget extends StatelessWidget {
   }
 
   Widget _buildDefaultBanner() {
+    final base = _parseColorOrDefault(banner.backgroundColor, AppColors.primary);
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -117,8 +130,8 @@ class BannerWidget extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primary,
-            AppColors.primary.withValues(alpha: 0.8),
+            base,
+            base.withValues(alpha: 0.85),
           ],
         ),
       ),
@@ -130,5 +143,63 @@ class BannerWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildApiBackground() {
+    // Try parse CSS linear-gradient; fallback to backgroundColor; finally app primary
+    final gradient = _parseCssLinearGradientToFlutter(banner.backgroundGradient) ??
+        LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            _parseColorOrDefault(banner.backgroundColor, AppColors.primary),
+            _parseColorOrDefault(banner.backgroundColor, AppColors.primary).withValues(alpha: 0.85),
+          ],
+        );
+    return DecoratedBox(
+      decoration: BoxDecoration(gradient: gradient),
+    );
+  }
+
+  LinearGradient? _parseCssLinearGradientToFlutter(String? css) {
+    if (css == null || css.isEmpty) return null;
+    // Extract hex colors from CSS gradient string
+    final regex = RegExp(r'#[0-9a-fA-F]{3,8}');
+    final matches = regex.allMatches(css).map((m) => m.group(0)!).toList();
+    if (matches.isEmpty) return null;
+    final colors = matches.map((hex) => _parseColorOrDefault(hex, AppColors.primary)).toList();
+    if (colors.length == 1) {
+      colors.add(colors.first.withValues(alpha: 0.85));
+    }
+    // Direction: try detect 135deg (diagonal). Default topLeft->bottomRight
+    Alignment begin = Alignment.topLeft;
+    Alignment end = Alignment.bottomRight;
+    final angleRegex = RegExp(r'linear-gradient\(\s*([0-9]+)deg', caseSensitive: false);
+    final angleMatch = angleRegex.firstMatch(css);
+    if (angleMatch != null) {
+      final angleDeg = double.tryParse(angleMatch.group(1)!);
+      if (angleDeg != null) {
+        // Convert CSS angle (clockwise from 0deg pointing up) to Flutter vector
+        final radians = (90 - angleDeg) * math.pi / 180.0;
+        final dx = math.cos(radians);
+        final dy = math.sin(radians);
+        begin = Alignment(-dx, -dy);
+        end = Alignment(dx, dy);
+      }
+    }
+    return LinearGradient(begin: begin, end: end, colors: colors);
+  }
+
+  Color _parseColorOrDefault(String? hexColor, Color fallback) {
+    if (hexColor == null || hexColor.isEmpty) return fallback;
+    try {
+      String value = hexColor.trim();
+      if (value.startsWith('#')) value = value.substring(1);
+      if (value.length == 6) value = 'FF$value';
+      final intColor = int.parse(value, radix: 16);
+      return Color(intColor);
+    } catch (_) {
+      return fallback;
+    }
   }
 }

@@ -60,10 +60,8 @@ class CourseCardWidget extends StatelessWidget {
             // Course Image with caching for better performance
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: SizedBox(
-                // full size to avoid layout shifts
-                height: 120,
-                width: double.infinity,
+              child: AspectRatio(
+                aspectRatio: 1 / 1,
                 child: imageUrl != null && imageUrl.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: imageUrl,
@@ -89,14 +87,12 @@ class CourseCardWidget extends StatelessWidget {
                             color: AppColors.primary,
                           ),
                         ),
-                        // Memory cache configuration
-                        memCacheWidth: 400,  // Limit memory cache width
-                        memCacheHeight: 240, // Limit memory cache height
+                        memCacheWidth: 400,
+                        memCacheHeight: 400,
                         maxWidthDiskCache: 800,
-                        maxHeightDiskCache: 480,
+                        maxHeightDiskCache: 800,
                       )
                     : Container(
-                        clipBehavior: Clip.antiAlias,
                         color: AppColors.primary.withValues(alpha: 0.1),
                         child: const Icon(
                           Icons.school,
@@ -146,25 +142,7 @@ class CourseCardWidget extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Category
-                    Container(
-                      clipBehavior: Clip.antiAlias,
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        category,
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.primary,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
+                    // Category removed per requirement
 
                     // Title
                     Text(
