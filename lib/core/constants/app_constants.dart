@@ -190,6 +190,7 @@ class AppConstants {
   static const String errorNotFound = 'Content not found.';
   static const String errorUnauthorized = 'Unauthorized. Please login again.';
   static const String errorServer = 'Server error. Please try again later.';
+  static const String errorCannotOpenUrl = 'Không thể mở liên kết. Vui lòng thử lại.';
 
   // Video Messages
   static const String videoLoadingMessage = 'Đang tải video...';

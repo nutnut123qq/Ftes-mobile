@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_html/flutter_html.dart';
+import '../../../../core/utils/url_helper.dart';
 import '../../../../core/utils/text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../features/home/domain/entities/course.dart';
@@ -485,6 +486,10 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   child: SingleChildScrollView(
                     child: Html(
                       data: lesson.video,
+                      onLinkTap: (url, attributes, element) {
+                        if (url == null) return;
+                        UrlHelper.openExternalUrl(context, url: url);
+                      },
                       style: {
                         "body": Style(
                           color: Colors.white,

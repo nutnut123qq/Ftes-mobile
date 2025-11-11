@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_html/flutter_html.dart';
+import '../../../../core/utils/url_helper.dart';
 import '../../../../core/constants/app_constants.dart' as app_constants;
 import '../../../../core/widgets/youtube_player_widget.dart';
 import '../../../../routes/app_routes.dart';
@@ -411,6 +412,10 @@ class _CourseVideoPageState extends State<CourseVideoPage> {
                   child: SingleChildScrollView(
                     child: Html(
                       data: widget.videoUrl,
+                      onLinkTap: (url, attributes, element) {
+                        if (url == null) return;
+                        UrlHelper.openExternalUrl(context, url: url);
+                      },
                       style: {
                         "body": Style(
                           color: Colors.white,

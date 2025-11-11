@@ -71,6 +71,9 @@ dependencies:
   
   # HTML rendering for blog content
   flutter_html: ^3.0.0-beta.2
+
+  # Open external links in browser
+  url_launcher: ^6.3.0
   
   # Redis client for caching
   redis: ^4.0.0
