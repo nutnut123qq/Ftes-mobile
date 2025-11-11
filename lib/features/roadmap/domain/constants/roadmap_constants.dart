@@ -6,6 +6,10 @@ class RoadmapConstants {
   static const String errorServerError = 'Lỗi máy chủ, vui lòng thử lại sau';
   static const String errorInvalidData = 'Dữ liệu không hợp lệ';
   static const String errorTimeout = 'Yêu cầu quá thời gian chờ, vui lòng thử lại';
+  // Validation Messages
+  static const String validateSelectSemester = 'Vui lòng chọn học kỳ';
+  static const String validateSelectTarget = 'Vui lòng chọn chuyên ngành';
+  static const String validateSelectAtLeastOneSkill = 'Vui lòng chọn ít nhất một kỹ năng';
   
   // Loading Messages
   static const String generatingRoadmap = 'Đang tạo lộ trình học tập...';
@@ -31,13 +35,14 @@ class RoadmapConstants {
   static const String generateButtonLabel = 'Tạo Lộ Trình Ngay';
   static const String retryLabel = 'Thử lại';
   static const String viewCourseLabel = 'Xem khóa học';
+  static const String selectedSkillsCountPrefix = 'Kỹ năng đã có';
   
   // Specialization Mapping
   static const Map<String, String> specializationMap = {
     'javaDeep': 'Java chuyên sâu',
     'feDev': 'Frontend Development',
     'beDev': 'Backend Development',
-    'fullStack': 'Full-stack Development',
+    'fullstackDev': 'Full-stack Development',
     'mobileDev': 'Mobile Development',
     'dataScience': 'Data Science',
     'mlDev': 'Machine Learning',

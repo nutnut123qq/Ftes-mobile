@@ -12,10 +12,17 @@ import '../presentation/viewmodels/roadmap_viewmodel.dart';
 Future<void> initRoadmapDependencies() async {
   final sl = GetIt.instance;
 
-  // AI API Client (separate Dio instance for AI service)
-  sl.registerLazySingleton<AiApiClient>(
-    () => AiApiClient(dio: Dio()),
-  );
+  // AI API Client
+  // Reuse base Dio configuration from DI (headers/timeouts) instead of raw new Dio(),
+  // but keep a dedicated instance to avoid changing baseUrl/options used by ApiClient.
+  sl.registerLazySingleton<AiApiClient>(() {
+    final baseDio = sl<Dio>();
+    final aiDio = Dio();
+    // Copy common headers if any (avoid mutating shared instance)
+    aiDio.options.headers.addAll(Map<String, dynamic>.from(baseDio.options.headers));
+    // Interceptors will be set up by AiApiClient itself
+    return AiApiClient(dio: aiDio);
+  });
 
   // Data sources
   sl.registerLazySingleton<RoadmapRemoteDataSource>(

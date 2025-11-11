@@ -29,7 +29,11 @@ class RoadmapRemoteDataSourceImpl implements RoadmapRemoteDataSource {
         final success = response.data['success'];
         if (success == true) {
           // Use compute() isolate for parsing if response is large
-          if (response.data.toString().length > RoadmapConstants.computeThreshold * 100) {
+          final courseDetails = response.data['data']?['course_details'];
+          final itemsCount = (courseDetails != null && courseDetails['data'] is List)
+              ? (courseDetails['data'] as List).length
+              : 0;
+          if (itemsCount > RoadmapConstants.computeThreshold) {
             return await compute<Map<String, dynamic>, RoadmapResponseModel>(parseRoadmapResponseJson, response.data);
           } else {
             return parseRoadmapResponseJson(response.data);

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../error/exceptions.dart';
 import '../constants/app_constants.dart';
+import '../utils/retry_helper.dart';
 
 /// AI API Client using Dio for AI service requests
 class AiApiClient {
@@ -81,14 +82,33 @@ class AiApiClient {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
+    CancelToken? cancelToken,
+    bool enableRetry = true,
+    int maxRetries = 3,
+    Duration initialDelay = const Duration(seconds: 2),
   }) async {
     try {
-      return await _dio.post(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
+      if (enableRetry) {
+        return await retryWithBackoff<Response>(
+          operation: () => _dio.post(
+            path,
+            data: data,
+            queryParameters: queryParameters,
+            options: options,
+            cancelToken: cancelToken,
+          ),
+          maxRetries: maxRetries,
+          initialDelay: initialDelay,
+        );
+      } else {
+        return await _dio.post(
+          path,
+          data: data,
+          queryParameters: queryParameters,
+          options: options,
+          cancelToken: cancelToken,
+        );
+      }
     } catch (e) {
       throw _handleError(e);
     }

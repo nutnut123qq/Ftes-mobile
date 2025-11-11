@@ -4,6 +4,7 @@ import '../../domain/entities/roadmap.dart';
 import '../../domain/usecases/generate_roadmap_usecase.dart';
 import '../../domain/repositories/roadmap_repository.dart';
 import '../../domain/constants/roadmap_constants.dart';
+import '../../domain/constants/skills_constants.dart';
 import '../../../../core/error/failures.dart';
 
 class RoadmapViewModel extends ChangeNotifier {
@@ -14,23 +15,7 @@ class RoadmapViewModel extends ChangeNotifier {
 
   Semester? semester;
   TargetMajor? target;
-  final List<Skill> allSkills = const [
-    Skill('c', 'C programming'),
-    Skill('java_oop', 'Java OOP'),
-    Skill('py', 'Python'),
-    Skill('js', 'JavaScript'),
-    Skill('htmlcss', 'HTML & CSS'),
-    Skill('sql', 'SQL'),
-    Skill('ds', 'Data Structures'),
-    Skill('algo', 'Algorithms'),
-    Skill('web', 'Web Development'),
-    Skill('mobile', 'Mobile Development'),
-    Skill('ml', 'Machine Learning'),
-    Skill('dbdesign', 'Database Design'),
-    Skill('git', 'Git'),
-    Skill('docker', 'Docker'),
-    Skill('cicd', 'CI/CD'),
-  ];
+  final List<Skill> allSkills = SkillsConstants.allSkills;
 
   final Set<String> selectedSkillIds = {};
 
@@ -77,9 +62,12 @@ class RoadmapViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String get selectedCountLabel => 'Kỹ năng đã có (${selectedSkillIds.length})';
+  String get selectedCountLabel => '${RoadmapConstants.selectedSkillsCountPrefix} (${selectedSkillIds.length})';
 
   Future<Roadmap?> submit(BuildContext context) async {
+    if (_isGenerating) {
+      return null;
+    }
     _setGenerating(true);
     _setError(null);
     _setRoadmap(null);
@@ -87,25 +75,23 @@ class RoadmapViewModel extends ChangeNotifier {
     try {
       // Validate inputs
       if (semester == null) {
-        _setError('Vui lòng chọn học kỳ');
+        _setError(RoadmapConstants.validateSelectSemester);
         return null;
       }
       
       if (target == null) {
-        _setError('Vui lòng chọn chuyên ngành');
+        _setError(RoadmapConstants.validateSelectTarget);
         return null;
       }
 
       if (selectedSkillIds.isEmpty) {
-        _setError('Vui lòng chọn ít nhất một kỹ năng');
+        _setError(RoadmapConstants.validateSelectAtLeastOneSkill);
         return null;
       }
 
       // Map enum to string
       final specialization = RoadmapConstants.getSpecializationString(target!.name);
-      final currentSkills = selectedSkillIds.map((id) {
-        return allSkills.firstWhere((skill) => skill.id == id).label;
-      }).toList();
+      final currentSkills = selectedSkillIds.toList();
 
       // Create params
       final params = GenerateRoadmapParams(
