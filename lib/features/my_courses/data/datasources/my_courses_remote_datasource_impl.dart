@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/error/exceptions.dart';
@@ -32,10 +33,12 @@ class MyCoursesRemoteDataSourceImpl implements MyCoursesRemoteDataSource {
           throw ServerException(MyCoursesConstants.errorInvalidResponse);
         }
         
-        final coursesCount = countCourses(coursesList);
+        // Check JSON size instead of item count for better performance decision
+        final jsonString = jsonEncode(coursesList);
+        final jsonSize = jsonString.length;
         
-        // Use compute isolate for large lists to avoid blocking main thread
-        if (coursesCount > MyCoursesConstants.defaultCoursesThreshold) {
+        // Use compute isolate for large JSON responses to avoid blocking main thread
+        if (jsonSize > MyCoursesConstants.jsonParsingThreshold) {
           return await compute<List<dynamic>, List<MyCourseModel>>(
             parseMyCourseListJson,
             coursesList,

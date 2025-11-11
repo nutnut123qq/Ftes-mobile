@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/my_course.dart';
+import '../../../../core/utils/image_cache_helper.dart';
 
 /// Widget to display individual my course card
 class MyCourseCardWidget extends StatelessWidget {
@@ -32,7 +33,7 @@ class MyCourseCardWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Course image
+            // Course image with caching
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               child: Container(
@@ -40,19 +41,33 @@ class MyCourseCardWidget extends StatelessWidget {
                 width: double.infinity,
                 color: Colors.grey[200],
                 child: course.imageHeader != null && course.imageHeader!.isNotEmpty
-                    ? Image.network(
+                    ? ImageCacheHelper.cached(
                         course.imageHeader!,
+                        height: 200,
+                        width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[200],
-                            child: const Icon(
-                              Icons.school,
-                              size: 64,
-                              color: Colors.grey,
+                        memCacheWidth: 800,
+                        memCacheHeight: 480,
+                        maxWidthDiskCache: 1600,
+                        maxHeightDiskCache: 960,
+                        placeholder: Container(
+                          color: Colors.grey[200],
+                          child: const Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             ),
-                          );
-                        },
+                          ),
+                        ),
+                        error: Container(
+                          color: Colors.grey[200],
+                          child: const Icon(
+                            Icons.school,
+                            size: 64,
+                            color: Colors.grey,
+                          ),
+                        ),
                       )
                     : Container(
                         color: Colors.grey[200],
