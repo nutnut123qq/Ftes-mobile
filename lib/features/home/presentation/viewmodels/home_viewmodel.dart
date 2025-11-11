@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited, Timer;
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/course.dart';
 import '../../domain/entities/banner.dart';
@@ -64,28 +65,29 @@ class HomeViewModel extends ChangeNotifier {
   bool get isLoading => _isLoadingLatestCourses || _isLoadingFeaturedCourses || _isLoadingBanners;
   bool get isSearching => _isSearching;
 
+  // Search debounce state
+  Timer? _searchDebounceTimer;
+  String? _currentSearchQuery;
+
   /// Initialize the ViewModel - fetch all data
   /// Optimized to minimize notifyListeners() calls
   Future<void> initialize() async {
-    // Fetch all data in parallel without notifying listeners for each
-    await Future.wait([
-      _fetchLatestCoursesInternal(),
-      _fetchFeaturedCoursesInternal(),
-      _fetchBannersInternal(),
-    ]);
-    
-    // Set default selected category to "Tất cả"
-    _selectedCategoryId = HomeConstants.defaultCategoryId;
-    _categoryCourses = _latestCourses;
-    
-    // Notify listeners only once after all data is loaded
-    notifyListeners();
+    // Progressive loading: load parts in parallel and notify as each completes
+    unawaited(_fetchLatestCoursesInternal().then((_) {
+      _selectedCategoryId ??= HomeConstants.defaultCategoryId;
+      _categoryCourses = _latestCourses;
+      notifyListeners();
+    }));
+    unawaited(_fetchFeaturedCoursesInternal().then((_) => notifyListeners()));
+    unawaited(_fetchBannersInternal().then((_) => notifyListeners()));
   }
 
   /// Search courses to provide suggestions (debounced from UI)
   Future<void> searchCoursesSuggestions(String keyword) async {
-    final query = keyword.trim();
-    if (query.isEmpty) {
+    _currentSearchQuery = keyword.trim();
+    _searchDebounceTimer?.cancel();
+
+    if (_currentSearchQuery!.isEmpty) {
       _searchSuggestions = [];
       notifyListeners();
       return;
@@ -93,26 +95,32 @@ class HomeViewModel extends ChangeNotifier {
     _isSearching = true;
     notifyListeners();
 
-    final result = await _searchCoursesUseCase(SearchCoursesParams(
-      code: query,
-      pageNumber: 1,
-      pageSize: 10,
-      sortField: 'title',
-      sortOrder: 'ASC',
-    ));
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () async {
+      final query = _currentSearchQuery;
+      final result = await _searchCoursesUseCase(SearchCoursesParams(
+        code: query,
+        pageNumber: 1,
+        pageSize: 10,
+        sortField: 'title',
+        sortOrder: 'ASC',
+      ));
 
-    result.fold(
-      (_) {
-        _searchSuggestions = [];
-        _isSearching = false;
-        notifyListeners();
-      },
-      (courses) {
-        _searchSuggestions = courses;
-        _isSearching = false;
-        notifyListeners();
-      },
-    );
+      // Only apply if query is still current
+      if (_currentSearchQuery == query) {
+        result.fold(
+          (_) {
+            _searchSuggestions = [];
+            _isSearching = false;
+            notifyListeners();
+          },
+          (courses) {
+            _searchSuggestions = courses;
+            _isSearching = false;
+            notifyListeners();
+          },
+        );
+      }
+    });
   }
   
   /// Internal method to fetch latest courses without notifying listeners

@@ -40,8 +40,8 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           throw const ServerException('Invalid response format for latest courses');
         }
         
-        // Use compute() isolate for parsing if list is large (>50 items)
-        if (coursesList.length > 50) {
+        // Use compute() isolate for parsing if list is moderately large (>20 items)
+        if (coursesList.length > 20) {
           return await compute(parseCourseListJson, coursesList);
         } else {
           // For smaller lists, parse directly on main isolate

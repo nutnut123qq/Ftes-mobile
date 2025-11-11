@@ -1,7 +1,11 @@
 import 'package:ftes/core/network/api_client.dart';
 import 'package:ftes/core/di/injection_container.dart' as core;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../data/datasources/home_remote_datasource.dart';
 import '../data/datasources/home_remote_datasource_impl.dart';
+import '../data/datasources/home_local_datasource.dart';
+import '../data/datasources/home_local_datasource_impl.dart';
+import '../data/cache/home_memory_cache.dart';
 import '../data/repositories/home_repository_impl.dart';
 import '../domain/repositories/home_repository.dart';
 import '../domain/usecases/get_latest_courses_usecase.dart';
@@ -19,12 +23,17 @@ Future<void> initHomeDependencies() async {
   sl.registerLazySingleton<HomeRemoteDataSource>(
     () => HomeRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
   );
+  sl.registerLazySingleton<HomeLocalDataSource>(
+    () => HomeLocalDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
+  );
 
   // Repository
   sl.registerLazySingleton<HomeRepository>(
     () => HomeRepositoryImpl(
       remoteDataSource: sl(),
+      localDataSource: sl<HomeLocalDataSource>(),
       networkInfo: sl(),
+      memoryCache: HomeMemoryCache(maxEntries: 50),
     ),
   );
 

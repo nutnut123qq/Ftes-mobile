@@ -104,7 +104,9 @@ class _CourseSearchPageState extends State<CourseSearchPage> {
                                 Navigator.pushNamed(
                                   context,
                                   AppConstants.routeCourseDetail,
-                                  arguments: {'slugName': course.slugName},
+                                  // Route expects either a Course in {'course': ...} or a String slug.
+                                  // Pass slug string for consistency with other places.
+                                  arguments: course.slugName,
                                 );
                               }
                             }),

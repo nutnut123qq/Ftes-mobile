@@ -14,3 +14,4 @@ List<ProfileModel> parseProfileListJson(List<dynamic> jsonList) {
       .toList();
 }
 
+
