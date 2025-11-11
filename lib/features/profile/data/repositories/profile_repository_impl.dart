@@ -1,395 +1,424 @@
-import '../../../../core/network/api_client.dart';
-import '../../../../core/network/network_info.dart';
+import 'dart:async';
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/network_info.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/entities/instructor_course.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../domain/constants/profile_constants.dart';
-import '../models/profile_model.dart';
+import '../datasources/profile_remote_datasource.dart';
+import '../datasources/profile_local_datasource.dart';
 import '../models/upload_image_response_model.dart';
-import '../helpers/instructor_json_parser_helper.dart';
-import 'package:dio/dio.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 
 /// Profile repository implementation
 class ProfileRepositoryImpl implements ProfileRepository {
-  final ApiClient _apiClient;
+  final ProfileRemoteDataSource _remoteDataSource;
+  final ProfileLocalDataSource? _localDataSource;
   final NetworkInfo _networkInfo;
 
   ProfileRepositoryImpl({
-    required ApiClient apiClient,
+    required ProfileRemoteDataSource remoteDataSource,
+    ProfileLocalDataSource? localDataSource,
     required NetworkInfo networkInfo,
-  })  : _apiClient = apiClient,
+  })  : _remoteDataSource = remoteDataSource,
+        _localDataSource = localDataSource,
         _networkInfo = networkInfo;
 
   @override
-  Future<Profile> getProfileById(String userId) async {
-    if (!await _networkInfo.isConnected) {
-      throw NetworkException('No internet connection');
-    }
-
+  Future<Either<Failure, Profile>> getProfileById(String userId) async {
     try {
-      final response = await _apiClient.get(
-        '${ProfileConstants.getProfileByIdEndpoint}/$userId',
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data != null && data['result'] != null) {
-          return ProfileModel.fromJson(data['result']).toEntity();
-        } else {
-          throw ServerException(ProfileConstants.errorProfileNotFound);
+      // 1. Try cache first (even offline)
+      final localDataSource = _localDataSource;
+      if (localDataSource != null) {
+        final cached = await localDataSource
+            .getCachedProfile(userId, ProfileConstants.profileCacheTTL);
+        if (cached != null) {
+          return Right(cached.toEntity());
         }
-      } else {
-        final data = response.data;
-        throw ServerException(
-          data?['messageDTO']?['message'] ?? ProfileConstants.errorGetProfileFailed,
+      }
+
+      // 2. Check network connection
+      if (!await _networkInfo.isConnected) {
+        return const Left(NetworkFailure(ProfileConstants.errorNoInternet));
+      }
+
+      // 3. Fetch from network
+      final model = await _remoteDataSource.getProfileById(userId);
+
+      // 4. Cache for next time (async, don't block)
+      if (localDataSource != null) {
+        unawaited(
+          localDataSource
+              .cacheProfile(userId, model, ProfileConstants.profileCacheTTL)
+              .catchError((_) {}),
         );
       }
+
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
     } catch (e) {
-      if (e is AppException) {
-        rethrow;
-      }
-      throw ServerException('${ProfileConstants.errorGetProfileFailed}: ${e.toString()}');
+      return Left(ServerFailure('${ProfileConstants.errorGetProfileFailed}: $e'));
     }
   }
 
   @override
-  Future<Profile> getProfileByUsername(String userName, {String? postId}) async {
-    if (!await _networkInfo.isConnected) {
-      throw NetworkException('No internet connection');
-    }
-
+  Future<Either<Failure, Profile>> getProfileByUsername(String userName, {String? postId}) async {
     try {
-      final queryParams = <String, dynamic>{};
-      if (postId != null) {
-        queryParams['postId'] = postId;
+      // 1. Try cache first (even offline)
+      final localDataSource = _localDataSource;
+      if (localDataSource != null) {
+        final cached = await localDataSource
+            .getCachedProfileByUsername(userName, ProfileConstants.profileCacheTTL);
+        if (cached != null) {
+          return Right(cached.toEntity());
+        }
       }
 
-      final response = await _apiClient.get(
-        '${ProfileConstants.getProfileByUsernameEndpoint}/$userName',
-        queryParameters: queryParams,
-      );
+      // 2. Check network connection
+      if (!await _networkInfo.isConnected) {
+        return const Left(NetworkFailure(ProfileConstants.errorNoInternet));
+      }
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data != null && data['result'] != null) {
-          return ProfileModel.fromJson(data['result']).toEntity();
-        } else {
-          throw ServerException(ProfileConstants.errorProfileNotFound);
-        }
-      } else {
-        final data = response.data;
-        throw ServerException(
-          data?['messageDTO']?['message'] ?? ProfileConstants.errorGetProfileFailed,
+      // 3. Fetch from network
+      final model = await _remoteDataSource.getProfileByUsername(userName, postId: postId);
+
+      // 4. Cache for next time (async, don't block)
+      if (localDataSource != null) {
+        unawaited(
+          localDataSource
+              .cacheProfileByUsername(userName, model, ProfileConstants.profileCacheTTL)
+              .catchError((_) {}),
         );
       }
+
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
     } catch (e) {
-      if (e is AppException) {
-        rethrow;
-      }
-      throw ServerException('${ProfileConstants.errorGetProfileFailed}: ${e.toString()}');
+      return Left(ServerFailure('${ProfileConstants.errorGetProfileFailed}: $e'));
     }
   }
 
   @override
-  Future<Profile> getInstructorProfileByUsername(String userName) async {
-    if (!await _networkInfo.isConnected) {
-      throw NetworkException('No internet connection');
-    }
-
+  Future<Either<Failure, Profile>> getInstructorProfileByUsername(String userName) async {
     try {
-      final response = await _apiClient.get(
-        '${ProfileConstants.getProfileByUsernameEndpoint}/$userName',
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data != null && data['result'] != null) {
-          return ProfileModel.fromJson(data['result']).toEntity();
-        } else {
-          throw ServerException(ProfileConstants.errorProfileNotFound);
+      // 1. Try cache first (even offline)
+      final localDataSource = _localDataSource;
+      if (localDataSource != null) {
+        final cached = await localDataSource
+            .getCachedProfileByUsername(userName, ProfileConstants.profileCacheTTL);
+        if (cached != null) {
+          return Right(cached.toEntity());
         }
-      } else {
-        final data = response.data;
-        throw ServerException(
-          data?['messageDTO']?['message'] ?? ProfileConstants.errorGetProfileFailed,
+      }
+
+      // 2. Check network connection
+      if (!await _networkInfo.isConnected) {
+        return const Left(NetworkFailure(ProfileConstants.errorNoInternet));
+      }
+
+      // 3. Fetch from network
+      final model = await _remoteDataSource.getInstructorProfileByUsername(userName);
+
+      // 4. Cache for next time (async, don't block)
+      if (localDataSource != null) {
+        unawaited(
+          localDataSource
+              .cacheProfileByUsername(userName, model, ProfileConstants.profileCacheTTL)
+              .catchError((_) {}),
         );
       }
+
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
     } catch (e) {
-      if (e is AppException) {
-        rethrow;
-      }
-      throw ServerException('${ProfileConstants.errorGetProfileFailed}: ${e.toString()}');
+      return Left(ServerFailure('${ProfileConstants.errorGetProfileFailed}: $e'));
     }
   }
 
   @override
-  Future<List<InstructorCourse>> getCoursesByCreator(String userId) async {
-    if (!await _networkInfo.isConnected) {
-      throw NetworkException('No internet connection');
-    }
-
+  Future<Either<Failure, List<InstructorCourse>>> getCoursesByCreator(String userId) async {
     try {
-      final response = await _apiClient.get(
-        '${ProfileConstants.getInstructorCoursesEndpoint}/$userId',
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data != null && data['result'] != null) {
-          final result = data['result'];
-          List<dynamic> coursesList;
-          
-          if (result['data'] is List) {
-            coursesList = result['data'] as List;
-          } else {
-            coursesList = [];
-          }
-
-          // Use compute isolate for parsing if list is large
-          if (coursesList.length > ProfileConstants.instructorCoursesThreshold) {
-            final courseModels = await compute(parseInstructorCoursesJson, coursesList);
-            return courseModels.map((model) => model.toEntity()).toList();
-          } else {
-            final courseModels = parseInstructorCoursesJson(coursesList);
-            return courseModels.map((model) => model.toEntity()).toList();
-          }
-        } else {
-          throw ServerException(ProfileConstants.errorGetInstructorCoursesFailed);
+      // 1. Try cache first (even offline)
+      final localDataSource = _localDataSource;
+      if (localDataSource != null) {
+        final cached = await localDataSource
+            .getCachedInstructorCourses(userId, ProfileConstants.instructorCoursesCacheTTL);
+        if (cached != null) {
+          return Right(cached.map((model) => model.toEntity()).toList());
         }
-      } else {
-        final data = response.data;
-        throw ServerException(
-          data?['messageDTO']?['message'] ?? ProfileConstants.errorGetInstructorCoursesFailed,
+      }
+
+      // 2. Check network connection
+      if (!await _networkInfo.isConnected) {
+        return const Left(NetworkFailure(ProfileConstants.errorNoInternet));
+      }
+
+      // 3. Fetch from network
+      final models = await _remoteDataSource.getCoursesByCreator(userId);
+
+      // 4. Cache for next time (async, don't block)
+      if (localDataSource != null) {
+        unawaited(
+          localDataSource
+              .cacheInstructorCourses(userId, models, ProfileConstants.instructorCoursesCacheTTL)
+              .catchError((_) {}),
         );
       }
+
+      return Right(models.map((model) => model.toEntity()).toList());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
     } catch (e) {
-      if (e is AppException) {
-        rethrow;
-      }
-      throw ServerException('${ProfileConstants.errorGetInstructorCoursesFailed}: ${e.toString()}');
+      return Left(ServerFailure('${ProfileConstants.errorGetInstructorCoursesFailed}: $e'));
     }
   }
 
   @override
-  Future<Profile> createProfile(String userId, Map<String, dynamic> requestData) async {
-    if (!await _networkInfo.isConnected) {
-      throw NetworkException('No internet connection');
-    }
-
+  Future<Either<Failure, Profile>> createProfile(String userId, Map<String, dynamic> requestData) async {
     try {
-      final response = await _apiClient.post(
-        '${ProfileConstants.createProfileEndpoint}/$userId',
-        data: requestData,
-      );
+      // Check network connection
+      if (!await _networkInfo.isConnected) {
+        return const Left(NetworkFailure(ProfileConstants.errorNoInternet));
+      }
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data != null && data['result'] != null) {
-          return ProfileModel.fromJson(data['result']).toEntity();
-        } else {
-          throw ServerException(ProfileConstants.errorCreateProfileFailed);
-        }
-      } else {
-        final data = response.data;
-        throw ServerException(
-          data?['messageDTO']?['message'] ?? ProfileConstants.errorCreateProfileFailed,
+      // Create profile
+      final model = await _remoteDataSource.createProfile(userId, requestData);
+
+      // Cache the new profile
+      final localDataSource = _localDataSource;
+      if (localDataSource != null) {
+        unawaited(
+          localDataSource
+              .cacheProfile(userId, model, ProfileConstants.profileCacheTTL)
+              .catchError((_) {}),
         );
+        // Also cache by username if available
+        if (model.username.isNotEmpty) {
+          unawaited(
+            localDataSource
+                .cacheProfileByUsername(model.username, model, ProfileConstants.profileCacheTTL)
+                .catchError((_) {}),
+          );
+        }
       }
+
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
     } catch (e) {
-      if (e is AppException) {
-        rethrow;
-      }
-      throw ServerException('${ProfileConstants.errorCreateProfileFailed}: ${e.toString()}');
+      return Left(ServerFailure('${ProfileConstants.errorCreateProfileFailed}: $e'));
     }
   }
 
   @override
-  Future<Profile> updateProfile(String userId, Map<String, dynamic> requestData) async {
-    if (!await _networkInfo.isConnected) {
-      throw NetworkException('No internet connection');
-    }
-
+  Future<Either<Failure, Profile>> updateProfile(String userId, Map<String, dynamic> requestData) async {
     try {
-      final response = await _apiClient.put(
-        '${ProfileConstants.updateProfileEndpoint}/$userId',
-        data: requestData,
-      );
+      // Check network connection
+      if (!await _networkInfo.isConnected) {
+        return const Left(NetworkFailure(ProfileConstants.errorNoInternet));
+      }
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data != null && data['result'] != null) {
-          return ProfileModel.fromJson(data['result']).toEntity();
-        } else {
-          throw ServerException(ProfileConstants.errorUpdateProfileFailed);
+      // Update profile
+      final model = await _remoteDataSource.updateProfile(userId, requestData);
+
+      // Invalidate and cache the updated profile
+      final localDataSource = _localDataSource;
+      if (localDataSource != null) {
+        // Invalidate old cache
+        await localDataSource.invalidateProfile(userId);
+        if (model.username.isNotEmpty) {
+          await localDataSource.invalidateProfileByUsername(model.username);
         }
-      } else {
-        final data = response.data;
-        throw ServerException(
-          data?['messageDTO']?['message'] ?? ProfileConstants.errorUpdateProfileFailed,
+
+        // Cache updated profile
+        unawaited(
+          localDataSource
+              .cacheProfile(userId, model, ProfileConstants.profileCacheTTL)
+              .catchError((_) {}),
         );
+        if (model.username.isNotEmpty) {
+          unawaited(
+            localDataSource
+                .cacheProfileByUsername(model.username, model, ProfileConstants.profileCacheTTL)
+                .catchError((_) {}),
+          );
+        }
       }
+
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
     } catch (e) {
-      if (e is AppException) {
-        rethrow;
-      }
-      throw ServerException('${ProfileConstants.errorUpdateProfileFailed}: ${e.toString()}');
+      return Left(ServerFailure('${ProfileConstants.errorUpdateProfileFailed}: $e'));
     }
   }
 
   @override
-  Future<Profile> createProfileAuto(String userId) async {
-    if (!await _networkInfo.isConnected) {
-      throw NetworkException('No internet connection');
-    }
-
+  Future<Either<Failure, Profile>> createProfileAuto(String userId) async {
     try {
-      final response = await _apiClient.post(
-        '${ProfileConstants.createProfileAutoEndpoint}/$userId',
-      );
+      // Check network connection
+      if (!await _networkInfo.isConnected) {
+        return const Left(NetworkFailure(ProfileConstants.errorNoInternet));
+      }
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data != null && data['result'] != null) {
-          return ProfileModel.fromJson(data['result']).toEntity();
-        } else {
-          throw ServerException(ProfileConstants.errorCreateProfileFailed);
-        }
-      } else {
-        final data = response.data;
-        throw ServerException(
-          data?['messageDTO']?['message'] ?? ProfileConstants.errorCreateProfileFailed,
+      // Create profile automatically
+      final model = await _remoteDataSource.createProfileAuto(userId);
+
+      // Cache the new profile
+      final localDataSource = _localDataSource;
+      if (localDataSource != null) {
+        unawaited(
+          localDataSource
+              .cacheProfile(userId, model, ProfileConstants.profileCacheTTL)
+              .catchError((_) {}),
         );
+        // Also cache by username if available
+        if (model.username.isNotEmpty) {
+          unawaited(
+            localDataSource
+                .cacheProfileByUsername(model.username, model, ProfileConstants.profileCacheTTL)
+                .catchError((_) {}),
+          );
+        }
       }
+
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
     } catch (e) {
-      if (e is AppException) {
-        rethrow;
-      }
-      throw ServerException('${ProfileConstants.errorCreateProfileFailed}: ${e.toString()}');
+      return Left(ServerFailure('${ProfileConstants.errorCreateProfileFailed}: $e'));
     }
   }
 
   @override
-  Future<int> getParticipantsCount(String instructorId) async {
-    if (!await _networkInfo.isConnected) {
-      throw NetworkException('No internet connection');
-    }
-
+  Future<Either<Failure, int>> getParticipantsCount(String instructorId) async {
     try {
-      final response = await _apiClient.get(
-        '${ProfileConstants.countParticipantsEndpoint}/$instructorId',
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data != null && data['result'] != null) {
-          return data['result'] as int;
-        } else {
-          throw ServerException(ProfileConstants.errorCountParticipantsFailed);
+      // 1. Try cache first (even offline)
+      final localDataSource = _localDataSource;
+      if (localDataSource != null) {
+        final cached = await localDataSource
+            .getCachedParticipantsCount(instructorId, ProfileConstants.participantsCountCacheTTL);
+        if (cached != null) {
+          return Right(cached);
         }
-      } else {
-        final data = response.data;
-        throw ServerException(
-          data?['messageDTO']?['message'] ?? ProfileConstants.errorCountParticipantsFailed,
+      }
+
+      // 2. Check network connection
+      if (!await _networkInfo.isConnected) {
+        return const Left(NetworkFailure(ProfileConstants.errorNoInternet));
+      }
+
+      // 3. Fetch from network
+      final count = await _remoteDataSource.getParticipantsCount(instructorId);
+
+      // 4. Cache for next time (async, don't block)
+      if (localDataSource != null) {
+        unawaited(
+          localDataSource
+              .cacheParticipantsCount(instructorId, count, ProfileConstants.participantsCountCacheTTL)
+              .catchError((_) {}),
         );
       }
+
+      return Right(count);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
     } catch (e) {
-      if (e is AppException) {
-        rethrow;
-      }
-      throw ServerException('${ProfileConstants.errorCountParticipantsFailed}: ${e.toString()}');
+      return Left(ServerFailure('${ProfileConstants.errorCountParticipantsFailed}: $e'));
     }
   }
 
   @override
-  Future<int> checkApplyCourse(String userId, String courseId) async {
-    if (!await _networkInfo.isConnected) {
-      throw NetworkException('No internet connection');
-    }
-
+  Future<Either<Failure, int>> checkApplyCourse(String userId, String courseId) async {
     try {
-      final response = await _apiClient.get(
-        '${ProfileConstants.checkApplyCourseEndpoint}/$userId/apply-course/$courseId',
-      );
+      // Check network connection
+      if (!await _networkInfo.isConnected) {
+        return const Left(NetworkFailure(ProfileConstants.errorNoInternet));
+      }
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data != null && data['result'] != null) {
-          return data['result'] as int;
-        } else {
-          throw ServerException(ProfileConstants.errorCheckApplyCourseFailed);
-        }
-      } else {
-        final data = response.data;
-        throw ServerException(
-          data?['messageDTO']?['message'] ?? ProfileConstants.errorCheckApplyCourseFailed,
-        );
-      }
+      // Check apply course (no cache for this operation)
+      final status = await _remoteDataSource.checkApplyCourse(userId, courseId);
+
+      return Right(status);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
     } catch (e) {
-      if (e is AppException) {
-        rethrow;
-      }
-      throw ServerException('${ProfileConstants.errorCheckApplyCourseFailed}: ${e.toString()}');
+      return Left(ServerFailure('${ProfileConstants.errorCheckApplyCourseFailed}: $e'));
     }
   }
 
   @override
-  Future<UploadImageResponseModel> uploadImage({
+  Future<Either<Failure, UploadImageResponseModel>> uploadImage({
     required String filePath,
     String? fileName,
     String? description,
     String? allText,
     String? folderPath,
   }) async {
-    if (!await _networkInfo.isConnected) {
-      throw NetworkException('No internet connection');
-    }
-
     try {
-      final file = File(filePath);
-      if (!await file.exists()) {
-        throw ValidationException('File does not exist');
+      // Check network connection
+      if (!await _networkInfo.isConnected) {
+        return const Left(NetworkFailure(ProfileConstants.errorNoInternet));
       }
 
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(
-          filePath,
-          filename: fileName ?? file.path.split('/').last,
-        ),
-        if (fileName != null) 'fileName': fileName,
-        if (description != null) 'description': description,
-        if (allText != null) 'allText': allText,
-        if (folderPath != null) 'folderPath': folderPath,
-      });
-
-      final response = await _apiClient.post(
-        ProfileConstants.uploadImageEndpoint,
-        data: formData,
+      // Upload image (already optimized in RemoteDataSource with isolate and timeout)
+      final response = await _remoteDataSource.uploadImage(
+        filePath: filePath,
+        fileName: fileName,
+        description: description,
+        allText: allText,
+        folderPath: folderPath,
       );
 
-      debugPrint('Upload image response status: ${response.statusCode}');
-      debugPrint('Upload image response data: ${response.data}');
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data != null) {
-          return UploadImageResponseModel.fromJson(data);
-        } else {
-          throw ServerException(ProfileConstants.errorUploadImageFailed);
-        }
-      } else {
-        final data = response.data;
-        throw ServerException(
-          data?['messageDTO']?['message'] ?? ProfileConstants.errorUploadImageFailed,
-        );
-      }
+      return Right(response);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
     } catch (e) {
-      if (e is AppException) {
-        rethrow;
-      }
-      throw ServerException('${ProfileConstants.errorUploadImageFailed}: ${e.toString()}');
+      return Left(ServerFailure('${ProfileConstants.errorUploadImageFailed}: $e'));
     }
   }
 }

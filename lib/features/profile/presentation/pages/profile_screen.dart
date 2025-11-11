@@ -20,6 +20,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  bool _isInitializing = true;
+
   @override
   void initState() {
     super.initState();
@@ -40,10 +42,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
       
       // Load profile data if user is logged in
       if (authViewModel.isLoggedIn && authViewModel.currentUser != null) {
-        await profileViewModel.getProfileById(authViewModel.currentUser!.id);
+        final userId = authViewModel.currentUser!.id;
+        
+        // First, load from cache immediately to show data instantly
+        await profileViewModel.loadProfileFromCache(userId);
+        
+        // Set initializing to false after cache is loaded
+        if (mounted) {
+          setState(() {
+            _isInitializing = false;
+          });
+        }
+        
+        // Then, refresh from network (will use cache if available, then update)
+        await profileViewModel.getProfileById(userId);
+      } else {
+        if (mounted) {
+          setState(() {
+            _isInitializing = false;
+          });
+        }
       }
     } catch (e) {
       debugPrint('Error loading user info: $e');
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
     }
   }
 
@@ -153,7 +179,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileContent() {
     return Consumer2<AuthViewModel, ProfileViewModel>(
       builder: (context, authViewModel, profileViewModel, child) {
-        if (authViewModel.isLoading || profileViewModel.isLoading) {
+        // Show loading only if initializing or if both are loading and no cached data
+        if (_isInitializing || 
+            (authViewModel.isLoading && profileViewModel.currentProfile == null) ||
+            (profileViewModel.isLoading && profileViewModel.currentProfile == null)) {
           return const Center(
             child: CircularProgressIndicator(),
           );

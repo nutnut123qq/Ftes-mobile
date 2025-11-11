@@ -20,6 +20,7 @@ class ProfileConstants {
   static const String errorGetInstructorCoursesFailed = 'Failed to get instructor courses';
   static const String errorCountParticipantsFailed = 'Failed to count participants';
   static const String errorCheckApplyCourseFailed = 'Failed to check course application';
+  static const String errorNoInternet = 'Không có kết nối internet';
 
   // Success Messages
   static const String successProfileCreated = 'Profile created successfully';
@@ -41,11 +42,32 @@ class ProfileConstants {
   // Performance Thresholds
   static const int instructorCoursesThreshold = 20; // Use compute isolate if > 20 courses
   static const int maxCoursesDisplay = 100; // Limit display courses
+  static const int jsonParsingThreshold = 10000; // Use compute isolate if response > 10KB
 
   // Validation
   static const int maxNameLength = 100;
   static const int maxDescriptionLength = 500;
   static const int maxJobNameLength = 100;
   static const int maxSocialUrlLength = 200;
+
+  // Cache Configuration
+  static const String cacheKeyPrefixProfile = 'profile_cache_';
+  static const String cacheKeyPrefixProfileByUsername = 'profile_username_cache_';
+  static const String cacheKeyPrefixInstructorCourses = 'instructor_courses_cache_';
+  static const String cacheKeyPrefixParticipantsCount = 'participants_count_cache_';
+
+  // Cache TTL (Time To Live)
+  static const Duration profileCacheTTL = Duration(hours: 1);
+  static const Duration instructorCoursesCacheTTL = Duration(minutes: 30);
+  static const Duration participantsCountCacheTTL = Duration(minutes: 15);
+
+  // Retry Configuration
+  static const int maxRetries = 3;
+  static const Duration retryDelay = Duration(seconds: 2);
+
+  // Timeout Configuration
+  static const Duration profileApiTimeout = Duration(seconds: 30);
+  static const Duration uploadImageTimeout = Duration(minutes: 5);
+  static const Duration participantsCountTimeout = Duration(seconds: 10);
 }
 

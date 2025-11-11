@@ -1,9 +1,15 @@
 import 'package:flutter/foundation.dart';
+import 'package:dartz/dartz.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/usecases/profile_usecases.dart';
+import '../../domain/constants/profile_constants.dart';
+import '../../data/datasources/profile_local_datasource.dart';
 import '../../../../core/error/failures.dart';
 
 /// ViewModel for Profile operations
+/// Optimized with minimal notifyListeners calls and parallel loading
 class ProfileViewModel extends ChangeNotifier {
   final GetProfileByIdUseCase _getProfileByIdUseCase;
   final GetProfileByUsernameUseCase _getProfileByUsernameUseCase;
@@ -13,6 +19,8 @@ class ProfileViewModel extends ChangeNotifier {
   final GetParticipantsCountUseCase _getParticipantsCountUseCase;
   final CheckApplyCourseUseCase _checkApplyCourseUseCase;
   final UploadImageUseCase _uploadImageUseCase;
+  final ProfileLocalDataSource? _localDataSource;
+  final SharedPreferences? _sharedPreferences;
 
   ProfileViewModel({
     required GetProfileByIdUseCase getProfileByIdUseCase,
@@ -23,6 +31,8 @@ class ProfileViewModel extends ChangeNotifier {
     required GetParticipantsCountUseCase getParticipantsCountUseCase,
     required CheckApplyCourseUseCase checkApplyCourseUseCase,
     required UploadImageUseCase uploadImageUseCase,
+    ProfileLocalDataSource? localDataSource,
+    SharedPreferences? sharedPreferences,
   })  : _getProfileByIdUseCase = getProfileByIdUseCase,
         _getProfileByUsernameUseCase = getProfileByUsernameUseCase,
         _createProfileUseCase = createProfileUseCase,
@@ -30,7 +40,9 @@ class ProfileViewModel extends ChangeNotifier {
         _createProfileAutoUseCase = createProfileAutoUseCase,
         _getParticipantsCountUseCase = getParticipantsCountUseCase,
         _checkApplyCourseUseCase = checkApplyCourseUseCase,
-        _uploadImageUseCase = uploadImageUseCase;
+        _uploadImageUseCase = uploadImageUseCase,
+        _localDataSource = localDataSource,
+        _sharedPreferences = sharedPreferences;
 
   // State variables
   Profile? _currentProfile;
@@ -52,54 +64,117 @@ class ProfileViewModel extends ChangeNotifier {
   int get participantsCount => _participantsCount;
   int get applyCourseStatus => _applyCourseStatus;
 
-  /// Get profile by user ID
+  /// Initialize ViewModel - load profile from cache if available
+  /// This is called when ViewModel is created to restore cached data
+  Future<void> initialize() async {
+    if (_sharedPreferences == null || _localDataSource == null) return;
+    
+    try {
+      final userId = _sharedPreferences!.getString(AppConstants.keyUserId);
+      if (userId != null && userId.isNotEmpty) {
+        await loadProfileFromCache(userId);
+      }
+    } catch (e) {
+      debugPrint('Error initializing ProfileViewModel: $e');
+    }
+  }
+
+  /// Load profile from cache immediately (without loading state)
+  /// This is called first to show cached data instantly
+  Future<void> loadProfileFromCache(String userId) async {
+    final localDataSource = _localDataSource;
+    if (localDataSource == null) return;
+    
+    try {
+      final cached = await localDataSource
+          .getCachedProfile(userId, ProfileConstants.profileCacheTTL);
+      if (cached != null) {
+        _currentProfile = cached.toEntity();
+        notifyListeners();
+      }
+      
+      // Also try to load participants count from cache
+      final cachedCount = await localDataSource
+          .getCachedParticipantsCount(userId, ProfileConstants.participantsCountCacheTTL);
+      if (cachedCount != null) {
+        _participantsCount = cachedCount;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error loading profile from cache: $e');
+    }
+  }
+
+  /// Get profile by user ID with parallel loading of participants count
+  /// This will load from cache first (via repository), then refresh from network
   Future<void> getProfileById(String userId) async {
-    _setLoading(true);
-    _clearError();
+    // If we already have profile from cache, don't show loading immediately
+    final hasCachedProfile = _currentProfile != null;
+    
+    _isLoading = true;
+    _errorMessage = null;
+    if (!hasCachedProfile) {
+      notifyListeners(); // Only notify if we don't have cached data
+    }
 
     try {
-      final result = await _getProfileByIdUseCase(userId);
-      result.fold(
-        (failure) => _setError(_mapFailureToMessage(failure)),
-        (profile) {
-          _currentProfile = profile;
-          notifyListeners();
+      // Load profile and participants count in parallel
+      final results = await Future.wait([
+        _getProfileByIdUseCase(userId),
+        _getParticipantsCountUseCase(userId),
+      ]);
+
+      // Handle profile result
+      final profileResult = results[0] as Either<Failure, Profile>;
+      profileResult.fold(
+        (failure) => _errorMessage = _mapFailureToMessage(failure),
+        (profile) => _currentProfile = profile,
+      );
+
+      // Handle participants count result
+      final countResult = results[1] as Either<Failure, int>;
+      countResult.fold(
+        (failure) {
+          // Don't set error if participants count fails, just log it
+          debugPrint('Failed to get participants count: ${_mapFailureToMessage(failure)}');
         },
+        (count) => _participantsCount = count,
       );
     } catch (e) {
-      _setError(e.toString());
+      _errorMessage = e.toString();
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      notifyListeners(); // Always notify at end
     }
   }
 
   /// Get profile by username
   Future<void> getProfileByUsername(String userName, {String? postId}) async {
-    _setLoading(true);
-    _clearError();
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners(); // Only once at start
 
     try {
       final result = await _getProfileByUsernameUseCase(
         GetProfileByUsernameParams(userName: userName, postId: postId),
       );
       result.fold(
-        (failure) => _setError(_mapFailureToMessage(failure)),
-        (profile) {
-          _currentProfile = profile;
-          notifyListeners();
-        },
+        (failure) => _errorMessage = _mapFailureToMessage(failure),
+        (profile) => _currentProfile = profile,
       );
     } catch (e) {
-      _setError(e.toString());
+      _errorMessage = e.toString();
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      notifyListeners(); // Only once at end
     }
   }
 
   /// Create new profile
   Future<bool> createProfile(String userId, Map<String, dynamic> requestData) async {
-    _setCreating(true);
-    _clearError();
+    _isCreating = true;
+    _errorMessage = null;
+    notifyListeners(); // Only once at start
 
     try {
       final result = await _createProfileUseCase(
@@ -107,27 +182,28 @@ class ProfileViewModel extends ChangeNotifier {
       );
       return result.fold(
         (failure) {
-          _setError(_mapFailureToMessage(failure));
+          _errorMessage = _mapFailureToMessage(failure);
           return false;
         },
         (profile) {
           _currentProfile = profile;
-          notifyListeners();
           return true;
         },
       );
     } catch (e) {
-      _setError(e.toString());
+      _errorMessage = e.toString();
       return false;
     } finally {
-      _setCreating(false);
+      _isCreating = false;
+      notifyListeners(); // Only once at end
     }
   }
 
   /// Update existing profile
   Future<bool> updateProfile(String userId, Map<String, dynamic> requestData) async {
-    _setUpdating(true);
-    _clearError();
+    _isUpdating = true;
+    _errorMessage = null;
+    notifyListeners(); // Only once at start
 
     try {
       final result = await _updateProfileUseCase(
@@ -135,90 +211,89 @@ class ProfileViewModel extends ChangeNotifier {
       );
       return result.fold(
         (failure) {
-          _setError(_mapFailureToMessage(failure));
+          _errorMessage = _mapFailureToMessage(failure);
           return false;
         },
         (profile) {
           _currentProfile = profile;
-          notifyListeners();
           return true;
         },
       );
     } catch (e) {
-      _setError(e.toString());
+      _errorMessage = e.toString();
       return false;
     } finally {
-      _setUpdating(false);
+      _isUpdating = false;
+      notifyListeners(); // Only once at end
     }
   }
 
   /// Create profile automatically (for new users)
   Future<bool> createProfileAuto(String userId) async {
-    _setCreating(true);
-    _clearError();
+    _isCreating = true;
+    _errorMessage = null;
+    notifyListeners(); // Only once at start
 
     try {
       final result = await _createProfileAutoUseCase(userId);
       return result.fold(
         (failure) {
-          _setError(_mapFailureToMessage(failure));
+          _errorMessage = _mapFailureToMessage(failure);
           return false;
         },
         (profile) {
           _currentProfile = profile;
-          notifyListeners();
           return true;
         },
       );
     } catch (e) {
-      _setError(e.toString());
+      _errorMessage = e.toString();
       return false;
     } finally {
-      _setCreating(false);
+      _isCreating = false;
+      notifyListeners(); // Only once at end
     }
   }
 
   /// Get participants count for instructor
   Future<void> getParticipantsCount(String instructorId) async {
-    _setLoading(true);
-    _clearError();
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners(); // Only once at start
 
     try {
       final result = await _getParticipantsCountUseCase(instructorId);
       result.fold(
-        (failure) => _setError(_mapFailureToMessage(failure)),
-        (count) {
-          _participantsCount = count;
-          notifyListeners();
-        },
+        (failure) => _errorMessage = _mapFailureToMessage(failure),
+        (count) => _participantsCount = count,
       );
     } catch (e) {
-      _setError(e.toString());
+      _errorMessage = e.toString();
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      notifyListeners(); // Only once at end
     }
   }
 
   /// Check if user has applied to course
   Future<void> checkApplyCourse(String userId, String courseId) async {
-    _setLoading(true);
-    _clearError();
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners(); // Only once at start
 
     try {
       final result = await _checkApplyCourseUseCase(
         CheckApplyCourseParams(userId: userId, courseId: courseId),
       );
       result.fold(
-        (failure) => _setError(_mapFailureToMessage(failure)),
-        (status) {
-          _applyCourseStatus = status;
-          notifyListeners();
-        },
+        (failure) => _errorMessage = _mapFailureToMessage(failure),
+        (status) => _applyCourseStatus = status,
       );
     } catch (e) {
-      _setError(e.toString());
+      _errorMessage = e.toString();
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      notifyListeners(); // Only once at end
     }
   }
 
@@ -230,8 +305,9 @@ class ProfileViewModel extends ChangeNotifier {
     String? allText,
     String? folderPath,
   }) async {
-    _setUploading(true);
-    _clearError();
+    _isUploading = true;
+    _errorMessage = null;
+    notifyListeners(); // Only once at start
 
     try {
       final result = await _uploadImageUseCase(
@@ -246,23 +322,24 @@ class ProfileViewModel extends ChangeNotifier {
 
       return result.fold(
         (failure) {
-          _setError(_mapFailureToMessage(failure));
+          _errorMessage = _mapFailureToMessage(failure);
           return null;
         },
         (response) {
           if (response.success && response.result != null) {
             return response.result!.cdnUrl;
           } else {
-            _setError('Upload failed');
+            _errorMessage = 'Upload failed';
             return null;
           }
         },
       );
     } catch (e) {
-      _setError(e.toString());
+      _errorMessage = e.toString();
       return null;
     } finally {
-      _setUploading(false);
+      _isUploading = false;
+      notifyListeners(); // Only once at end
     }
   }
 
@@ -274,36 +351,6 @@ class ProfileViewModel extends ChangeNotifier {
 
   /// Clear error message
   void clearError() {
-    _clearError();
-  }
-
-  // Private methods
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
-  void _setCreating(bool creating) {
-    _isCreating = creating;
-    notifyListeners();
-  }
-
-  void _setUpdating(bool updating) {
-    _isUpdating = updating;
-    notifyListeners();
-  }
-
-  void _setUploading(bool uploading) {
-    _isUploading = uploading;
-    notifyListeners();
-  }
-
-  void _setError(String error) {
-    _errorMessage = error;
-    notifyListeners();
-  }
-
-  void _clearError() {
     _errorMessage = null;
     notifyListeners();
   }

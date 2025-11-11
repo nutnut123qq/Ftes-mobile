@@ -163,6 +163,7 @@ class CourseInfoCard extends StatelessWidget {
 
   String _formatPrice(double price) {
     final str = price.toStringAsFixed(0);
+    // ignore: deprecated_member_use
     return '${str.replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}đ';
   }
 }

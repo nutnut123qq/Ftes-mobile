@@ -121,12 +121,14 @@ class CourseVideoViewModel extends ChangeNotifier {
 
   /// Check if URL is YouTube
   bool isYouTubeUrl(String url) {
+    // ignore: deprecated_member_use
     final youtubeRegex = RegExp(r'(?:youtube\.com/(?:watch\?v=|embed/|v/|shorts/)|youtu\.be/)([a-zA-Z0-9_-]{11})');
     return youtubeRegex.hasMatch(url);
   }
 
   /// Extract YouTube video ID from URL
   String? extractYouTubeId(String url) {
+    // ignore: deprecated_member_use
     final youtubeRegex = RegExp(r'(?:youtube\.com/(?:watch\?v=|embed/|v/|shorts/)|youtu\.be/)([a-zA-Z0-9_-]{11})');
     final match = youtubeRegex.firstMatch(url);
     return match?.group(1);
@@ -134,12 +136,14 @@ class CourseVideoViewModel extends ChangeNotifier {
 
   /// Check if URL is Vimeo
   bool isVimeoUrl(String url) {
+    // ignore: deprecated_member_use
     final vimeoRegex = RegExp(r'(?:vimeo\.com/)(\d+)');
     return vimeoRegex.hasMatch(url);
   }
 
   /// Extract Vimeo video ID from URL
   String? extractVimeoId(String url) {
+    // ignore: deprecated_member_use
     final vimeoRegex = RegExp(r'(?:vimeo\.com/)(\d+)');
     final match = vimeoRegex.firstMatch(url);
     return match?.group(1);

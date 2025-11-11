@@ -1,5 +1,6 @@
 // Web implementation
 // ignore_for_file: avoid_web_libraries_in_flutter
+// ignore: deprecated_member_use
 import 'dart:html' as html;
 // ignore: depend_on_referenced_packages
 import 'dart:ui_web' as ui_web;

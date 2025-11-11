@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../constants/app_constants.dart';
-import '../error/exceptions.dart';
 
 /// Singleton service to validate tokens using Introspect API
 /// Implements debouncing and caching to avoid excessive API calls
@@ -19,7 +18,6 @@ class TokenValidator {
   // Debounce
   Future<bool>? _pendingValidation;
   Timer? _debounceTimer;
-  static const Duration _debounceDuration = Duration(seconds: 2);
   
   // Lock to prevent concurrent validations
   bool _isValidating = false;

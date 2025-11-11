@@ -30,6 +30,7 @@ class BlogHelpers {
 
   // Isolate functions (must be top-level or static)
   static String _stripHtmlTagsIsolate(String htmlText) {
+    // ignore: deprecated_member_use
     final RegExp exp = RegExp(r'<[^>]*>', multiLine: true, caseSensitive: true);
     return htmlText.replaceAll(exp, '').trim();
   }
@@ -57,11 +58,13 @@ class BlogHelpers {
 
   static String _calculateReadTimeIsolate(String content) {
     // Strip HTML first
+    // ignore: deprecated_member_use
     final RegExp exp = RegExp(r'<[^>]*>', multiLine: true, caseSensitive: true);
     final plainText = content.replaceAll(exp, ' ').trim();
     
     if (plainText.isEmpty) return '1 ${BlogConstants.readTimeLabel}';
     
+    // ignore: deprecated_member_use
     final words = plainText.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
     final minutes = (words / BlogConstants.averageReadingSpeed).ceil();
     return '$minutes ${BlogConstants.readTimeLabel}';

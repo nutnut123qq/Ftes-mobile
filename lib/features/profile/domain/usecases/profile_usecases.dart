@@ -1,6 +1,5 @@
 import '../../../../core/usecases/usecase.dart';
 import '../../../../core/error/failures.dart';
-import '../../../../core/error/exceptions.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../data/models/upload_image_response_model.dart';
@@ -14,12 +13,7 @@ class GetProfileByIdUseCase implements UseCase<Profile, String> {
 
   @override
   Future<Either<Failure, Profile>> call(String userId) async {
-    try {
-      final profile = await _repository.getProfileById(userId);
-      return Right(profile);
-    } catch (e) {
-      return Left(_mapExceptionToFailure(e));
-    }
+    return await _repository.getProfileById(userId);
   }
 }
 
@@ -31,15 +25,10 @@ class GetProfileByUsernameUseCase implements UseCase<Profile, GetProfileByUserna
 
   @override
   Future<Either<Failure, Profile>> call(GetProfileByUsernameParams params) async {
-    try {
-      final profile = await _repository.getProfileByUsername(
-        params.userName,
-        postId: params.postId,
-      );
-      return Right(profile);
-    } catch (e) {
-      return Left(_mapExceptionToFailure(e));
-    }
+    return await _repository.getProfileByUsername(
+      params.userName,
+      postId: params.postId,
+    );
   }
 }
 
@@ -51,12 +40,7 @@ class CreateProfileUseCase implements UseCase<Profile, CreateProfileParams> {
 
   @override
   Future<Either<Failure, Profile>> call(CreateProfileParams params) async {
-    try {
-      final profile = await _repository.createProfile(params.userId, params.requestData);
-      return Right(profile);
-    } catch (e) {
-      return Left(_mapExceptionToFailure(e));
-    }
+    return await _repository.createProfile(params.userId, params.requestData);
   }
 }
 
@@ -68,12 +52,7 @@ class UpdateProfileUseCase implements UseCase<Profile, UpdateProfileParams> {
 
   @override
   Future<Either<Failure, Profile>> call(UpdateProfileParams params) async {
-    try {
-      final profile = await _repository.updateProfile(params.userId, params.requestData);
-      return Right(profile);
-    } catch (e) {
-      return Left(_mapExceptionToFailure(e));
-    }
+    return await _repository.updateProfile(params.userId, params.requestData);
   }
 }
 
@@ -85,12 +64,7 @@ class CreateProfileAutoUseCase implements UseCase<Profile, String> {
 
   @override
   Future<Either<Failure, Profile>> call(String userId) async {
-    try {
-      final profile = await _repository.createProfileAuto(userId);
-      return Right(profile);
-    } catch (e) {
-      return Left(_mapExceptionToFailure(e));
-    }
+    return await _repository.createProfileAuto(userId);
   }
 }
 
@@ -102,12 +76,7 @@ class GetParticipantsCountUseCase implements UseCase<int, String> {
 
   @override
   Future<Either<Failure, int>> call(String instructorId) async {
-    try {
-      final count = await _repository.getParticipantsCount(instructorId);
-      return Right(count);
-    } catch (e) {
-      return Left(_mapExceptionToFailure(e));
-    }
+    return await _repository.getParticipantsCount(instructorId);
   }
 }
 
@@ -119,12 +88,7 @@ class CheckApplyCourseUseCase implements UseCase<int, CheckApplyCourseParams> {
 
   @override
   Future<Either<Failure, int>> call(CheckApplyCourseParams params) async {
-    try {
-      final status = await _repository.checkApplyCourse(params.userId, params.courseId);
-      return Right(status);
-    } catch (e) {
-      return Left(_mapExceptionToFailure(e));
-    }
+    return await _repository.checkApplyCourse(params.userId, params.courseId);
   }
 }
 
@@ -136,18 +100,13 @@ class UploadImageUseCase implements UseCase<UploadImageResponseModel, UploadImag
 
   @override
   Future<Either<Failure, UploadImageResponseModel>> call(UploadImageParams params) async {
-    try {
-      final response = await _repository.uploadImage(
-        filePath: params.filePath,
-        fileName: params.fileName,
-        description: params.description,
-        allText: params.allText,
-        folderPath: params.folderPath,
-      );
-      return Right(response);
-    } catch (e) {
-      return Left(_mapExceptionToFailure(e));
-    }
+    return await _repository.uploadImage(
+      filePath: params.filePath,
+      fileName: params.fileName,
+      description: params.description,
+      allText: params.allText,
+      folderPath: params.folderPath,
+    );
   }
 }
 
@@ -212,17 +171,3 @@ class UploadImageParams {
   });
 }
 
-/// Map exceptions to failures
-Failure _mapExceptionToFailure(dynamic exception) {
-  if (exception is ServerException) {
-    return ServerFailure(exception.message);
-  } else if (exception is NetworkException) {
-    return NetworkFailure(exception.message);
-  } else if (exception is ValidationException) {
-    return ValidationFailure(exception.message);
-  } else if (exception is AuthException) {
-    return AuthFailure(exception.message);
-  } else {
-    return ServerFailure('Unexpected error: ${exception.toString()}');
-  }
-}

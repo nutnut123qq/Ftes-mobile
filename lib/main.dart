@@ -38,7 +38,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => di.sl<BlogViewModel>()..initialize(),
         ),
-        ChangeNotifierProvider(create: (context) => di.sl<ProfileViewModel>()),
+        ChangeNotifierProvider(
+          create: (context) => di.sl<ProfileViewModel>()..initialize(),
+        ),
         // Legacy providers (temporary for backward compatibility) - DEPRECATED
         // ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
         ChangeNotifierProvider(create: (context) => di.sl<PointsViewModel>()),

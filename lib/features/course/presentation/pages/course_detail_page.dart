@@ -297,6 +297,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                           return (raw['items'] as List).map((e) => e.toString()).cast<String>().toList();
                         }
                         if (raw is String && raw.trim().isNotEmpty) {
+                          // ignore: deprecated_member_use
                           final lines = raw.split(RegExp(r'[\n;]|\r\n')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
                           if (lines.isNotEmpty) return lines;
                         }
@@ -323,6 +324,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                           return (only['items'] as List).map((e) => e.toString()).cast<String>().toList();
                         }
                         if (only is String && only.trim().isNotEmpty) {
+                          // ignore: deprecated_member_use
                           final lines = only.split(RegExp(r'[\n;]|\r\n')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
                           if (lines.isNotEmpty) return lines;
                         }

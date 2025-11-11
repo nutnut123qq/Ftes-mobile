@@ -10,10 +10,10 @@ class YouTubePlayerWidget extends StatefulWidget {
   final String? videoType; // 'youtube', 'vimeo', etc.
 
   const YouTubePlayerWidget({
-    Key? key,
+    super.key,
     required this.videoUrl,
     this.videoType = 'youtube',
-  }) : super(key: key);
+  });
 
   @override
   State<YouTubePlayerWidget> createState() => _YouTubePlayerWidgetState();
@@ -53,6 +53,7 @@ class _YouTubePlayerWidgetState extends State<YouTubePlayerWidget> {
   }
 
   String? _extractVimeoId(String url) {
+    // ignore: deprecated_member_use
     final vimeoRegex = RegExp(r'(?:vimeo\.com/)(\d+)');
     final match = vimeoRegex.firstMatch(url);
     return match?.group(1);
