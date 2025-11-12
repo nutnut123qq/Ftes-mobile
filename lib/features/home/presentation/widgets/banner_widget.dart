@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/banner.dart' as home_banner;
 import 'package:ftes/core/utils/text_styles.dart';
 import 'package:ftes/core/utils/colors.dart';
+import '../../../../core/utils/url_helper.dart';
 
 /// Widget for displaying banner
 /// Optimized with CachedNetworkImage for better performance
@@ -20,7 +21,14 @@ class BannerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        // If banner has URL, open it; otherwise use custom onTap
+        if (banner.url != null && banner.url!.isNotEmpty) {
+          UrlHelper.openExternalUrl(context, url: banner.url!);
+        } else if (onTap != null) {
+          onTap!();
+        }
+      },
       child: Container(
         height: 200,
         margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -95,17 +103,30 @@ class BannerWidget extends StatelessWidget {
                     if (banner.buttonText != null && banner.buttonText!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Text(
-                            banner.buttonText!,
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w700,
+                        child: GestureDetector(
+                          onTap: () {
+                            // Open URL when button is clicked
+                            if (banner.url != null && banner.url!.isNotEmpty) {
+                              UrlHelper.openExternalUrl(context, url: banner.url!);
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 2,
+                              ),
+                            ),
+                            child: Text(
+                              banner.buttonText!,
+                              style: AppTextStyles.caption.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ),

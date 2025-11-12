@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../constants/app_constants.dart';
 
 class ImageCacheHelper {
   ImageCacheHelper._();
@@ -20,8 +21,20 @@ class ImageCacheHelper {
       return error ?? const SizedBox.shrink();
     }
 
+    // Ensure URL is absolute (starts with http:// or https://)
+    final String fullUrl;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      fullUrl = url;
+    } else if (url.startsWith('/')) {
+      // Relative path starting with /, add base URL
+      fullUrl = '${AppConstants.baseUrl}$url';
+    } else {
+      // Relative path without /, add base URL with /
+      fullUrl = '${AppConstants.baseUrl}/$url';
+    }
+
     return CachedNetworkImage(
-      imageUrl: url,
+      imageUrl: fullUrl,
       width: width,
       height: height,
       fit: fit,

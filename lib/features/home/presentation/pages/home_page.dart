@@ -15,6 +15,8 @@ import '../viewmodels/home_viewmodel.dart';
 import '../widgets/course_card_widget.dart';
 import '../widgets/banner_widget.dart';
 import '../widgets/mentor_carousel.dart';
+import '../../../my_courses/presentation/viewmodels/my_courses_viewmodel.dart';
+import '../../../../core/utils/image_cache_helper.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,6 +30,7 @@ class _HomePageState extends State<HomePage> {
   int _currentBannerIndex = 0;
   final PageController _bannerController = PageController();
   Timer? _autoSlideTimer;
+  String? _userId;
 
   @override
   void initState() {
@@ -64,6 +67,12 @@ class _HomePageState extends State<HomePage> {
       final prefs = di.sl<SharedPreferences>();
       final userId = prefs.getString(AppConstants.keyUserId);
       if (userId == null || userId.isEmpty) return;
+
+      if (mounted) {
+        setState(() {
+          _userId = userId;
+        });
+      }
 
       final cachedUserData = prefs.getString(AppConstants.keyUserData);
       if (cachedUserData != null && cachedUserData.isNotEmpty) {
@@ -126,6 +135,10 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 30),
               _buildOfferBanner(),
               const SizedBox(height: 30),
+              if (_userId != null && _userId!.isNotEmpty) ...[
+                _buildMyEnrolledSection(_userId!),
+                const SizedBox(height: 24),
+              ],
               _buildCategorySection(
                 titleParts: const ['DEV', ' căn bản, không lo ', 'PHÍ'],
                 titleFirstGradient: true,
@@ -359,6 +372,226 @@ class _HomePageState extends State<HomePage> {
               Icon(Icons.filter_list, color: Colors.grey[600]!, size: 20),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMyEnrolledSection(String userId) {
+    return ChangeNotifierProvider(
+      create: (context) {
+        final vm = di.sl<MyCoursesViewModel>();
+        vm.fetchUserCourses(userId);
+        return vm;
+      },
+      child: Consumer<MyCoursesViewModel>(
+        builder: (context, vm, _) {
+          if (vm.isLoading) {
+            return const SizedBox(
+              height: 200,
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (vm.myCourses.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Khoá học của bạn',
+                      style: AppTextStyles.h3.copyWith(
+                        color: const Color(0xFF202244),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppConstants.routeMyCourses,
+                        );
+                      },
+                      child: const Text('Xem tất cả'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 150,
+                child: PageView.builder(
+                  controller: PageController(viewportFraction: 0.98),
+                  itemCount: vm.myCourses.length,
+                  itemBuilder: (context, index) {
+                    final c = vm.myCourses[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: _EnrolledWideCard(
+                        title: c.title ?? '',
+                        imageUrl: c.imageHeader,
+                        onContinue: () {
+                          if (c.slugName != null && c.slugName!.isNotEmpty) {
+                            Navigator.pushNamed(
+                              context,
+                              AppConstants.routeCourseDetail,
+                              arguments: c.slugName,
+                            );
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // Wide full-width enrolled card (7:3 content:image)
+  Widget _EnrolledWideCard({
+    required String title,
+    required String? imageUrl,
+    required VoidCallback onContinue,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Row(
+          children: [
+            // Image (flex 3)
+            Expanded(
+              flex: 4,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (imageUrl != null && imageUrl.isNotEmpty)
+                    ImageCacheHelper.cached(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 800,
+                      memCacheHeight: 480,
+                      maxWidthDiskCache: 1600,
+                      maxHeightDiskCache: 960,
+                      placeholder: Container(
+                        color: Colors.grey[200],
+                        child: const Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      ),
+                      error: Container(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        child: const Icon(
+                          Icons.school,
+                          color: AppColors.primary,
+                          size: 28,
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      child: const Icon(
+                        Icons.school,
+                        color: AppColors.primary,
+                        size: 28,
+                      ),
+                    ),
+                  Container(color: Colors.black.withValues(alpha: 0.08)),
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.95),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: AppColors.primary,
+                        size: 26,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Content (flex 7)
+            Expanded(
+              flex: 6,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.body1.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: const Color(0xFF202244),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: ElevatedButton(
+                        onPressed: onContinue,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Tiếp tục học'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
