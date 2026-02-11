@@ -194,23 +194,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: _buildGradientTitle(titleParts, titleFirstGradient),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      AppRoutes.navigateToCoursesList(
-                        context,
-                        categoryId: categoryId,
-                      );
-                    },
-                    child: const Text('Xem tất cả'),
-                  ),
-                ],
-              ),
+              child: _buildGradientTitle(titleParts, titleFirstGradient),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -227,8 +211,24 @@ class _HomePageState extends State<HomePage> {
                   : ListView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: courses.length,
+                      // +1 để có thêm item "Xem tất cả" ở cuối
+                      itemCount: courses.length + 1,
                       itemBuilder: (context, index) {
+                        // Item cuối: nút "Xem tất cả"
+                        if (index == courses.length) {
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: _SeeAllCard(
+                              onTap: () {
+                                AppRoutes.navigateToCoursesList(
+                                  context,
+                                  categoryId: categoryId,
+                                );
+                              },
+                            ),
+                          );
+                        }
+
                         final course = courses[index];
                         return Padding(
                           padding: EdgeInsets.only(
@@ -257,10 +257,34 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Card "Xem tất cả" nằm trong ListView ngang
+  Widget _SeeAllCard({required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        width: 140,
+        padding: const EdgeInsets.all(12),
+        child: Center(
+          child: Text(
+            'Xem tất cả',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.body1.copyWith(
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildGradientTitle(List<String> parts, bool firstGradient) {
     TextStyle base = AppTextStyles.h3.copyWith(
       color: const Color(0xFF202244),
       fontWeight: FontWeight.bold,
+      fontSize: 20, // giảm size tiêu đề cho gọn hơn
     );
     Widget gradientText(String text) {
       return ShaderMask(
