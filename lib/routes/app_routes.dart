@@ -16,6 +16,7 @@ import '../features/auth/presentation/viewmodels/forgot_password_viewmodel.dart'
 import '../features/auth/presentation/pages/congratulations_screen.dart';
 import '../features/auth/presentation/pages/create_pin_screen.dart';
 import '../features/home/presentation/pages/home_page.dart';
+import '../features/home/presentation/pages/main_tab_screen.dart';
 import '../features/home/presentation/pages/course_search_page.dart';
 import '../features/home/presentation/viewmodels/home_viewmodel.dart';
 import '../features/my_courses/presentation/pages/my_courses_page.dart';
@@ -50,7 +51,8 @@ import '../features/home/domain/entities/course.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
-    core_constants.AppConstants.routeOnboarding: (context) => const OnboardingScreen(),
+    core_constants.AppConstants.routeOnboarding: (context) =>
+        const OnboardingScreen(),
     core_constants.AppConstants.routeSplash: (context) => const LoadingScreen(),
     core_constants.AppConstants.routeLaunching: (context) =>
         const LaunchingScreen(),
@@ -104,10 +106,8 @@ class AppRoutes {
         const CongratulationsScreen(),
     core_constants.AppConstants.routeCreatePin: (context) =>
         const CreatePinScreen(),
-    core_constants.AppConstants.routeHome: (context) => ChangeNotifierProvider(
-      create: (context) => di.sl<HomeViewModel>(),
-      child: const HomePage(),
-    ),
+    core_constants.AppConstants.routeHome: (context) =>
+        const MainTabScreen(initialIndex: 0),
     core_constants.AppConstants.routeCourseSearch: (context) {
       return ChangeNotifierProvider(
         create: (context) => di.sl<HomeViewModel>(),
@@ -191,12 +191,12 @@ class AppRoutes {
         );
       }
 
-        // Fallback to old screen for non-lesson chats
-        return ChatMessagesScreen(
-          lessonId: lessonId,
-          lessonTitle: lessonTitle,
-          videoId: videoId,
-        );
+      // Fallback to old screen for non-lesson chats
+      return ChatMessagesScreen(
+        lessonId: lessonId,
+        lessonTitle: lessonTitle,
+        videoId: videoId,
+      );
     },
     core_constants.AppConstants.routeReviews: (context) {
       final args =
@@ -294,10 +294,7 @@ class AppRoutes {
         );
       case core_constants.AppConstants.routeHome:
         return MaterialPageRoute(
-          builder: (context) => ChangeNotifierProvider(
-            create: (context) => di.sl<HomeViewModel>(),
-            child: const HomePage(),
-          ),
+          builder: (context) => const MainTabScreen(initialIndex: 0),
           settings: settings,
         );
       case core_constants.AppConstants.routePopularCourses:
@@ -395,7 +392,7 @@ class AppRoutes {
         final lessonTitle = args?['lessonTitle'] as String?;
         final videoId = args?['videoId'] as String?;
         final lessonDescription = args?['lessonDescription'] as String?;
-        
+
         // Use AiChatPage if lessonId is provided, otherwise use old ChatMessagesScreen
         if (lessonId != null && lessonTitle != null && videoId != null) {
           return MaterialPageRoute(
@@ -411,9 +408,9 @@ class AppRoutes {
             settings: settings,
           );
         }
-        
-      // Fallback to old screen for non-lesson chats
-      return MaterialPageRoute(
+
+        // Fallback to old screen for non-lesson chats
+        return MaterialPageRoute(
           builder: (context) => ChatMessagesScreen(
             lessonId: lessonId,
             lessonTitle: lessonTitle,
@@ -795,4 +792,3 @@ class AppRoutes {
     Navigator.pushNamedAndRemoveUntil(context, routeName, (route) => false);
   }
 }
-

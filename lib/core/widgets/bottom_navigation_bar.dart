@@ -8,84 +8,82 @@ class AppBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
   final Function(int)? onTap;
 
-  const AppBottomNavigationBar({
-    super.key,
-    this.selectedIndex = 0,
-    this.onTap,
-  });
+  const AppBottomNavigationBar({super.key, this.selectedIndex = 0, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 88,
+    return Container(
+      padding: EdgeInsets.only(
+        top: 20,
+        bottom: MediaQuery.of(context).padding.bottom,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F9FF),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(25),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
       child: Stack(
         clipBehavior: Clip.none,
-        alignment: Alignment.topCenter,
+        alignment: Alignment.bottomCenter,
         children: [
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F9FF),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(25),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
+          // Custom Bottom Navigation Bar với 5 items
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // Item 0: Home
+                Expanded(
+                  child: _buildNavItem(
+                    Icons.home,
+                    'Trang chủ',
+                    selectedIndex == 0,
+                    onTap: () => _handleNavigation(context, 0),
                   ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildBottomNavItem(
-                        context,
-                        Icons.home,
-                        'Trang chủ',
-                        selectedIndex == 0,
-                        onTap: () => _handleTap(context, 0),
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildBottomNavItem(
-                        context,
-                        Icons.book,
-                        'Khóa học',
-                        selectedIndex == 1,
-                        onTap: () => _handleTap(context, 1),
-                      ),
-                    ),
-                    const SizedBox(width: 52),
-                    Expanded(
-                      child: _buildBottomNavItem(
-                        context,
-                        Icons.article,
-                        'Blog',
-                        selectedIndex == 3,
-                        onTap: () => _handleTap(context, 3),
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildBottomNavItem(
-                        context,
-                        Icons.shopping_cart,
-                        'Giỏ hàng',
-                        selectedIndex == 4,
-                        onTap: () => _handleTap(context, 4),
-                      ),
-                    ),
-                  ],
                 ),
-              ),
+                // Item 1: My Courses
+                Expanded(
+                  child: _buildNavItem(
+                    Icons.book,
+                    'Khóa học',
+                    selectedIndex == 1,
+                    onTap: () => _handleNavigation(context, 1),
+                  ),
+                ),
+                // Spacer cho floating button ở giữa
+                const SizedBox(width: 60),
+                // Item 3: Blog
+                Expanded(
+                  child: _buildNavItem(
+                    Icons.article,
+                    'Blog',
+                    selectedIndex == 3,
+                    onTap: () => _handleNavigation(context, 3),
+                  ),
+                ),
+                // Item 4: Cart
+                Expanded(
+                  child: _buildNavItem(
+                    Icons.shopping_cart,
+                    'Giỏ hàng',
+                    selectedIndex == 4,
+                    onTap: () => _handleNavigation(context, 4),
+                  ),
+                ),
+              ],
             ),
           ),
 
-          // Floating Action Button có hiệu ứng chọn
+          // Floating Action Button ở giữa (Roadmap) - nổi lên trên navigation bar
           Positioned(
-            top: -16,
+            top: -30,
             child: GestureDetector(
-              onTap: () => _handleTap(context, 2),
+              onTap: () => _handleNavigation(context, 2),
               child: AnimatedScale(
                 scale: selectedIndex == 2 ? 1.1 : 1.0,
                 duration: const Duration(milliseconds: 200),
@@ -110,13 +108,7 @@ class AppBottomNavigationBar extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.route,
-                    color: selectedIndex == 2
-                        ? Colors.white
-                        : const Color(0xFFE0E0E0),
-                    size: 28,
-                  ),
+                  child: Icon(Icons.route, color: Colors.white, size: 28),
                 ),
               ),
             ),
@@ -126,18 +118,66 @@ class AppBottomNavigationBar extends StatelessWidget {
     );
   }
 
-  void _handleTap(BuildContext context, int index) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    bool isSelected, {
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            color: isSelected
+                ? const Color(0xFF0961F5)
+                : const Color(0xFFA0A4AB),
+            size: 24,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: AppTextStyles.body1.copyWith(
+              color: isSelected
+                  ? const Color(0xFF0961F5)
+                  : const Color(0xFFA0A4AB),
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleNavigation(BuildContext context, int index) {
+    // Priority: Use callback if provided (for tab-based navigation)
     if (onTap != null) {
       onTap!(index);
       return;
     }
+    // Fallback: Use Navigator for route-based navigation
+    _handleTap(context, index);
+  }
 
+  void _handleTap(BuildContext context, int index) {
     switch (index) {
       case 0: // Home
-        Navigator.pushNamedAndRemoveUntil(context, core_constants.AppConstants.routeHome, (route) => false);
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          core_constants.AppConstants.routeHome,
+          (route) => false,
+        );
         break;
       case 1: // My Courses
-        Navigator.pushNamed(context, core_constants.AppConstants.routeMyCourses);
+        Navigator.pushNamed(
+          context,
+          core_constants.AppConstants.routeMyCourses,
+        );
         break;
       case 2: // AI Roadmap
         Navigator.push(
@@ -157,37 +197,4 @@ class AppBottomNavigationBar extends StatelessWidget {
         break;
     }
   }
-
-  Widget _buildBottomNavItem(
-      BuildContext context,
-      IconData icon,
-      String label,
-      bool isSelected, {
-        VoidCallback? onTap,
-      }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? const Color(0xFF0961F5) : const Color(0xFFA0A4AB),
-            size: 24,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: AppTextStyles.body1.copyWith(
-              color: isSelected ? const Color(0xFF0961F5) : const Color(0xFFA0A4AB),
-              fontSize: 9,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.4,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
-

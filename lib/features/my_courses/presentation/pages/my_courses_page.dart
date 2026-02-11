@@ -10,7 +10,9 @@ import '../../domain/constants/my_courses_constants.dart';
 
 /// My Courses page using Clean Architecture
 class MyCoursesPage extends StatefulWidget {
-  const MyCoursesPage({super.key});
+  final bool hideBottomNav;
+  
+  const MyCoursesPage({super.key, this.hideBottomNav = false});
 
   @override
   State<MyCoursesPage> createState() => _MyCoursesPageState();
@@ -79,7 +81,9 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
           ],
         ),
       ),
-      bottomNavigationBar: const AppBottomNavigationBar(selectedIndex: 1),
+      bottomNavigationBar: widget.hideBottomNav
+          ? null
+          : const AppBottomNavigationBar(selectedIndex: 1),
     );
   }
 

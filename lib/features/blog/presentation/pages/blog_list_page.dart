@@ -12,7 +12,9 @@ import '../widgets/blog_post_item.dart';
 import '../widgets/blog_categories_section.dart';
 
 class BlogListPage extends StatefulWidget {
-  const BlogListPage({super.key});
+  final bool hideBottomNav;
+  
+  const BlogListPage({super.key, this.hideBottomNav = false});
 
   @override
   State<BlogListPage> createState() => _BlogListPageState();
@@ -173,7 +175,9 @@ class _BlogListPageState extends State<BlogListPage> {
           );
         },
       ),
-      bottomNavigationBar: AppBottomNavigationBar(selectedIndex: 3),
+      bottomNavigationBar: widget.hideBottomNav
+          ? null
+          : AppBottomNavigationBar(selectedIndex: 3),
     );
   }
 

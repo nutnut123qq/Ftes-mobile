@@ -10,11 +10,14 @@ import 'package:ftes/core/widgets/bottom_navigation_bar.dart';
 import '../../../../core/di/injection_container.dart' as di;
 
 class RoadmapPage extends StatelessWidget {
-  const RoadmapPage({super.key});
+  final bool hideBottomNav;
+  
+  const RoadmapPage({super.key, this.hideBottomNav = false});
   static final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
+    final hideBottomNav = this.hideBottomNav;
     return ChangeNotifierProvider(
       create: (_) => di.sl<RoadmapViewModel>(),
       child: Consumer<RoadmapViewModel>(
@@ -185,7 +188,9 @@ class RoadmapPage extends StatelessWidget {
                 ),
               ),
             ),
-            bottomNavigationBar: AppBottomNavigationBar(selectedIndex: 2),
+            bottomNavigationBar: hideBottomNav
+                ? null
+                : AppBottomNavigationBar(selectedIndex: 2),
           );
         },
       ),
