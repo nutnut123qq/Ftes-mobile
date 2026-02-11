@@ -9,7 +9,9 @@ import '../widgets/cart_item_widget.dart';
 import '../widgets/cart_summary_widget.dart';
 
 class CartPage extends StatefulWidget {
-  const CartPage({super.key});
+  final bool hideBottomNav;
+  
+  const CartPage({super.key, this.hideBottomNav = false});
 
   @override
   State<CartPage> createState() => _CartPageState();
@@ -101,7 +103,9 @@ class _CartPageState extends State<CartPage> {
           },
         ),
       ),
-      bottomNavigationBar: const AppBottomNavigationBar(selectedIndex: 4),
+      bottomNavigationBar: widget.hideBottomNav
+          ? null
+          : const AppBottomNavigationBar(selectedIndex: 4),
     );
   }
 

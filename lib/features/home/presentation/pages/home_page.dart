@@ -19,7 +19,9 @@ import '../../../my_courses/presentation/viewmodels/my_courses_viewmodel.dart';
 import '../../../../core/utils/image_cache_helper.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final bool hideBottomNav;
+
+  const HomePage({super.key, this.hideBottomNav = false});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -169,7 +171,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      bottomNavigationBar: const AppBottomNavigationBar(selectedIndex: 0),
+      bottomNavigationBar: widget.hideBottomNav
+          ? null
+          : const AppBottomNavigationBar(selectedIndex: 0),
     );
   }
 
