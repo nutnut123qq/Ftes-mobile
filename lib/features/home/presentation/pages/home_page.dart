@@ -1,7 +1,7 @@
-import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:ftes/core/utils/text_styles.dart';
 import 'package:ftes/core/utils/colors.dart';
 import 'package:ftes/core/widgets/bottom_navigation_bar.dart';
@@ -29,9 +29,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _userName = HomeConstants.defaultUserName;
-  int _currentBannerIndex = 0;
-  final PageController _bannerController = PageController();
-  Timer? _autoSlideTimer;
   String? _userId;
 
   @override
@@ -45,22 +42,6 @@ class _HomePageState extends State<HomePage> {
         homeViewModel.fetchCategories(),
         _loadUserInfoAsync(),
       ]);
-
-      _autoSlideTimer = Timer.periodic(const Duration(seconds: 4), (_) {
-        if (!mounted) return;
-        final banners = homeViewModel.banners;
-        if (banners.isEmpty) return;
-
-        setState(() {
-          _currentBannerIndex = (_currentBannerIndex + 1) % banners.length;
-        });
-
-        _bannerController.animateToPage(
-          _currentBannerIndex,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      });
     });
   }
 
@@ -116,8 +97,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _autoSlideTimer?.cancel();
-    _bannerController.dispose();
     super.dispose();
   }
 
@@ -312,55 +291,67 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildNavigationBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                HomeConstants.greetingText,
-                style: AppTextStyles.body1.copyWith(
-                  color: Colors.grey[600]!,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _userName,
-                style: AppTextStyles.h2.copyWith(
-                  color: const Color(0xFF202244),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          GestureDetector(
-            onTap: () =>
-                Navigator.pushNamed(context, AppConstants.routeProfile),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(26),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+    final greetingCards = <Widget>[
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  HomeConstants.greetingText,
+                  style: AppTextStyles.body1.copyWith(
+                    color: Colors.grey[600]!,
+                    fontSize: 16,
                   ),
-                ],
-              ),
-              child: const Icon(
-                Icons.person,
-                color: AppColors.primary,
-                size: 24,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _userName,
+                  style: AppTextStyles.h2.copyWith(
+                    color: const Color(0xFF202244),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            GestureDetector(
+              onTap: () =>
+                  Navigator.pushNamed(context, AppConstants.routeProfile),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(26),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.person,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    ];
+
+    return CarouselSlider(
+      items: greetingCards,
+      options: CarouselOptions(
+        height: 72,
+        viewportFraction: 1,
+        enableInfiniteScroll: false,
+        enlargeCenterPage: false,
       ),
     );
   }
@@ -629,10 +620,23 @@ class _HomePageState extends State<HomePage> {
     return Consumer<HomeViewModel>(
       builder: (context, homeViewModel, child) {
         if (homeViewModel.isLoadingBanners) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(32.0),
-              child: CircularProgressIndicator(),
+          final screenWidth = MediaQuery.of(context).size.width;
+          final slideWidth = screenWidth * 0.9;
+          final bannerHeight = (slideWidth * 9 / 16).clamp(
+            180.0,
+            double.infinity,
+          );
+
+          return SizedBox(
+            height: bannerHeight,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              ),
             ),
           );
         }
@@ -641,23 +645,34 @@ class _HomePageState extends State<HomePage> {
           return const SizedBox.shrink();
         }
 
-        return SizedBox(
-          height: 240,
-          child: PageView.builder(
-            controller: _bannerController,
-            onPageChanged: (index) =>
-                setState(() => _currentBannerIndex = index),
-            itemCount: homeViewModel.banners.length,
-            itemBuilder: (context, index) {
-              final banner = homeViewModel.banners[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 0),
+        final screenWidth = MediaQuery.of(context).size.width;
+        final slideWidth = screenWidth * 0.9;
+        final bannerHeight = (slideWidth * 9 / 16).clamp(180.0, 260.0);
+
+        return CarouselSlider.builder(
+          itemCount: homeViewModel.banners.length,
+          itemBuilder: (context, index, realIndex) {
+            final banner = homeViewModel.banners[index];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: SizedBox(
+                width: slideWidth,
                 child: BannerWidget(
                   banner: banner,
                   onTap: () => debugPrint('Banner tapped: ${banner.title}'),
                 ),
-              );
-            },
+              ),
+            );
+          },
+          options: CarouselOptions(
+            height: bannerHeight,
+            viewportFraction: 0.9,
+            enlargeCenterPage: true,
+            enlargeFactor: 0.18,
+            autoPlay: true,
+            autoPlayInterval: const Duration(seconds: 4),
+            autoPlayAnimationDuration: const Duration(milliseconds: 600),
+            autoPlayCurve: Curves.easeInOut,
           ),
         );
       },
