@@ -36,40 +36,35 @@ class PartSection extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(
-                    isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
+                    isExpanded
+                        ? Icons.keyboard_arrow_down
+                        : Icons.keyboard_arrow_right,
                     color: const Color(0xFF666666),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '${part.name} - ${part.description}',
-                      style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                  Text(
-                    '${part.lessons.where((l) => l.type != 'EXERCISE').length} bài học',
-                    style: AppTextStyles.bodyMedium.copyWith(color: const Color(0xFF666666)),
                   ),
                 ],
               ),
             ),
           ),
-          if (isExpanded) ...[
-            const Divider(height: 1),
-            ..._buildLessons(),
-          ],
+          if (isExpanded) ...[const Divider(height: 1), ..._buildLessons()],
         ],
       ),
     );
   }
 
   List<Widget> _buildLessons() {
-    final sortedLessons = part.lessons
-        .where((l) => l.type != 'EXERCISE')
-        .toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+    final sortedLessons =
+        part.lessons.where((l) => l.type != 'EXERCISE').toList()
+          ..sort((a, b) => a.order.compareTo(b.order));
     return sortedLessons.map((l) => buildLessonItem(l)).toList();
   }
 }
-
-

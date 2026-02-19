@@ -107,8 +107,3 @@ class LessonItem extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
