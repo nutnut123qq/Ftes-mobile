@@ -11,7 +11,7 @@ import '../../domain/constants/my_courses_constants.dart';
 /// My Courses page using Clean Architecture
 class MyCoursesPage extends StatefulWidget {
   final bool hideBottomNav;
-  
+
   const MyCoursesPage({super.key, this.hideBottomNav = false});
 
   @override
@@ -36,18 +36,21 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   Future<void> _initializeAsync() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Try to get userId from SharedPreferences first
       final userId = prefs.getString(AppConstants.keyUserId);
       if (userId != null && userId.isNotEmpty) {
         if (!mounted) return;
-        
+
         setState(() {
           _userId = userId;
         });
-        
+
         // Fetch user courses
-        final viewModel = Provider.of<MyCoursesViewModel>(context, listen: false);
+        final viewModel = Provider.of<MyCoursesViewModel>(
+          context,
+          listen: false,
+        );
         await viewModel.fetchUserCourses(userId);
         return;
       }
@@ -75,9 +78,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
             // Search bar
             _buildSearchBar(),
             // Courses list
-            Expanded(
-              child: _buildCoursesList(),
-            ),
+            Expanded(child: _buildCoursesList()),
           ],
         ),
       ),
@@ -105,7 +106,10 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
             onPressed: () {
               // Refresh courses
               if (_userId.isNotEmpty) {
-                final viewModel = Provider.of<MyCoursesViewModel>(context, listen: false);
+                final viewModel = Provider.of<MyCoursesViewModel>(
+                  context,
+                  listen: false,
+                );
                 viewModel.fetchUserCourses(_userId);
               }
             },
@@ -149,7 +153,10 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
                     )
                   : null,
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
             onChanged: _onSearchChanged,
           );
@@ -162,13 +169,16 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   void _onSearchChanged(String query) {
     // Cancel previous timer
     _debounceTimer?.cancel();
-    
+
     // Create new timer for debounce
     _debounceTimer = Timer(
       const Duration(milliseconds: MyCoursesConstants.searchDebounceMs),
       () {
         // Perform search after debounce
-        final viewModel = Provider.of<MyCoursesViewModel>(context, listen: false);
+        final viewModel = Provider.of<MyCoursesViewModel>(
+          context,
+          listen: false,
+        );
         viewModel.searchCourses(query);
       },
     );
@@ -178,9 +188,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
     return Consumer<MyCoursesViewModel>(
       builder: (context, viewModel, child) {
         if (viewModel.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (viewModel.errorMessage != null) {
@@ -188,18 +196,11 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Colors.grey[400],
-                ),
+                Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
                 const SizedBox(height: 16),
                 Text(
                   viewModel.errorMessage!,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
@@ -219,7 +220,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
         if (viewModel.myCourses.isEmpty) {
           // Check if it's an empty search result or no courses at all
           final isSearching = viewModel.searchQuery.isNotEmpty;
-          
+
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -231,7 +232,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  isSearching 
+                  isSearching
                       ? MyCoursesConstants.emptySearchTitle
                       : MyCoursesConstants.emptyCoursesTitle,
                   style: TextStyle(
@@ -245,10 +246,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
                   isSearching
                       ? MyCoursesConstants.emptySearchSubtitle
                       : MyCoursesConstants.emptyCoursesSubtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[500],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                   textAlign: TextAlign.center,
                 ),
               ],

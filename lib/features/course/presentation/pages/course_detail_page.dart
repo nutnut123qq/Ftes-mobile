@@ -377,7 +377,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     final parts = apiCourse?.parts ?? [];
     
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 34),
+      margin: const EdgeInsets.symmetric(horizontal: 10),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
