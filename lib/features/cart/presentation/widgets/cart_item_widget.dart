@@ -48,9 +48,9 @@ class CartItemWidget extends StatelessWidget {
                   )
                 : _buildPlaceholderImage(),
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           // Course Info
           Expanded(
             child: Column(
@@ -65,28 +65,13 @@ class CartItemWidget extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                
+
                 const SizedBox(height: 4),
-                
-                Text(
-                  cartItem.course.description,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: const Color(0xFF666666),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                const SizedBox(height: 8),
-                
+
                 // Rating and Level
                 Row(
                   children: [
-                    Icon(
-                      Icons.star,
-                      size: 14,
-                      color: Colors.amber[600],
-                    ),
+                    Icon(Icons.star, size: 14, color: Colors.amber[600]),
                     const SizedBox(width: 4),
                     Text(
                       cartItem.course.avgStar.toStringAsFixed(1),
@@ -96,25 +81,11 @@ class CartItemWidget extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0961F5).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        cartItem.course.level,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: const Color(0xFF0961F5),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 8),
-                
+
                 // Price
                 Row(
                   children: [
@@ -138,7 +109,10 @@ class CartItemWidget extends StatelessWidget {
                     if (cartItem.discountPercentage > 0) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.red.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
@@ -157,7 +131,7 @@ class CartItemWidget extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Remove Button
           IconButton(
             onPressed: isRemoving ? null : onRemove,
@@ -170,11 +144,7 @@ class CartItemWidget extends StatelessWidget {
                       strokeWidth: 2,
                     ),
                   )
-                : const Icon(
-                    Icons.delete_outline,
-                    color: Colors.red,
-                    size: 24,
-                  ),
+                : const Icon(Icons.delete_outline, color: Colors.red, size: 24),
           ),
         ],
       ),
@@ -189,11 +159,7 @@ class CartItemWidget extends StatelessWidget {
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(8),
       ),
-      child: const Icon(
-        Icons.school,
-        color: Color(0xFF0961F5),
-        size: 32,
-      ),
+      child: const Icon(Icons.school, color: Color(0xFF0961F5), size: 32),
     );
   }
 }
