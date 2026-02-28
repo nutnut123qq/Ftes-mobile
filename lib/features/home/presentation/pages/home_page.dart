@@ -13,6 +13,7 @@ import 'package:ftes/features/profile/domain/usecases/profile_usecases.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/constants/home_constants.dart';
 import '../viewmodels/home_viewmodel.dart';
+import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../widgets/course_card_widget.dart';
 import '../widgets/banner_widget.dart';
 import '../widgets/mentor_carousel.dart';
@@ -38,9 +39,11 @@ class _HomePageState extends State<HomePage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
+      final cartViewModel = Provider.of<CartViewModel>(context, listen: false);
       Future.wait([
         homeViewModel.initialize(),
         homeViewModel.fetchCategories(),
+        cartViewModel.loadCartCount(), // Fetch the count for the badge
         _loadUserInfoAsync(),
       ]);
     });
@@ -322,21 +325,29 @@ class _HomePageState extends State<HomePage> {
               onTap: () => Navigator.pushNamed(context, AppConstants.routeCart),
               child: Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(26),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.shopping_cart_outlined,
-                  color: AppColors.primary,
-                  size: 24,
+                
+                child: Consumer<CartViewModel>(
+                  builder: (context, cartViewModel, child) {
+                    final cartCount = cartViewModel.cartCount;
+                    return Badge(
+                      isLabelVisible: cartCount > 0,
+                      label: Text(
+                        cartCount > 99 ? '99+' : cartCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      backgroundColor: Colors.red,
+                      offset: const Offset(8, -8),
+                      child: const Icon(
+                        Icons.shopping_cart_outlined,
+                        color: AppColors.primary,
+                        size: 24,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),

@@ -10,6 +10,7 @@ import 'features/auth/presentation/viewmodels/register_viewmodel.dart';
 import 'features/course/presentation/viewmodels/course_detail_viewmodel.dart';
 import 'features/blog/presentation/viewmodels/blog_viewmodel.dart';
 import 'features/profile/presentation/viewmodels/profile_viewmodel.dart';
+import 'features/cart/presentation/viewmodels/cart_viewmodel.dart';
 // import 'legacy/providers/auth_provider.dart'; // Deprecated - use auth feature instead
 import 'features/points/presentation/viewmodels/points_viewmodel.dart';
 // import 'providers/ai_chat_provider.dart'; // Unused import
@@ -40,6 +41,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => di.sl<ProfileViewModel>()..initialize(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => di.sl<CartViewModel>()..initialize(),
         ),
         // Legacy providers (temporary for backward compatibility) - DEPRECATED
         // ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),

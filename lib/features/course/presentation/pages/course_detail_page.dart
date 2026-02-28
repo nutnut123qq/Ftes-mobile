@@ -10,7 +10,6 @@ import '../viewmodels/course_detail_viewmodel.dart';
 import '../../domain/entities/course_detail.dart';
 import '../../domain/entities/lesson.dart';
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
-import '../../../../core/di/injection_container.dart' as di;
 import '../../../../routes/app_routes.dart';
 import '../widgets/curriculum/part_section.dart';
 import '../widgets/curriculum/lesson_item.dart';
@@ -214,196 +213,190 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => di.sl<CartViewModel>()),
-      ],
-      child: Consumer<CourseDetailViewModel>(
-        builder: (context, viewModel, child) {
-          // Use API data if available, otherwise fall back to widget.course
-          final apiCourse = viewModel.courseDetail;
-          final isLoading = viewModel.isLoading;
+    return Consumer<CourseDetailViewModel>(
+      builder: (context, viewModel, child) {
+        // Use API data if available, otherwise fall back to widget.course
+        final apiCourse = viewModel.courseDetail;
+        final isLoading = viewModel.isLoading;
 
-          return Scaffold(
-            backgroundColor: const Color(0xFFF5F9FF),
-            body: CustomScrollView(
-              slivers: [
-                // Hero Image with App Bar
-                CourseHeroSection(
-                  courseDetail: apiCourse,
-                  fallbackImageUrl:
-                      widget.course.image ?? widget.course.imageHeader ?? '',
-                  onBack: () => Navigator.pop(context),
-                  trailing: _buildHeroTrailing(context),
+        return Scaffold(
+          backgroundColor: const Color(0xFFF5F9FF),
+          body: CustomScrollView(
+            slivers: [
+              // Hero Image with App Bar
+              CourseHeroSection(
+                courseDetail: apiCourse,
+                fallbackImageUrl:
+                    widget.course.image ?? widget.course.imageHeader ?? '',
+                onBack: () => Navigator.pop(context),
+                trailing: _buildHeroTrailing(context),
+              ),
+
+              // Loading indicator
+              if (isLoading)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
                 ),
 
-                // Loading indicator
-                if (isLoading)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: Center(child: CircularProgressIndicator()),
+              // TabBar3D - moved to top
+              if (!isLoading)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16, bottom: 8),
+                    child: TabBar3D(
+                      tabs: _tabs,
+                      selectedIndex: _selectedTabIndex,
+                      onTabChanged: (index) => setState(() {
+                        _selectedTabIndex = index;
+                      }),
                     ),
                   ),
+                ),
 
-                // TabBar3D - moved to top
-                if (!isLoading)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 16, bottom: 8),
-                      child: TabBar3D(
-                        tabs: _tabs,
-                        selectedIndex: _selectedTabIndex,
-                        onTabChanged: (index) => setState(() {
-                          _selectedTabIndex = index;
-                        }),
-                      ),
-                    ),
+              // Course Info Card
+              if (!isLoading)
+                SliverToBoxAdapter(
+                  child: CourseInfoCard(
+                    courseDetail: apiCourse,
+                    fallbackTitle: widget.course.title ?? '',
+                    fallbackCategory: widget.course.categoryName ?? '',
                   ),
+                ),
 
-                // Course Info Card
-                if (!isLoading)
-                  SliverToBoxAdapter(
-                    child: CourseInfoCard(
-                      courseDetail: apiCourse,
-                      fallbackTitle: widget.course.title ?? '',
-                      fallbackCategory: widget.course.categoryName ?? '',
-                    ),
+              // Conditional content based on selected tab
+              if (!isLoading && _selectedTabIndex == 0) ...[
+                SliverToBoxAdapter(
+                  child: DescriptionSection(
+                    description: apiCourse?.description ?? 'Không có mô tả',
                   ),
-
-                // Conditional content based on selected tab
-                if (!isLoading && _selectedTabIndex == 0) ...[
-                  SliverToBoxAdapter(
-                    child: DescriptionSection(
-                      description: apiCourse?.description ?? 'Không có mô tả',
-                    ),
+                ),
+                SliverToBoxAdapter(
+                  child: InstructorSection(
+                    instructorName:
+                        viewModel.mentorProfile?.name ?? 'Giảng viên',
+                    title:
+                        viewModel.mentorProfile?.jobName ??
+                        'Giảng viên chuyên nghiệp',
+                    about: viewModel.mentorProfile?.description ?? '',
+                    avatarUrl: viewModel.mentorProfile?.avatar,
                   ),
-                  SliverToBoxAdapter(
-                    child: InstructorSection(
-                      instructorName:
-                          viewModel.mentorProfile?.name ?? 'Giảng viên',
-                      title:
-                          viewModel.mentorProfile?.jobName ??
-                          'Giảng viên chuyên nghiệp',
-                      about: viewModel.mentorProfile?.description ?? '',
-                      avatarUrl: viewModel.mentorProfile?.avatar,
-                    ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: BenefitsSection(
-                      benefits: (() {
-                        final map = apiCourse?.infoCourse;
-                        if (map == null) return const <String>[];
-                        final candidates = [
-                          'benefits',
-                          'whatYouWillLearn',
-                          'what_you_will_learn',
-                          'learn_points',
-                          'learnings',
-                          'outcomes',
-                          'youWillLearn',
-                          'learn',
-                          'highlights',
-                        ];
-                        for (final key in candidates) {
-                          final raw = map[key];
-                          if (raw is List) {
-                            return raw
-                                .map((e) => e.toString())
-                                .cast<String>()
-                                .toList();
-                          }
-                          if (raw is Map && raw['items'] is List) {
-                            return (raw['items'] as List)
-                                .map((e) => e.toString())
-                                .cast<String>()
-                                .toList();
-                          }
-                          if (raw is String && raw.trim().isNotEmpty) {
-                            // ignore: deprecated_member_use
-                            final lines = raw
-                                .split(RegExp(r'[\n;]|\r\n'))
-                                .map((e) => e.trim())
-                                .where((e) => e.isNotEmpty)
-                                .toList();
-                            if (lines.isNotEmpty) return lines;
-                          }
+                ),
+                SliverToBoxAdapter(
+                  child: BenefitsSection(
+                    benefits: (() {
+                      final map = apiCourse?.infoCourse;
+                      if (map == null) return const <String>[];
+                      final candidates = [
+                        'benefits',
+                        'whatYouWillLearn',
+                        'what_you_will_learn',
+                        'learn_points',
+                        'learnings',
+                        'outcomes',
+                        'youWillLearn',
+                        'learn',
+                        'highlights',
+                      ];
+                      for (final key in candidates) {
+                        final raw = map[key];
+                        if (raw is List) {
+                          return raw
+                              .map((e) => e.toString())
+                              .cast<String>()
+                              .toList();
                         }
-                        // Fallback chung: thu thập mọi giá trị string trong map (hỗ trợ additionalProp1..n)
-                        final collected = <String>[];
-                        map.forEach((k, v) {
-                          if (v is String && v.trim().isNotEmpty) {
-                            collected.add(v.trim());
-                          } else if (v is List) {
-                            collected.addAll(
-                              v
-                                  .map((e) => e.toString())
-                                  .where((e) => e.trim().isNotEmpty),
-                            );
-                          } else if (v is Map && v['items'] is List) {
-                            collected.addAll(
-                              (v['items'] as List)
-                                  .map((e) => e.toString())
-                                  .where((e) => e.trim().isNotEmpty),
-                            );
-                          }
-                        });
-                        if (collected.isNotEmpty) return collected;
-                        // Fallback: nếu có đúng một key và value là List/Map/String, dùng nó làm benefits
-                        if (map.length == 1) {
-                          final only = map.values.first;
-                          if (only is List) {
-                            return only
-                                .map((e) => e.toString())
-                                .cast<String>()
-                                .toList();
-                          }
-                          if (only is Map && only['items'] is List) {
-                            return (only['items'] as List)
-                                .map((e) => e.toString())
-                                .cast<String>()
-                                .toList();
-                          }
-                          if (only is String && only.trim().isNotEmpty) {
-                            // ignore: deprecated_member_use
-                            final lines = only
-                                .split(RegExp(r'[\n;]|\r\n'))
-                                .map((e) => e.trim())
-                                .where((e) => e.isNotEmpty)
-                                .toList();
-                            if (lines.isNotEmpty) return lines;
-                          }
+                        if (raw is Map && raw['items'] is List) {
+                          return (raw['items'] as List)
+                              .map((e) => e.toString())
+                              .cast<String>()
+                              .toList();
                         }
-                        // Fallback 2: tìm value đầu tiên dạng List trong map
-                        for (final value in map.values) {
-                          if (value is List && value.isNotEmpty) {
-                            return value
-                                .map((e) => e.toString())
-                                .cast<String>()
-                                .toList();
-                          }
+                        if (raw is String && raw.trim().isNotEmpty) {
+                          // ignore: deprecated_member_use
+                          final lines = raw
+                              .split(RegExp(r'[\n;]|\r\n'))
+                              .map((e) => e.trim())
+                              .where((e) => e.isNotEmpty)
+                              .toList();
+                          if (lines.isNotEmpty) return lines;
                         }
-                        return const <String>[];
-                      })(),
-                    ),
+                      }
+                      // Fallback chung: thu thập mọi giá trị string trong map (hỗ trợ additionalProp1..n)
+                      final collected = <String>[];
+                      map.forEach((k, v) {
+                        if (v is String && v.trim().isNotEmpty) {
+                          collected.add(v.trim());
+                        } else if (v is List) {
+                          collected.addAll(
+                            v
+                                .map((e) => e.toString())
+                                .where((e) => e.trim().isNotEmpty),
+                          );
+                        } else if (v is Map && v['items'] is List) {
+                          collected.addAll(
+                            (v['items'] as List)
+                                .map((e) => e.toString())
+                                .where((e) => e.trim().isNotEmpty),
+                          );
+                        }
+                      });
+                      if (collected.isNotEmpty) return collected;
+                      // Fallback: nếu có đúng một key và value là List/Map/String, dùng nó làm benefits
+                      if (map.length == 1) {
+                        final only = map.values.first;
+                        if (only is List) {
+                          return only
+                              .map((e) => e.toString())
+                              .cast<String>()
+                              .toList();
+                        }
+                        if (only is Map && only['items'] is List) {
+                          return (only['items'] as List)
+                              .map((e) => e.toString())
+                              .cast<String>()
+                              .toList();
+                        }
+                        if (only is String && only.trim().isNotEmpty) {
+                          // ignore: deprecated_member_use
+                          final lines = only
+                              .split(RegExp(r'[\n;]|\r\n'))
+                              .map((e) => e.trim())
+                              .where((e) => e.isNotEmpty)
+                              .toList();
+                          if (lines.isNotEmpty) return lines;
+                        }
+                      }
+                      // Fallback 2: tìm value đầu tiên dạng List trong map
+                      for (final value in map.values) {
+                        if (value is List && value.isNotEmpty) {
+                          return value
+                              .map((e) => e.toString())
+                              .cast<String>()
+                              .toList();
+                        }
+                      }
+                      return const <String>[];
+                    })(),
                   ),
-                 
-                ],
-
-                // Curriculum tab
-                if (!isLoading && _selectedTabIndex == 1)
-                  SliverToBoxAdapter(child: _buildCurriculumContent(apiCourse)),
-              
-                // Enroll Button
-                // if (!isLoading) SliverToBoxAdapter(child: _buildEnrollButton()),
-
-                // Bottom Spacing
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                ),
               ],
-            ),
-          );
-        },
-      ),
+
+              // Curriculum tab
+              if (!isLoading && _selectedTabIndex == 1)
+                SliverToBoxAdapter(child: _buildCurriculumContent(apiCourse)),
+
+              // Enroll Button
+              // if (!isLoading) SliverToBoxAdapter(child: _buildEnrollButton()),
+
+              // Bottom Spacing
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            ],
+          ),
+        );
+      },
     );
   }
 
