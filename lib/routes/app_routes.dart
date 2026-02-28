@@ -38,7 +38,6 @@ import '../features/course/presentation/pages/enroll_success_screen.dart';
 import '../features/points/presentation/pages/invite_friends_screen.dart';
 // Removed legacy CartScreen - use CartPage
 import '../features/cart/presentation/pages/cart_page.dart';
-import '../features/cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../features/blog/presentation/pages/blog_detail_page.dart';
 import '../features/blog/presentation/pages/blog_list_page.dart';
 import '../features/blog/presentation/viewmodels/blog_viewmodel.dart';
@@ -245,10 +244,7 @@ class AppRoutes {
           create: (context) => di.sl<PointsViewModel>(),
           child: const InviteFriendsScreen(),
         ),
-    core_constants.AppConstants.routeCart: (context) => ChangeNotifierProvider(
-      create: (context) => di.sl<CartViewModel>(),
-      child: const CartPage(),
-    ),
+    core_constants.AppConstants.routeCart: (context) => const CartPage(),
     core_constants.AppConstants.routeBlogList: (context) =>
         const BlogListPage(),
   };
@@ -479,10 +475,7 @@ class AppRoutes {
         );
       case core_constants.AppConstants.routeCart:
         return MaterialPageRoute(
-          builder: (context) => ChangeNotifierProvider(
-            create: (context) => di.sl<CartViewModel>(),
-            child: const CartPage(),
-          ),
+          builder: (context) => const CartPage(),
           settings: settings,
         );
       case core_constants.AppConstants.routeBlogList:
