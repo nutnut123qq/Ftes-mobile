@@ -325,7 +325,6 @@ class _HomePageState extends State<HomePage> {
               onTap: () => Navigator.pushNamed(context, AppConstants.routeCart),
               child: Container(
                 padding: const EdgeInsets.all(12),
-                
                 child: Consumer<CartViewModel>(
                   builder: (context, cartViewModel, child) {
                     final cartCount = cartViewModel.cartCount;
