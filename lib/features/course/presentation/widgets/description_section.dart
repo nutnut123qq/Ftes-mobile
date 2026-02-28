@@ -9,13 +9,10 @@ class DescriptionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: CourseUiConstants.horizontalMargin),
-      padding: const EdgeInsets.all(CourseUiConstants.cardPadding),
-      decoration: BoxDecoration(
-        color: CourseUiConstants.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: CourseUiConstants.cardShadow,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: CourseUiConstants.horizontalMargin,
+        vertical: 16,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,7 +24,9 @@ class DescriptionSection extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             description.isNotEmpty ? description : 'Không có mô tả',
-            style: AppTextStyles.bodyMedium.copyWith(color: CourseUiConstants.textSecondary),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: CourseUiConstants.textSecondary,
+            ),
           ),
         ],
       ),

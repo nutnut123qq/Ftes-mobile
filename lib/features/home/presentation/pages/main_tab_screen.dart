@@ -10,8 +10,7 @@ import '../../../roadmap/presentation/pages/roadmap_page.dart';
 import '../../../roadmap/presentation/viewmodels/roadmap_viewmodel.dart';
 import '../../../blog/presentation/pages/blog_list_page.dart';
 import '../../../blog/presentation/viewmodels/blog_viewmodel.dart';
-import '../../../cart/presentation/pages/cart_page.dart';
-import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
+import '../../../profile/presentation/pages/profile_screen.dart';
 
 /// Main tab screen that holds all tabs in memory with smooth fade animations
 class MainTabScreen extends StatefulWidget {
@@ -55,11 +54,8 @@ class _MainTabScreenState extends State<MainTabScreen> {
         create: (context) => di.sl<BlogViewModel>()..initialize(),
         child: const BlogListPage(hideBottomNav: true),
       ),
-      // Tab 4: Cart
-      ChangeNotifierProvider(
-        create: (context) => di.sl<CartViewModel>(),
-        child: const CartPage(hideBottomNav: true),
-      ),
+      // Tab 4: Profile
+      const ProfileScreen(hideBottomNav: true),
     ];
   }
 

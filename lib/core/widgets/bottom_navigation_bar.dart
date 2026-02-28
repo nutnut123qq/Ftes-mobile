@@ -69,8 +69,8 @@ class AppBottomNavigationBar extends StatelessWidget {
                 // Item 4: Cart
                 Expanded(
                   child: _buildNavItem(
-                    Icons.shopping_cart,
-                    'Giỏ hàng',
+                    Icons.person,
+                    'Profile',
                     selectedIndex == 4,
                     onTap: () => _handleNavigation(context, 4),
                   ),
@@ -192,8 +192,8 @@ class AppBottomNavigationBar extends StatelessWidget {
           MaterialPageRoute(builder: (context) => const BlogListPage()),
         );
         break;
-      case 4: // Cart
-        Navigator.pushNamed(context, core_constants.AppConstants.routeCart);
+      case 4: // Profile
+        Navigator.pushNamed(context, core_constants.AppConstants.routeProfile);
         break;
     }
   }

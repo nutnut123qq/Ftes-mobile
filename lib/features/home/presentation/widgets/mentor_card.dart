@@ -23,38 +23,52 @@ class MentorCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            '“${mentor.quote}”',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[800],
-              fontStyle: FontStyle.italic,
-              height: 1.5,
+          Flexible(
+            child: Text(
+              '“${mentor.quote}”',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[800],
+                fontStyle: FontStyle.italic,
+                height: 1.25,
+                fontSize: 13,
+              ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
                 radius: 20,
                 backgroundImage: AssetImage(mentor.avatar),
               ),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    mentor.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      mentor.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
                     ),
-                  ),
-                  Text(
-                    mentor.title,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ],
+                    Text(
+                      mentor.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
