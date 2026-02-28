@@ -16,7 +16,9 @@ import 'package:ftes/core/utils/image_cache_helper.dart';
 import 'package:ftes/core/utils/url_helper.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final bool hideBottomNav;
+
+  const ProfileScreen({super.key, this.hideBottomNav = false});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -145,7 +147,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: const AppBottomNavigationBar(selectedIndex: 4),
+      bottomNavigationBar: widget.hideBottomNav
+          ? null
+          : const AppBottomNavigationBar(selectedIndex: 4),
     );
   }
 

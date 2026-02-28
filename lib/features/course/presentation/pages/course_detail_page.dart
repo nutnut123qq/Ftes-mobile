@@ -21,14 +21,14 @@ import '../widgets/instructor_section.dart';
 import '../widgets/benefits_section.dart';
 import '../widgets/reviews_section.dart';
 import '../widgets/enroll_button.dart';
+import '../../../../core/widgets/3D/button_3d.dart';
+import '../../../../core/widgets/3D/tab_bar_3d.dart';
+import '../constants/course_ui_constants.dart';
 
 class CourseDetailPage extends StatefulWidget {
   final Course course;
 
-  const CourseDetailPage({
-    super.key,
-    required this.course,
-  });
+  const CourseDetailPage({super.key, required this.course});
 
   @override
   State<CourseDetailPage> createState() => _CourseDetailPageState();
@@ -37,7 +37,7 @@ class CourseDetailPage extends StatefulWidget {
 class _CourseDetailPageState extends State<CourseDetailPage> {
   int _selectedTabIndex = 1;
   final List<String> _tabs = ['Giới thiệu', 'Chương trình học'];
-  
+
   // Track which parts are expanded
   final Map<String, bool> _expandedParts = {};
   DateTime? _lastToggleAt;
@@ -55,8 +55,11 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     return Consumer2<CourseDetailViewModel, CartViewModel>(
       builder: (context, viewModel, cartViewModel, child) {
         final isEnrolled = viewModel.isEnrolled;
-        return GestureDetector(
-          onTap: () async {
+        return OutlineButton3D(
+          text: isEnrolled == true ? 'Học ngay' : 'Thêm vào giỏ',
+          icon: isEnrolled == true ? Icons.play_arrow : Icons.shopping_cart,
+          iconOnRight: true,
+          onPressed: () async {
             if (isEnrolled == true) {
               final courseDetail = viewModel.courseDetail;
               if (courseDetail != null && courseDetail.parts.isNotEmpty) {
@@ -97,7 +100,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             } else {
               final courseDetail = viewModel.courseDetail;
               final apiPrice = courseDetail?.totalPrice ?? 0.0;
-              final coursePrice = widget.course.price ?? widget.course.salePrice ?? 0.0;
+              final coursePrice =
+                  widget.course.price ?? widget.course.salePrice ?? 0.0;
               final price = apiPrice > 0 ? apiPrice : coursePrice;
               if (price > 0) {
                 final courseId = courseDetail?.id ?? widget.course.id ?? '';
@@ -117,7 +121,10 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   } else {
                     messenger.showSnackBar(
                       SnackBar(
-                        content: Text(cartViewModel.errorMessage ?? 'Không thể thêm vào giỏ hàng'),
+                        content: Text(
+                          cartViewModel.errorMessage ??
+                              'Không thể thêm vào giỏ hàng',
+                        ),
                         backgroundColor: Colors.red,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -132,44 +139,26 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               }
             }
           },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0961F5),
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  isEnrolled == true ? Icons.play_arrow : Icons.shopping_cart,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  isEnrolled == true ? 'Học ngay' : 'Thêm vào giỏ',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          variant: Button3DVariant.solid,
+          borderRadius: 10.0,
+          borderWidth: 0,
+          borderColor: const Color(0xFF0961F5),
+          backgroundColor: const Color(0xFF0961F5),
+          shadowOffset: 4.0,
+          fontSize: 16.0,
+          height: 40.0,
+          width: 150,
+          autoSize: true,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         );
       },
     );
   }
+
   void _onTogglePart(String partId) {
     final now = DateTime.now();
-    if (_lastToggleAt != null && now.difference(_lastToggleAt!).inMilliseconds < 150) {
+    if (_lastToggleAt != null &&
+        now.difference(_lastToggleAt!).inMilliseconds < 150) {
       return; // debounce rapid toggles
     }
     _lastToggleAt = now;
@@ -177,7 +166,10 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
       _expandedParts[partId] = !(_expandedParts[partId] ?? false);
     });
     // Prefetch: khi expand, có thể thực hiện prefetch metadata/video nhẹ
-    final viewModel = Provider.of<CourseDetailViewModel>(context, listen: false);
+    final viewModel = Provider.of<CourseDetailViewModel>(
+      context,
+      listen: false,
+    );
     final course = viewModel.courseDetail;
     if (course != null && (_expandedParts[partId] ?? false)) {
       final part = course.parts.firstWhere(
@@ -206,7 +198,10 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
       if (!mounted) return;
 
-      final viewModel = Provider.of<CourseDetailViewModel>(context, listen: false);
+      final viewModel = Provider.of<CourseDetailViewModel>(
+        context,
+        listen: false,
+      );
 
       // Initialize course detail (fetches course, profile, enrollment in one go)
       await viewModel.initialize(courseIdentifier, userId);
@@ -225,149 +220,188 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
       ],
       child: Consumer<CourseDetailViewModel>(
         builder: (context, viewModel, child) {
-        // Use API data if available, otherwise fall back to widget.course
-        final apiCourse = viewModel.courseDetail;
-        final isLoading = viewModel.isLoading;
-        
-        return Scaffold(
-          backgroundColor: const Color(0xFFF5F9FF),
-          body: CustomScrollView(
-            slivers: [
-              // Hero Image with App Bar
-              CourseHeroSection(
-                courseDetail: apiCourse,
-                fallbackImageUrl: widget.course.image ?? widget.course.imageHeader ?? '',
-                onBack: () => Navigator.pop(context),
-                trailing: _buildHeroTrailing(context),
-              ),
+          // Use API data if available, otherwise fall back to widget.course
+          final apiCourse = viewModel.courseDetail;
+          final isLoading = viewModel.isLoading;
+
+          return Scaffold(
+            backgroundColor: const Color(0xFFF5F9FF),
+            body: CustomScrollView(
+              slivers: [
+                // Hero Image with App Bar
+                CourseHeroSection(
+                  courseDetail: apiCourse,
+                  fallbackImageUrl:
+                      widget.course.image ?? widget.course.imageHeader ?? '',
+                  onBack: () => Navigator.pop(context),
+                  trailing: _buildHeroTrailing(context),
+                ),
+
+                // Loading indicator
+                if (isLoading)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  ),
+
+                // TabBar3D - moved to top
+                if (!isLoading)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 16, bottom: 8),
+                      child: TabBar3D(
+                        tabs: _tabs,
+                        selectedIndex: _selectedTabIndex,
+                        onTabChanged: (index) => setState(() {
+                          _selectedTabIndex = index;
+                        }),
+                      ),
+                    ),
+                  ),
+
+                // Course Info Card
+                if (!isLoading)
+                  SliverToBoxAdapter(
+                    child: CourseInfoCard(
+                      courseDetail: apiCourse,
+                      fallbackTitle: widget.course.title ?? '',
+                      fallbackCategory: widget.course.categoryName ?? '',
+                    ),
+                  ),
+
+                // Conditional content based on selected tab
+                if (!isLoading && _selectedTabIndex == 0) ...[
+                  SliverToBoxAdapter(
+                    child: DescriptionSection(
+                      description: apiCourse?.description ?? 'Không có mô tả',
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: InstructorSection(
+                      instructorName:
+                          viewModel.mentorProfile?.name ?? 'Giảng viên',
+                      title:
+                          viewModel.mentorProfile?.jobName ??
+                          'Giảng viên chuyên nghiệp',
+                      about: viewModel.mentorProfile?.description ?? '',
+                      avatarUrl: viewModel.mentorProfile?.avatar,
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: BenefitsSection(
+                      benefits: (() {
+                        final map = apiCourse?.infoCourse;
+                        if (map == null) return const <String>[];
+                        final candidates = [
+                          'benefits',
+                          'whatYouWillLearn',
+                          'what_you_will_learn',
+                          'learn_points',
+                          'learnings',
+                          'outcomes',
+                          'youWillLearn',
+                          'learn',
+                          'highlights',
+                        ];
+                        for (final key in candidates) {
+                          final raw = map[key];
+                          if (raw is List) {
+                            return raw
+                                .map((e) => e.toString())
+                                .cast<String>()
+                                .toList();
+                          }
+                          if (raw is Map && raw['items'] is List) {
+                            return (raw['items'] as List)
+                                .map((e) => e.toString())
+                                .cast<String>()
+                                .toList();
+                          }
+                          if (raw is String && raw.trim().isNotEmpty) {
+                            // ignore: deprecated_member_use
+                            final lines = raw
+                                .split(RegExp(r'[\n;]|\r\n'))
+                                .map((e) => e.trim())
+                                .where((e) => e.isNotEmpty)
+                                .toList();
+                            if (lines.isNotEmpty) return lines;
+                          }
+                        }
+                        // Fallback chung: thu thập mọi giá trị string trong map (hỗ trợ additionalProp1..n)
+                        final collected = <String>[];
+                        map.forEach((k, v) {
+                          if (v is String && v.trim().isNotEmpty) {
+                            collected.add(v.trim());
+                          } else if (v is List) {
+                            collected.addAll(
+                              v
+                                  .map((e) => e.toString())
+                                  .where((e) => e.trim().isNotEmpty),
+                            );
+                          } else if (v is Map && v['items'] is List) {
+                            collected.addAll(
+                              (v['items'] as List)
+                                  .map((e) => e.toString())
+                                  .where((e) => e.trim().isNotEmpty),
+                            );
+                          }
+                        });
+                        if (collected.isNotEmpty) return collected;
+                        // Fallback: nếu có đúng một key và value là List/Map/String, dùng nó làm benefits
+                        if (map.length == 1) {
+                          final only = map.values.first;
+                          if (only is List) {
+                            return only
+                                .map((e) => e.toString())
+                                .cast<String>()
+                                .toList();
+                          }
+                          if (only is Map && only['items'] is List) {
+                            return (only['items'] as List)
+                                .map((e) => e.toString())
+                                .cast<String>()
+                                .toList();
+                          }
+                          if (only is String && only.trim().isNotEmpty) {
+                            // ignore: deprecated_member_use
+                            final lines = only
+                                .split(RegExp(r'[\n;]|\r\n'))
+                                .map((e) => e.trim())
+                                .where((e) => e.isNotEmpty)
+                                .toList();
+                            if (lines.isNotEmpty) return lines;
+                          }
+                        }
+                        // Fallback 2: tìm value đầu tiên dạng List trong map
+                        for (final value in map.values) {
+                          if (value is List && value.isNotEmpty) {
+                            return value
+                                .map((e) => e.toString())
+                                .cast<String>()
+                                .toList();
+                          }
+                        }
+                        return const <String>[];
+                      })(),
+                    ),
+                  ),
+                 
+                ],
+
+                // Curriculum tab
+                if (!isLoading && _selectedTabIndex == 1)
+                  SliverToBoxAdapter(child: _buildCurriculumContent(apiCourse)),
               
-              // Loading indicator
-              if (isLoading)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                ),
-              
-              // Course Info Card
-              if (!isLoading)
-                SliverToBoxAdapter(
-                  child: CourseInfoCard(
-                    courseDetail: apiCourse,
-                    fallbackTitle: widget.course.title ?? '',
-                    fallbackCategory: widget.course.categoryName ?? '',
-                    tabs: _tabs,
-                    selectedIndex: _selectedTabIndex,
-                    onTabSelected: (i) => setState(() { _selectedTabIndex = i; }),
-                  ),
-                ),
-              
-              // Conditional content based on selected tab
-              if (!isLoading && _selectedTabIndex == 0) ...[
-                SliverToBoxAdapter(
-                  child: DescriptionSection(
-                    description: apiCourse?.description ?? 'Không có mô tả',
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                SliverToBoxAdapter(
-                  child: InstructorSection(
-                    instructorName: viewModel.mentorProfile?.name ?? 'Giảng viên',
-                    title: viewModel.mentorProfile?.jobName ?? 'Giảng viên chuyên nghiệp',
-                    about: viewModel.mentorProfile?.description ?? '',
-                    avatarUrl: viewModel.mentorProfile?.avatar,
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                SliverToBoxAdapter(
-                  child: BenefitsSection(
-                    benefits: (() {
-                      final map = apiCourse?.infoCourse;
-                      if (map == null) return const <String>[];
-                      final candidates = [
-                        'benefits', 'whatYouWillLearn', 'what_you_will_learn', 'learn_points',
-                        'learnings', 'outcomes', 'youWillLearn', 'learn', 'highlights'
-                      ];
-                      for (final key in candidates) {
-                        final raw = map[key];
-                        if (raw is List) {
-                          return raw.map((e) => e.toString()).cast<String>().toList();
-                        }
-                        if (raw is Map && raw['items'] is List) {
-                          return (raw['items'] as List).map((e) => e.toString()).cast<String>().toList();
-                        }
-                        if (raw is String && raw.trim().isNotEmpty) {
-                          // ignore: deprecated_member_use
-                          final lines = raw.split(RegExp(r'[\n;]|\r\n')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-                          if (lines.isNotEmpty) return lines;
-                        }
-                      }
-                      // Fallback chung: thu thập mọi giá trị string trong map (hỗ trợ additionalProp1..n)
-                      final collected = <String>[];
-                      map.forEach((k, v) {
-                        if (v is String && v.trim().isNotEmpty) {
-                          collected.add(v.trim());
-                        } else if (v is List) {
-                          collected.addAll(v.map((e) => e.toString()).where((e) => e.trim().isNotEmpty));
-                        } else if (v is Map && v['items'] is List) {
-                          collected.addAll((v['items'] as List).map((e) => e.toString()).where((e) => e.trim().isNotEmpty));
-                        }
-                      });
-                      if (collected.isNotEmpty) return collected;
-                      // Fallback: nếu có đúng một key và value là List/Map/String, dùng nó làm benefits
-                      if (map.length == 1) {
-                        final only = map.values.first;
-                        if (only is List) {
-                          return only.map((e) => e.toString()).cast<String>().toList();
-                        }
-                        if (only is Map && only['items'] is List) {
-                          return (only['items'] as List).map((e) => e.toString()).cast<String>().toList();
-                        }
-                        if (only is String && only.trim().isNotEmpty) {
-                          // ignore: deprecated_member_use
-                          final lines = only.split(RegExp(r'[\n;]|\r\n')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-                          if (lines.isNotEmpty) return lines;
-                        }
-                      }
-                      // Fallback 2: tìm value đầu tiên dạng List trong map
-                      for (final value in map.values) {
-                        if (value is List && value.isNotEmpty) {
-                          return value.map((e) => e.toString()).cast<String>().toList();
-                        }
-                      }
-                      return const <String>[];
-                    })(),
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                SliverToBoxAdapter(
-                  child: ReviewsSection(
-                    rating: apiCourse?.avgStar ?? (widget.course.rating ?? 0),
-                    totalReviews: apiCourse?.totalUser ?? 0,
-                  ),
-                ),
+                // Enroll Button
+                // if (!isLoading) SliverToBoxAdapter(child: _buildEnrollButton()),
+
+                // Bottom Spacing
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
               ],
-              
-              // Curriculum tab
-              if (!isLoading && _selectedTabIndex == 1)
-                SliverToBoxAdapter(
-                  child: _buildCurriculumContent(apiCourse),
-                ),
-              
-              // Enroll Button
-              if (!isLoading)
-                SliverToBoxAdapter(
-                  child: _buildEnrollButton(),
-                ),
-              
-              // Bottom Spacing
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 20),
-              ),
-            ],
-          ),
-        );
+            ),
+          );
         },
       ),
     );
@@ -375,29 +409,18 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
   Widget _buildCurriculumContent(CourseDetail? apiCourse) {
     final parts = apiCourse?.parts ?? [];
-    
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: CourseUiConstants.horizontalMargin,
+        vertical: 16,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Chương trình học',
-            style: AppTextStyles.heading3.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -422,7 +445,6 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
       ),
     );
   }
-
 
   void _showContentPopup(Lesson lesson) {
     showDialog(
@@ -499,16 +521,12 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                           color: const Color(0xFF0961F5), // Blue links
                           textDecoration: TextDecoration.underline,
                         ),
-                        "p": Style(
-                          margin: Margins.only(bottom: 8),
-                        ),
+                        "p": Style(margin: Margins.only(bottom: 8)),
                         "ul": Style(
                           margin: Margins.only(bottom: 8),
                           padding: HtmlPaddings.zero,
                         ),
-                        "li": Style(
-                          margin: Margins.only(bottom: 4),
-                        ),
+                        "li": Style(margin: Margins.only(bottom: 4)),
                       },
                     ),
                   ),
@@ -579,9 +597,11 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
       builder: (context, viewModel, cartViewModel, child) {
         final apiCourse = viewModel.courseDetail;
         final isEnrolled = viewModel.isEnrolled == true;
-        final isLoading = viewModel.isCheckingEnrollment || cartViewModel.isAddingToCart;
+        final isLoading =
+            viewModel.isCheckingEnrollment || cartViewModel.isAddingToCart;
         final apiPrice = apiCourse?.totalPrice ?? 0.0;
-        final coursePrice = widget.course.price ?? widget.course.salePrice ?? 0.0;
+        final coursePrice =
+            widget.course.price ?? widget.course.salePrice ?? 0.0;
         final price = apiPrice > 0 ? apiPrice : coursePrice;
         return EnrollButton(
           isEnrolled: isEnrolled,
@@ -593,17 +613,23 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     );
   }
 
-  void _handleEnrollButtonTap(bool isEnrolled, CartViewModel cartViewModel) async {
+  void _handleEnrollButtonTap(
+    bool isEnrolled,
+    CartViewModel cartViewModel,
+  ) async {
     if (isEnrolled) {
       // Navigate to first lesson of the course
-      final courseDetailViewModel = Provider.of<CourseDetailViewModel>(context, listen: false);
+      final courseDetailViewModel = Provider.of<CourseDetailViewModel>(
+        context,
+        listen: false,
+      );
       final courseDetail = courseDetailViewModel.courseDetail;
-      
+
       if (courseDetail != null && courseDetail.parts.isNotEmpty) {
         final firstPart = courseDetail.parts.first;
         if (firstPart.lessons.isNotEmpty) {
           final firstLesson = firstPart.lessons.first;
-          
+
           // Navigate to video page
           Navigator.pushNamed(
             context,
@@ -645,11 +671,14 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         );
       }
     } else {
-      final apiCourse = Provider.of<CourseDetailViewModel>(context, listen: false).courseDetail;
+      final apiCourse = Provider.of<CourseDetailViewModel>(
+        context,
+        listen: false,
+      ).courseDetail;
       final apiPrice = apiCourse?.totalPrice ?? 0.0;
       final coursePrice = widget.course.price ?? widget.course.salePrice ?? 0.0;
       final price = apiPrice > 0 ? apiPrice : coursePrice;
-      
+
       if (price > 0) {
         // Add to cart for paid courses
         final courseId = apiCourse?.id ?? widget.course.id ?? '';
@@ -658,7 +687,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
           final messenger = ScaffoldMessenger.of(context);
           final navigator = Navigator.of(context);
           final success = await cartViewModel.addToCart(courseId);
-          
+
           if (!mounted) return;
           if (success) {
             // Show success message
@@ -683,7 +712,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             // Show error message
             messenger.showSnackBar(
               SnackBar(
-                content: Text(cartViewModel.errorMessage ?? 'Không thể thêm vào giỏ hàng'),
+                content: Text(
+                  cartViewModel.errorMessage ?? 'Không thể thêm vào giỏ hàng',
+                ),
                 backgroundColor: Colors.red,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
@@ -698,9 +729,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         Navigator.pushNamed(
           context,
           AppConstants.routePayment,
-          arguments: {
-            'course': widget.course,
-          },
+          arguments: {'course': widget.course},
         );
       }
     }

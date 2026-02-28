@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/my_course.dart';
 import '../../../../core/utils/image_cache_helper.dart';
-import '../../../../core/widgets/3D/outline_button_3d.dart';
+import '../../../../core/widgets/3D/button_3d.dart';
 
 /// Widget to display individual my course card
 class MyCourseCardWidget extends StatelessWidget {
@@ -114,11 +114,11 @@ class MyCourseCardWidget extends StatelessWidget {
                         borderColor: const Color.fromARGB(255, 28, 38, 228),
                         shadowOffset: 3.0,
                         fontSize: 10.0,
-                        width: 100,
+                        width: 90,
                         height: 35,
                         autoSize: true,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16, // chiều ngang của button
+                          horizontal: 14, // chiều ngang của button
                           vertical: 8, // chiều cao của button
                         ),
                       ),

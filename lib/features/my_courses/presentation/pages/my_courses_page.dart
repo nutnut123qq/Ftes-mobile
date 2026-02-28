@@ -91,30 +91,15 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(20),
-      child: Row(
+      child: const Row(
         children: [
-          const Text(
+          Text(
             MyCoursesConstants.titleMyCoursesPage,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Color(0xFF202244),
             ),
-          ),
-          const Spacer(),
-          IconButton(
-            onPressed: () {
-              // Refresh courses
-              if (_userId.isNotEmpty) {
-                final viewModel = Provider.of<MyCoursesViewModel>(
-                  context,
-                  listen: false,
-                );
-                viewModel.fetchUserCourses(_userId);
-              }
-            },
-            icon: const Icon(Icons.refresh),
-            color: const Color(0xFF202244),
           ),
         ],
       ),
@@ -184,35 +169,55 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
     );
   }
 
+  /// Refresh courses when pull-to-refresh
+  Future<void> _refreshCourses() async {
+    if (_userId.isNotEmpty) {
+      final viewModel = Provider.of<MyCoursesViewModel>(
+        context,
+        listen: false,
+      );
+      await viewModel.fetchUserCourses(_userId);
+    }
+  }
+
   Widget _buildCoursesList() {
     return Consumer<MyCoursesViewModel>(
       builder: (context, viewModel, child) {
-        if (viewModel.isLoading) {
+        if (viewModel.isLoading && viewModel.myCourses.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (viewModel.errorMessage != null) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
-                const SizedBox(height: 16),
-                Text(
-                  viewModel.errorMessage!,
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
+        if (viewModel.errorMessage != null && viewModel.myCourses.isEmpty) {
+          return RefreshIndicator(
+            onRefresh: _refreshCourses,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.7,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+                      const SizedBox(height: 16),
+                      Text(
+                        viewModel.errorMessage!,
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_userId.isNotEmpty) {
+                            viewModel.fetchUserCourses(_userId);
+                          }
+                        },
+                        child: const Text('Thử lại'),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_userId.isNotEmpty) {
-                      viewModel.fetchUserCourses(_userId);
-                    }
-                  },
-                  child: const Text('Thử lại'),
-                ),
-              ],
+              ),
             ),
           );
         }
@@ -221,61 +226,73 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
           // Check if it's an empty search result or no courses at all
           final isSearching = viewModel.searchQuery.isNotEmpty;
 
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  isSearching ? Icons.search_off : Icons.school_outlined,
-                  size: 64,
-                  color: Colors.grey[400],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  isSearching
-                      ? MyCoursesConstants.emptySearchTitle
-                      : MyCoursesConstants.emptyCoursesTitle,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[600],
+          return RefreshIndicator(
+            onRefresh: _refreshCourses,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.7,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        isSearching ? Icons.search_off : Icons.school_outlined,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        isSearching
+                            ? MyCoursesConstants.emptySearchTitle
+                            : MyCoursesConstants.emptyCoursesTitle,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        isSearching
+                            ? MyCoursesConstants.emptySearchSubtitle
+                            : MyCoursesConstants.emptyCoursesSubtitle,
+                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  isSearching
-                      ? MyCoursesConstants.emptySearchSubtitle
-                      : MyCoursesConstants.emptyCoursesSubtitle,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+              ),
             ),
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(20),
-          itemCount: viewModel.myCourses.length,
-          itemBuilder: (context, index) {
-            final course = viewModel.myCourses[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: MyCourseCardWidget(
-                course: course,
-                onTap: () {
-                  // Navigate to course detail using slugName
-                  if (course.slugName != null && course.slugName!.isNotEmpty) {
-                    Navigator.pushNamed(
-                      context,
-                      AppConstants.routeCourseDetail,
-                      arguments: course.slugName,
-                    );
-                  }
-                },
-              ),
-            );
-          },
+        return RefreshIndicator(
+          onRefresh: _refreshCourses,
+          child: ListView.builder(
+            padding: const EdgeInsets.all(20),
+            itemCount: viewModel.myCourses.length,
+            itemBuilder: (context, index) {
+              final course = viewModel.myCourses[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: MyCourseCardWidget(
+                  course: course,
+                  onTap: () {
+                    // Navigate to course detail using slugName
+                    if (course.slugName != null && course.slugName!.isNotEmpty) {
+                      Navigator.pushNamed(
+                        context,
+                        AppConstants.routeCourseDetail,
+                        arguments: course.slugName,
+                      );
+                    }
+                  },
+                ),
+              );
+            },
+          ),
         );
       },
     );

@@ -19,18 +19,18 @@ class InstructorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: CourseUiConstants.horizontalMargin),
-      padding: const EdgeInsets.all(CourseUiConstants.cardPadding),
-      decoration: BoxDecoration(
-        color: CourseUiConstants.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: CourseUiConstants.cardShadow,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: CourseUiConstants.horizontalMargin,
+        vertical: 16,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Giảng viên', style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            'Giảng viên',
+            style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -57,9 +57,19 @@ class InstructorSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text(title, style: AppTextStyles.bodyMedium.copyWith(color: CourseUiConstants.textSecondary)),
+          Text(
+            title,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: CourseUiConstants.textSecondary,
+            ),
+          ),
           const SizedBox(height: 12),
-          Text(about, style: AppTextStyles.bodyMedium.copyWith(color: CourseUiConstants.textSecondary)),
+          Text(
+            about,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: CourseUiConstants.textSecondary,
+            ),
+          ),
         ],
       ),
     );

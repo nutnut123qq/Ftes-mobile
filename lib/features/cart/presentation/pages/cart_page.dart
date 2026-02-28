@@ -105,7 +105,8 @@ class _CartPageState extends State<CartPage> {
       ),
       bottomNavigationBar: widget.hideBottomNav
           ? null
-          : const AppBottomNavigationBar(selectedIndex: 4),
+          // Cart is not a tab anymore, so don't highlight any tab.
+          : const AppBottomNavigationBar(selectedIndex: -1),
     );
   }
 

@@ -5,6 +5,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:ftes/core/utils/text_styles.dart';
 import 'package:ftes/core/utils/colors.dart';
 import 'package:ftes/core/widgets/bottom_navigation_bar.dart';
+import 'package:ftes/core/widgets/3D/button_3d.dart';
 import 'package:ftes/core/di/injection_container.dart' as di;
 import 'package:ftes/core/constants/app_constants.dart';
 import 'package:ftes/routes/app_routes.dart';
@@ -318,8 +319,7 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
             GestureDetector(
-              onTap: () =>
-                  Navigator.pushNamed(context, AppConstants.routeProfile),
+              onTap: () => Navigator.pushNamed(context, AppConstants.routeCart),
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -334,7 +334,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 child: const Icon(
-                  Icons.person,
+                  Icons.shopping_cart_outlined,
                   color: AppColors.primary,
                   size: 24,
                 ),
@@ -590,20 +590,24 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Align(
                       alignment: Alignment.bottomRight,
-                      child: ElevatedButton(
+                      child: OutlineButton3D(
+                        text: 'Tiếp tục học',
                         onPressed: onContinue,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                        variant: Button3DVariant.solid,
+                        backgroundColor: AppColors.primary,
+                        borderColor: AppColors.primary,
+                        borderWidth: 0,
+                        borderRadius: 8,
+                        shadowOffset: 3,
+                        height: 34,
+                        autoSize: true,
+                        fontSize: 12,
+                        iconOnRight: true,
+                        iconSize: 18,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
                         ),
-                        child: const Text('Tiếp tục học'),
                       ),
                     ),
                   ],
